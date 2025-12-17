@@ -6,5 +6,6 @@ todo.md
 cache
 static/*.css
 static/*.css.map
-wholth_include
+wholth_lib
 wholth.db
+wholth_go

@@ -1,6 +1,6 @@
 package wholth
 
-// #cgo CFLAGS: -I${SRCDIR}/../wholth_include
+// #cgo CFLAGS: -I${SRCDIR}/../wholth_lib/include
 // #include "wholth/wholth.h"
 import "C"
 
