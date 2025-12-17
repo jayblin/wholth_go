@@ -1,0 +1,15 @@
+@use "variables/color";
+
+@each $color_group_name, $color_group in color.$colors {
+  @each $color_name, $color in $color_group {
+    .color-#{$color_group_name}-#{$color_name} {
+      color: #{$color} !important;
+    }
+    .color-bg-#{$color_group_name}-#{$color_name} {
+      background-color: #{$color} !important;
+    }
+    .color-border-#{$color_group_name}-#{$color_name} {
+      border-color: #{$color} !important;
+    }
+  }
+}

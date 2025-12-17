@@ -1,0 +1,55 @@
+// https://paletton.com/#uid=70d0u0k8Ioq1cSO4Kv-bYiihdbB
+$primary-a: #E2EBE7;
+$primary-b: #95AFA3;
+$primary-c: #638776;
+$primary-d: #406553;
+$primary-e: #1E4030;
+
+$tertiary-a: #FFFBF5;
+$tertiary-b: #FCEBD6;
+$tertiary-c: #C2AB8E;
+$tertiary-d: #927A5B;
+$tertiary-e: #5C462B;
+
+$secondary-a: #DFE4E7;
+$secondary-b: #8A98A1;
+$secondary-c: #5D707C;
+$secondary-d: #3C505D;
+$secondary-e: #1D2F3B;
+
+$complementary-a: #FFF8F5;
+$complementary-b: #FCE0D6;
+$complementary-c: #C29B8E;
+$complementary-d: #92695B;
+$complementary-e: #5C372B;
+
+$colors: (
+  "primary": (
+    "a": $primary-a,
+    "b": $primary-b,
+    "c": $primary-c,
+    "d": $primary-d,
+    "e": $primary-e,
+  ),
+  "secondary": (
+    "a": $secondary-a,
+    "b": $secondary-b,
+    "c": $secondary-c,
+    "d": $secondary-d,
+    "e": $secondary-e,
+  ),
+  "tertiary": (
+    "a": $tertiary-a,
+    "b": $tertiary-b,
+    "c": $tertiary-c,
+    "d": $tertiary-d,
+    "e": $tertiary-e,
+  ),
+  "complementary": (
+    "a": $complementary-a,
+    "b": $complementary-b,
+    "c": $complementary-c,
+    "d": $complementary-d,
+    "e": $complementary-e,
+  ),
+);

@@ -1,0 +1,17 @@
+{{define "content"}}
+<form id="auth-form" method="post">
+    <label for="username">Name</label>
+    <input type="text" name="username" id="username" required autofocus />
+    <label for="password">Password</label>
+    <input type="password" name="password" id="password" required />
+    <div class="actions">
+        <button formaction="/register">Regsiter</button>
+        <button formaction="/login">Login</button>
+    </div>
+    {{if .ErrorMessage}}
+        <label for="err">Ошибка: </label>
+        <output name="err">{{.ErrorMessage}}</output>
+    {{end}}
+    <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" />
+</form>
+{{end}}

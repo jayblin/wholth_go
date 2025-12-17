@@ -1,0 +1,33 @@
+{{template "food_get_form" .}}
+{{define "food_get_form"}}
+<form
+    id="food-get-form"
+    action="/food#food-get-form"
+    method="get"
+    target="htmz"
+>
+    <div>
+        <input
+            type="search"
+            name="food_q"
+            placeholder="Найти пищу"
+            value="{{.FoodQ}}"
+        >
+        <button>&#9745;</button>
+    </div>
+
+    <ul>
+    {{range .Values}}
+        <li>
+            <a href="/food/{{.Id}}"><h2>{{.Title}}</h2></a>
+            <span>Калории: {{.TopNutrient}}</span>
+            <span>Готовится: {{.PrepTime}}</span>
+        </li>
+    {{end}}
+    </ul>
+
+    {{template "paginator" .Pagination}}
+
+    <input type="hidden" name="as_subdoc" value="1">
+</form>
+{{end}}

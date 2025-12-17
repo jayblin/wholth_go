@@ -1,0 +1,68 @@
+<!doctype html>
+<html lang="{{.Meta.Lang}}">
+    <head>
+        <meta charset="utf-8"  >
+        <meta name="description" content="{{.Meta.Description}}" >
+        <meta name="viewport" content="width=device-width, initial-scale=1" >
+        <link rel="apple-touch-icon" href="/static/apple-touch-icon.png" >
+        <link rel="icon" href="/static/favicon.ico" type="image/x-icon" >
+        <title>{{.Meta.Title}}</title>
+        <link
+            rel="stylesheet"
+            href="/static/styles.css"
+            fetchpriority="high"
+        >
+        <!-- <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script> -->
+        <script src="/static/main.js"></script>
+
+        {{define "head"}}
+        {{end}}
+        {{template "head" .}}
+    </head>
+
+    <body>
+        <!-- https://leanrada.com/htmz/ -->
+        <iframe hidden name=htmz onload="setTimeout(()=>document.querySelector(contentWindow.location.hash||null)?.replaceWith(...contentDocument.body.childNodes))"></iframe>
+        <header>
+            <div id="logo">
+                <a href="/">
+                    <img src="/static/apple-touch-icon.png" width="40" height="40" alt="Site Logo" >
+                </a>
+                <h1>{{.Meta.Title}}</h1>
+            </div>
+            <button commandfor="user-info-modal" command="show-modal" title="User info" >
+                {{if .Session.IsAuthenticated}}
+                &#127773;
+                {{else}}
+                &#127770;
+                {{end}}
+            </button>
+            <dialog id="user-info-modal">
+                <button class="close" commandfor="user-info-modal" command="close"></button>
+                <p>{{.Session.Username}}</p>
+                <p>Сессия протухнет 
+                    <time datetime="{{.Session.ExpiresStr}}" >
+                        {{.Session.ExpiresStr}}
+                    </time>
+                 </p>
+                {{if not .Session.IsAuthenticated}}
+                    <a href="/authenticate">Authenticate</a>
+                {{end}}
+            </dialog>
+        </header>
+
+        <nav>
+            <menu>
+                <li><a href="/food">Хавка</a></li>
+                <li><a href="/consumption_log">Логи поедания</a></li>
+                <!-- <li><a href="/test#test-target" target="htmz">test</a></li> -->
+            </menu>
+        </nav>
+
+        <!-- <div id="test-target"></div> -->
+
+        <main>
+            {{template "content" .}}
+        </main>
+    </body>
+</html>

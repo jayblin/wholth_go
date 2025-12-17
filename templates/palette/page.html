@@ -1,0 +1,70 @@
+{{define "head"}}
+<link
+    rel="stylesheet"
+    href="/static/palette.css"
+>
+{{end}}
+
+{{define "content"}}
+<style>
+section {
+    display: flex;
+    gap: 10px;
+    flex-direction: row;
+    justify-content: center;
+    margin-bottom: 4px;
+}
+section > div {
+    min-width: 12ch;
+    max-width: 20ch;
+    height: 50px;
+    border: 3px solid;
+    padding: 8px 4px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+}
+</style>
+<section>
+    <div class="color-bg-primary-b color-border-primary-c">
+        <span class="color-primary-a">Primary!</span>
+        <span class="color-primary-d">Primary!</span>
+        <span class="color-primary-e">Primary!</span>
+    </div>
+    <div class="color-bg-secondary-b color-border-secondary-c">
+        <span class="color-secondary-a">Secondary!</span>
+        <span class="color-secondary-d">Secondary!</span>
+        <span class="color-secondary-e">Secondary!</span>
+    </div>
+    <div class="color-bg-tertiary-b color-border-tertiary-c">
+        <span class="color-tertiary-a">Tertiary!</span>
+        <span class="color-tertiary-d">Tertiary!</span>
+        <span class="color-tertiary-e">Tertiary!</span>
+    </div>
+    <div class="color-bg-complementary-b color-border-complementary-c">
+        <span class="color-complementary-a">Complementary!</span>
+        <span class="color-complementary-d">Complementary!</span>
+        <span class="color-complementary-e">Complementary!</span>
+    </div>
+</section>
+<section>
+    <div class="color-bg-primary-e color-border-primary-c">
+        <span class="color-primary-a">Primary!</span>
+        <span class="color-primary-d">Primary!</span>
+    </div>
+    <div class="color-bg-secondary-e color-border-secondary-c">
+        <span class="color-secondary-a">Secondary!</span>
+        <span class="color-secondary-d">Secondary!</span>
+    </div>
+    <div class="color-bg-tertiary-e color-border-tertiary-c">
+        <span class="color-tertiary-a">Tertiary!</span>
+        <span class="color-tertiary-d">Tertiary!</span>
+    </div>
+    <div class="color-bg-complementary-e color-border-complementary-c">
+        <span class="color-complementary-a">Complementary!</span>
+        <span class="color-complementary-d">Complementary!</span>
+    </div>
+</section>
+{{end}}
+

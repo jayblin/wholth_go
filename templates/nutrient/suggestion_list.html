@@ -1,0 +1,22 @@
+{{template "nutrient_suggestion_list" .}}
+{{define "nutrient_suggestion_list"}}
+<ul id="nutrient-suggestor-result" class="suggestions">
+{{range .}}
+    <li>
+        <label {{if lt 30 (len .Title)}}title="{{.Title}}"{{end}}>
+            <input
+                type="checkbox"
+                name="nutrient"
+                value="{{.Id}}"
+                {{if .Checked}}checked{{end}}
+            >
+            <span>{{.Title}}</span>
+        </label>
+        <label>
+            <input name="nutrient_value" type="number" min="0" step="0.1" value="{{.Value}}">
+            <span>{{.Unit}}</span>
+        </label>
+    </li>
+{{end}}
+</ul>
+{{end}}

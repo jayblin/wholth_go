@@ -1,0 +1,73 @@
+{{template "food_post_form" .}}
+{{define "food_post_form"}}
+<form 
+    id="food-post-form"
+    method="post"
+    action="/food#food-post-form"
+    target="htmz"
+    class="{{.PostForm.ResultStatus}}"
+>
+    <fieldset>
+        <legend>Инфа</legend>
+        <label>
+            Название
+            <input name="food_title" type="text" maxlength="255" value="{{.PostForm.Food.Title}}" required>
+        </label>
+        <input type="hidden" name="food_id" value="{{.PostForm.Food.Id}}" >
+    </fieldset>
+    <fieldset>
+        <legend>Рецепт</legend>
+        <label style="display: grid">
+            Шаги
+            <textarea name="recipe_step_description" maxlength="5120" rows="10">{{.PostForm.RecipeStep.Description}}</textarea>
+        </label>
+        <label>
+            Сколько времени займёт
+            <input
+                name="recipe_step_time"
+                type="text"
+                pattern="(\d+(h|m)\s{0,}){1,}"
+                placeholder="1h30m"
+                required value="{{.PostForm.RecipeStep.Time}}"
+            >
+        </label>
+            <input type="hidden" name="recipe_step_id" value="{{.PostForm.RecipeStep.Id}}">
+    </fieldset>
+    <fieldset id="ingredient-suggestor">
+        <legend>Ингредиенты</legend>
+        <search>
+            <label>
+                Поиск
+                <input type="search" name="ingredient_q" >
+            </label>
+            <button
+                formaction="/ingredient#ingredient-suggestor-result"
+                formmethod="get"
+                formtarget="htmz"
+                formnovalidate
+            >Найти</button>
+                {{template "ingredient_suggestion_list" .PostForm.Ingredients}}
+        </search>
+    </fieldset>
+    <fieldset id="nutrient-suggestor">
+        <legend>Нутриенты</legend>
+        <search>
+            <label>
+                Поиск
+                <input type="search" name="nutrient_q" >
+            </label>
+            <button
+                type="submit"
+                formaction="/nutrient#nutrient-suggestor-result"
+                formmethod="get"
+                formtarget="htmz"
+                formnovalidate
+            >Найти</button>
+            {{template "nutrient_suggestion_list" .PostForm.Nutrients}}
+        </search>
+    </fieldset>
+    <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" >
+    <button type="submit">Сохранить</button>
+    <output>{{.PostForm.ResultMessage}}</output>
+</form>
+{{end}}

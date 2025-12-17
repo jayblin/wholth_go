@@ -1,0 +1,47 @@
+{{template "consumption_log_post_form" .}}
+{{define "consumption_log_post_form"}}
+<form 
+    id="consumption_log-post-form"
+    method="post"
+    action="/consumption_log#consumption_log-post-result"
+    target="htmz"
+    class="{{.PostForm.ResultStatus}}"
+>
+    <fieldset>
+        <legend>Инфа</legend>
+        <label>
+            Вес
+            <input name="mass" type="number" min="1" value="{{.PostForm.Mass}}" required>
+        </label>
+        <label>
+            Когда поглащена
+            <input name="consumed_at" type="datetime-local" value="{{.PostForm.ConsumedAt}}" required autocomplete="off">
+        </label>
+    </fieldset>
+
+    <fieldset id="food-suggestor">
+        <legend>Пища</legend>
+        <search>
+            <label>
+                Поиск
+                <input type="search" name="food_q" >
+                <input type="hidden" name="as_suggestion" value="1" >
+                <input type="hidden" name="limit" value="5" >
+            </label>
+            <button
+                formaction="/food#food-suggestor-result"
+                formmethod="get"
+                formtarget="htmz"
+                formnovalidate
+            >Найти</button>
+            {{template "food_suggestion_list"}}
+        </search>
+    </fieldset>
+
+    <input type="hidden" name="id" value="{{.PostForm.Id}}" >
+    <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" >
+
+    <button type="submit">Сохранить</button>
+    <output id="consumption_log-post-result">{{.PostForm.ResultMessage}}</output>
+</form>
+{{end}}

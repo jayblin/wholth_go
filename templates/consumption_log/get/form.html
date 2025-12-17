@@ -1,0 +1,47 @@
+{{template "consumption_log_get_form" .}}
+{{define "consumption_log_get_form"}}
+<form
+    id="consumption_log-get-form"
+    action="/consumption_log#consumption_log-get-form"
+    method="get"
+    target="htmz"
+>
+    <div>
+        <label>
+            Дата от
+            <input type="datetime-local" name="consumed_from" value="{{.ConsumedFrom}}" autocomplete="off" >
+        </label>
+        <label>
+            Дата до
+            <input type="datetime-local" name="consumed_to" value="{{.ConsumedTo}}" autocomplete="off" >
+        </label>
+        <button>&#9745;</button>
+        <button onclick="event.target.form.submit()">&#9850;</button>
+        <input type="hidden" name="as_subdoc" value="1">
+    </div>
+
+    <table>
+        <thead>
+            <th>Пища</th>
+            <th>Масса</th>
+            <th>Когда?</th>
+        </thead>
+        {{range $date := .Groups}}
+        <tr>
+            <td colspan="3">{{$date}}</td>
+        </tr>
+        {{range (index $.Values $date)}}
+        <tr>
+            <td>{{.FoodTitle}}</td>
+            <td>{{.Mass}}</td>
+            <td>{{.ConsumedAt}}</td>
+        </tr>
+        {{end}}
+        {{end}}
+    </table>
+
+    {{template "paginator" .Pagination}}
+
+    <input type="hidden" name="as_subdoc" value="1">
+</form>
+{{end}}

@@ -1,0 +1,29 @@
+{{/* 0 title */}}
+{{/* 1 top_nutrient */}}
+{{/* 2 ? */}}
+{{/* 3 id */}}
+{{/* 4 canonical_mass */}}
+{{template "ingredient_suggestion_list" .}}
+{{define "ingredient_suggestion_list"}}
+<ul id="ingredient-suggestor-result" class="suggestions">
+{{range .}}
+    <li>
+        <label {{if lt 30 (len .Title)}}title="{{.Title}}"{{end}}>
+            <input
+                type="checkbox"
+                name="ingredient"
+                value="{{.FoodId}}"
+                {{if ne "" .CanonicalMass}}checked{{end}}
+            >
+            <span>{{.Title}}</span>
+            {{/*<pre title="Калории">{{index . 1}}</pre>*/}}
+        </label>
+        <label class="ingredient-mass">
+            Вес
+            <input type="number" name="ingredient_mass" min="0" step="0.001" value="{{.CanonicalMass}}">
+        </label>
+        <input type="hidden" name="ingredient_id" value="{{.Id}}">
+    </li>
+{{end}}
+</ul>
+{{end}}

@@ -1,0 +1,13 @@
+{{define "content"}}
+{{template "consumption_log_get_form" .}}
+
+<div id="actions">
+    {{if .Session.IsAuthenticated}}
+    <button command="show-modal" commandfor="consumption_log-post-modal">Залогировать</button>
+    <dialog id="consumption_log-post-modal">
+        {{template "consumption_log_post_form" .}}
+        <button commandfor="consumption_log-post-modal" command="close">&#9746;</button>
+    </dialog>
+    {{end}}
+</div>
+{{end}}

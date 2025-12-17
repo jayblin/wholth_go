@@ -1,0 +1,16 @@
+{{define "paginator"}}
+<div class="paginator">
+    <p>{{.Count}} Шт.</p>
+    <button onclick="paginateDown(event)">&#8678;</button>
+    <input
+        type="number"
+        name="page_number"
+        min="1"
+        max="{{.PageMax}}"
+        value="{{.PageCurrent}}"
+        autocomplete="off"
+    >
+    <button onclick="paginateUp(event)">&#8680;</button>
+    <span>{{.PageCurrent}}/{{.PageMax}}</span>
+</div>
+{{end}}

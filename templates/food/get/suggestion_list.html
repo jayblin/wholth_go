@@ -1,0 +1,14 @@
+{{template "food_suggestion_list" .}}
+{{define "food_suggestion_list"}}
+<div id="food-suggestor-result">
+    <ul class="suggestions">
+    {{range .Values}}
+        <label>
+            <input type="radio" name="food_id" value="{{.Id}}" >
+            {{.Title}}
+        </label>
+    {{end}}
+    </ul>
+    {{template "paginator" .Pagination}}
+</div>
+{{end}}

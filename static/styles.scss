@@ -1,0 +1,397 @@
+@use "variables/spacing";
+@use "variables/color";
+@use "variables/breakpoint";
+// :root {
+//     --s-0: 0px;
+//     --s-xs: 4px;
+//     --s-sm: 8px;
+//     --s-md: 16px;
+//     --s-lg: 32px;
+//     --s-xl: 64px;
+// }
+
+::backdrop {
+    backdrop-filter: blur(5px);
+}
+
+dialog {
+  overscroll-behavior: contain;
+  width: auto;
+}
+
+html {
+  scrollbar-color: color.$primary-c color.$primary-a;
+}
+
+body {
+  margin: 0;
+  color: color.$secondary-e;
+  background-color: color.$tertiary-a;
+  display: grid;
+  justify-items: center;
+  gap: spacing.$sm;
+  font-size: 18px;
+  margin: spacing.$sm spacing.$sm;
+
+  & * {
+    max-width: 80ch;
+  }
+
+  & > * {
+    // border: 1px dashed color.$tertiary-e;
+    width: 100%;
+  }
+}
+
+header {
+  display: flex;
+  gap: spacing.$xs;
+  align-items: center;
+  justify-content: space-between;
+}
+
+nav {
+  menu {
+    display: flex;
+    gap: spacing.$md;
+    justify-content: center;
+  }
+}
+
+h1, h2 {
+  margin: 0;
+  // color: color.$secondary-e;
+}
+
+p {
+  margin-top: spacing.$sm;
+  margin-bottom: spacing.$sm;
+}
+
+a {
+  color: color.$primary-d;
+  text-decoration-line: grammar-error;
+
+  &:hover {
+    color: color.$primary-e;
+    cursor: pointer;
+    text-decoration-line: underline;
+  }
+}
+
+button, .button {
+  text-decoration: none;
+  padding: spacing.$xs;
+  border: 1px solid color.$primary-c;
+  border-radius: 5px;
+  background-color: color.$primary-a;
+  color: color.$primary-e;
+  outline: none;
+  min-width: 2rem;
+  min-height: 2rem;
+
+  &:hover {
+    text-decoration: none;
+    cursor: pointer;
+    background-color: color.$primary-b;
+  }
+
+  &.close {
+    width: spacing.$lg;
+    height: spacing.$lg;
+    &:after {
+      content: "\2715";
+    }
+  }
+}
+
+dialog[open] {
+  display: grid;
+  border: 2px dashed color.$complementary-e;
+  background-color: color.$tertiary-a;
+  color: color.$secondary-e;
+
+  button.close {
+    justify-self: end;
+  }
+}
+
+input {
+  // border: 2px dotted color.$primary-c;
+  border: none;
+  outline: 1px solid color.$primary-c;
+  border-radius: 4px;
+
+  &[type="number"],
+  &[type="text"],
+  &[type="search"],
+  &[type="password"] {
+    min-height: 2rem;
+  }
+
+  &[type="checkbox"],
+  &[type="radio"] {
+  outline: unset;
+  }
+
+  &:focus-visible {
+    outline: 1px solid color.$complementary-d;
+  }
+}
+
+form {
+  display: grid;
+  gap: spacing.$xs;
+}
+
+fieldset {
+  border: 1px solid color.$primary-d;
+  display: grid;
+  gap: spacing.$xs;
+
+  & legend {
+    padding-left: spacing.$xs;
+    padding-right: spacing.$xs;
+    padding-bottom: 0;
+    padding-top: 0;
+    color: color.$primary-c;
+  }
+}
+
+pre {
+  font-size: 0.8em;
+  margin: 0px;
+}
+
+menu, ul {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+select {
+  width: 100%;
+  overscroll-behavior: contain;
+}
+
+input[type="checkbox"] {
+  margin: 0px;
+}
+
+table {
+  border-spacing: 0;
+  border-collapse: collapse;
+}
+
+table,
+th,
+td {
+  border: 1px solid color.$primary-d;
+}
+
+th,
+td {
+  padding: spacing.$xs;
+}
+
+.suggestions {
+  flex: 1 0 100%;
+  display: grid;
+  gap: 8px;
+  grid-template-columns: 1fr 1fr;
+
+  @media (max-width: breakpoint.$md) {
+    grid-template-columns: 1fr;
+  }
+
+  li {
+    display: flex;
+    flex-direction: column;
+    gap: spacing.$xs;
+    padding: spacing.$xs 0 spacing.$xs spacing.$xs;
+
+    &:hover {
+      background: color.$primary-c;
+      color: color.$primary-a;
+    }
+
+    label:first-child {
+      display: flex;
+      gap: spacing.$xs;
+
+      &:hover {
+        cursor: pointer;
+      }
+
+      span {
+        display: block;
+        text-overflow: ellipsis;
+        overflow: hidden;
+        white-space: nowrap;
+        max-width: 30ch;
+      }
+    }
+
+    label:nth-child(2) {
+      span {
+        font-size: 1em;
+      }
+    }
+  }
+}
+
+.paginator {
+  // input[type=number]::-moz-inner-spin-button,
+  // input[type=number]::-moz-outer-spin-button,
+  // input[type=number]::-webkit-inner-spin-button,
+  // input[type=number]::-webkit-outer-spin-button {
+  //   -webkit-appearance: none;
+  //   -moz-appearance: none;
+  // }
+}
+
+#logo {
+  display: flex;
+  align-items: center;
+  gap: spacing.$sm;
+}
+
+#actions {
+  margin-top: spacing.$sm;
+  position: sticky;
+  bottom: spacing.$sm;
+  display: flex;
+  justify-content: end;
+  // outline: 1px dotted color.$primary-d;
+}
+
+#food-get-form {
+  display: grid;
+  gap: spacing.$sm;
+  justify-items: center;
+
+  > div:first-child {
+    max-width: fit-content;
+    display: grid;
+    grid-template-columns: auto min-content;
+    align-items: center;
+    gap: spacing.$xs;
+  }
+
+  ul {
+    display: grid;
+    gap: spacing.$md;
+    max-width: 30ch;
+
+    h2 {
+      font-size: 1.2em;
+    }
+
+    li {
+      display: flex;
+      flex-direction: column;
+    }
+
+    a {
+      width: fit-content;
+    }
+  }
+}
+
+#auth-form {
+  display: grid;
+  width: fit-content;
+  grid-template-columns: auto minmax(20ch, 40ch);
+  align-items: center;
+  justify-content: center;
+  row-gap: spacing.$sm;
+  column-gap: spacing.$xs;
+  border: 1px solid color.$secondary-c;
+  border-radius: 5px;
+  padding: spacing.$sm;
+  margin: 0 auto;
+
+  .actions {
+    grid-column: 1/3;
+    display: flex;
+    justify-content: center;
+    gap: spacing.$sm;
+  }
+
+  output {
+    color: color.$complementary-d;
+  }
+}
+
+#ingredient-suggestor {
+  
+  & input[type="search"] {
+    width: 100%;
+  }
+
+  & search {
+    display: flex;
+    flex-wrap: wrap;
+    gap: spacing.$xs;
+  }
+}
+
+#ingredient-suggestor-result {
+
+  .ingredient-mass {
+    input {
+      max-width: 6ch;
+    }
+  }
+}
+
+#nutrient-suggestor-result {
+  li label:nth-child(2) {
+    display: flex;
+    gap: spacing.$xs;
+    flex-wrap: nowrap;
+
+    input {
+      width: 8ch;
+    }
+
+    pre {
+      margin: 0px
+    }
+  }
+}
+
+#consumption_log-get-form {
+
+  > div:first-child {
+    display: flex;
+    align-items: center;
+    // justify-items: center;
+    gap: spacing.$sm;
+    flex-wrap: wrap;
+    margin-bottom: spacing.$sm;
+  }
+}
+
+#consumption_log-get-form,
+#food-post-form {
+  position: relative;
+
+  button[type="submit"] {
+    position: sticky;
+    bottom: 0;
+  }
+}
+
+// @keyframes myAnimation {
+//   from {transform: skew(-1deg,-1deg) translate(-10px);}
+//   to {transform: skew(1deg,1deg) translate(10px);}
+// }
+//
+// h2 {
+//   animation-name: myAnimation;
+//   animation-duration: 2s;
+//   animation-timing-function: linear;
+//   animation-iteration-count: infinite;
+//   animation-direction: alternate;
+// }
