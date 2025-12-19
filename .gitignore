@@ -3,7 +3,6 @@
 .DS_Store
 Session.vim
 todo.md
-cache
 static/*.css
 static/*.css.map
 wholth_lib
