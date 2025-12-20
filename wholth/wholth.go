@@ -7,7 +7,7 @@ import "C"
 import (
 	"errors"
 	"time"
-
+	// "fmt"
 	"unsafe"
 	"wholth_go/logger"
 	"wholth_go/secret"
@@ -64,7 +64,9 @@ func UserRegister(username string, password string) (string, error) {
 
 	wuser := C.wholth_entity_user_init()
 	wuser.name = toStrView(username)
+	wuser.locale_id = toStrView("2")
 	wpassword := toStrView(password)
+	// fmt.Println(username, password)
 	werr := C.wholth_em_user_insert(&wuser, wpassword, scratch)
 
 	if !C.wholth_error_ok(&werr) {
@@ -156,7 +158,7 @@ type FoodPage struct {
 func FoodPageNew(perPage uint64) (FoodPage, error) {
 	var handle *C.wholth_Page = nil
 
-	werr := C.wholth_pages_food(&handle, C.ulonglong(perPage))
+	werr := C.wholth_pages_food(&handle, C.uint64_t(perPage))
 	var err error = nil
 
 	if !C.wholth_error_ok(&werr) {
@@ -175,7 +177,7 @@ func (t *FoodPage) SetId(id string) {
 }
 
 func (t *FoodPage) SkipTo(to int) {
-	C.wholth_pages_skip_to(t.Handle, C.ulonglong(to))
+	C.wholth_pages_skip_to(t.Handle, C.uint64_t(to))
 }
 
 func (t *FoodPage) At(i uint64) Food {
@@ -184,7 +186,7 @@ func (t *FoodPage) At(i uint64) Food {
 	err := C.wholth_pages_at(
 		t.Handle,
 		(unsafe.Pointer)(ptr),
-		C.ulonglong(i))
+		C.uint64_t(i))
 
 	if !C.wholth_error_ok(&err) {
 		return Food{}
@@ -268,7 +270,7 @@ type IngredientPage struct {
 
 func IngredientPageNew(perPage uint64) (IngredientPage, error) {
 	var handle *C.wholth_Page = nil
-	werr := C.wholth_pages_ingredient(&handle, C.ulonglong(perPage))
+	werr := C.wholth_pages_ingredient(&handle, C.uint64_t(perPage))
 	var err error = nil
 
 	if !C.wholth_error_ok(&werr) {
@@ -293,7 +295,7 @@ func (t *IngredientPage) At(i uint64) Ingredient {
 	err := C.wholth_pages_at(
 		t.Handle,
 		unsafe.Pointer(ptr),
-		C.ulonglong(i))
+		C.uint64_t(i))
 
 	if !C.wholth_error_ok(&err) {
 		return Ingredient{}
@@ -323,7 +325,7 @@ type NutrientPage struct {
 
 func NutrientPageNew(perPage uint64) (NutrientPage, error) {
 	var handle *C.wholth_Page = nil
-	werr := C.wholth_pages_nutrient(&handle, C.ulonglong(perPage))
+	werr := C.wholth_pages_nutrient(&handle, C.uint64_t(perPage))
 
 	var err error = nil
 
@@ -344,7 +346,7 @@ func (t *NutrientPage) At(i uint64) Nutrient {
 	err := C.wholth_pages_at(
 		t.Handle,
 		unsafe.Pointer(ptr),
-		C.ulonglong(i))
+		C.uint64_t(i))
 
 	if !C.wholth_error_ok(&err) {
 		return Nutrient{}
@@ -372,7 +374,7 @@ type FoodNutrientPage struct {
 
 func FoodNutrientPageNew(perPage uint64) (FoodNutrientPage, error) {
 	var handle *C.wholth_Page = nil
-	werr := C.wholth_pages_food_nutrient(&handle, C.ulonglong(perPage))
+	werr := C.wholth_pages_food_nutrient(&handle, C.uint64_t(perPage))
 	var err error = nil
 
 	if !C.wholth_error_ok(&werr) {
@@ -392,7 +394,7 @@ func (t *FoodNutrientPage) At(i uint64) FoodNutrient {
 	err := C.wholth_pages_at(
 		t.Handle,
 		unsafe.Pointer(ptr),
-		C.ulonglong(i))
+		C.uint64_t(i))
 
 	if !C.wholth_error_ok(&err) {
 		return FoodNutrient{}
@@ -455,7 +457,7 @@ func (t *ConsumptionLogPage) At(i uint64) ConsumptionLog {
 	err := C.wholth_pages_at(
 		t.Handle,
 		(unsafe.Pointer)(ptr),
-		C.ulonglong(i))
+		C.uint64_t(i))
 
 	if !C.wholth_error_ok(&err) {
 		return ConsumptionLog{}
@@ -476,7 +478,7 @@ func (t *ConsumptionLogPage) At(i uint64) ConsumptionLog {
 
 func ConsumptionLogPageNew(perPage uint64) (ConsumptionLogPage, error) {
 	var handle *C.wholth_Page = nil
-	werr := C.wholth_pages_consumption_log(&handle, C.ulonglong(perPage))
+	werr := C.wholth_pages_consumption_log(&handle, C.uint64_t(perPage))
 	var err error = nil
 
 	if !C.wholth_error_ok(&werr) {

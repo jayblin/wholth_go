@@ -3,10 +3,12 @@
 
 <div id="actions">
     {{if .Session.IsAuthenticated}}
-    <button command="show-modal" commandfor="consumption_log-post-modal">Залогировать</button>
-    <dialog id="consumption_log-post-modal">
+    {{/*<button command="show-modal" commandfor="consumption_log_post_modal">Залогировать</button>*/}}
+    <button onclick="consumption_log_post_modal.showModal()">Залогировать</button>
+    <dialog id="consumption_log_post_modal">
         {{template "consumption_log_post_form" .}}
-        <button commandfor="consumption_log-post-modal" command="close">&#9746;</button>
+	{{/*<button commandfor="consumption_log_post_modal" command="close">&#9746;</button>*/}}
+        <button onclick="consumption_log_post_modal.close()">&#9746;</button>
     </dialog>
     {{end}}
 </div>

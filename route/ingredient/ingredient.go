@@ -110,7 +110,7 @@ func ListIngredients(w http.ResponseWriter, r *http.Request) {
 	var values = IngredientsFromRequest(query)
 
 	for i := range titles {
-		page.SetTitle(titles[i])
+		page.SetTitle(strings.ToLower(titles[i]))
 
 		page.Fetch()
 

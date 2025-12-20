@@ -5,6 +5,7 @@ import (
 	"net/http"
 	// "net/url"
 	"strconv"
+	"strings"
 
 	// "net/url"
 	// "slices"
@@ -51,7 +52,7 @@ func ListFoods(w http.ResponseWriter, r *http.Request) {
 	food_q := q.Get("food_q")
 
 	if "" != food_q {
-		wpage.SetTitle(food_q)
+		wpage.SetTitle(strings.ToLower(food_q))
 	}
 
 	page_number, page_number_err := strconv.Atoi(r.URL.Query().Get("page_number"))
