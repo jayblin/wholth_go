@@ -98,7 +98,7 @@ func ListNutrients(w http.ResponseWriter, r *http.Request) {
 	titles := strings.SplitN(titles_raw, ",", 10)
 
 	for i := range titles {
-		page.SetTitle(titles[i])
+		page.SetTitle(strings.ToLower(titles[i]))
 
 		page.Fetch()
 

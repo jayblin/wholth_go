@@ -2,10 +2,12 @@
 {{template "food_get_form" .}}
 <div id="actions">
     {{if .Session.IsAuthenticated}}
-    <button command="show-modal" commandfor="food-post-modal">Создать запись</button>
-    <dialog id="food-post-modal">
+    {{/*<button command="show-modal" commandfor="food_post_modal">Создать запись</button>*/}}
+    <button onclick="food_post_modal.showModal()">Создать запись</button>
+    <dialog id="food_post_modal">
         {{template "food_post_form" .}}
-        <button commandfor="food-post-modal" command="close">&#9746;</button>
+	{{/*<button commandfor="food_post_modal" command="close">&#9746;</button>*/}}
+        <button onclick="food_post_modal.close()">&#9746;</button>
     </dialog>
     {{end}}
 </div>

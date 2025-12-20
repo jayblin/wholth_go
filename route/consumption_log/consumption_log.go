@@ -66,23 +66,25 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 	mapped := make(map[string][]wholth.ConsumptionLog)
 	groups := make([]string, 0)
 
-	for i := (size - 1); i > 0; i-- {
-		value := page.At(i)
+	if size > 0 {
+		for i := (size - 1); i > 0; i-- {
+			value := page.At(i)
 
-		// 1234567890123456789
-		// 2025-12-14T23:48:53
-		grp := value.ConsumedAt[0:10]
-		values, ok := mapped[grp]
+			// 1234567890123456789
+			// 2025-12-14T23:48:53
+			grp := value.ConsumedAt[0:10]
+			values, ok := mapped[grp]
 
-		value.ConsumedAt = value.ConsumedAt[11:]
+			value.ConsumedAt = value.ConsumedAt[11:]
 
-		if ok {
-			mapped[grp] = append(values, value)
-		} else {
-			values = make([]wholth.ConsumptionLog, 1)
-			values[0] = value
-			mapped[grp] = values
-			groups = append(groups, grp)
+			if ok {
+				mapped[grp] = append(values, value)
+			} else {
+				values = make([]wholth.ConsumptionLog, 1)
+				values[0] = value
+				mapped[grp] = values
+				groups = append(groups, grp)
+			}
 		}
 	}
 
@@ -99,7 +101,7 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 		mapped,
 		page.Pagination(),
 		wholth.ConsumptionLogPostForm{
-			Mass:       "0",
+			Mass:       "",
 			ConsumedAt: time.Now().Format(format),
 		},
 		from.Format(format),

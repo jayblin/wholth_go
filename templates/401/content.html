@@ -1,12 +1,12 @@
 {{define "content"}}
 <form id="auth-form" method="post">
-    <label for="username">Name</label>
+    <label for="username">Имя</label>
     <input type="text" name="username" id="username" required autofocus />
-    <label for="password">Password</label>
+    <label for="password">Пароль</label>
     <input type="password" name="password" id="password" required />
     <div class="actions">
-        <button formaction="/register">Regsiter</button>
-        <button formaction="/login">Login</button>
+        <button formaction="/register">Регистрация</button>
+        <button formaction="/login">Войти</button>
     </div>
     {{if .ErrorMessage}}
         <label for="err">Ошибка: </label>

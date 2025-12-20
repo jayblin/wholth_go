@@ -8,8 +8,12 @@ import (
 	"log"
 	"net/http"
 	"os"
+	// "crypto/tls"
+	// "crypto/x509"
+	// "io"
+	// "io/ioutil"
 
-	// "time"
+	"time"
 	"wholth_go/logger"
 	"wholth_go/route"
 	"wholth_go/route/auth"
@@ -45,7 +49,7 @@ func main() {
 	wholth.SetPasswordEncryptionSecret(secrets[0])
 
 	secret.SetCsrfSecret(secrets[1])
-	secret.SetSessionSecret(secrets[1])
+	secret.SetSessionSecret(secrets[2])
 	secret.SetDomain(os.Getenv("DOMAIN"))
 	secret.SetUseTemplateCache("" != os.Getenv("USE_TEMPLATE_CACHE"))
 	secret.SetAllowRegistration("1" == os.Getenv("ALLOW_REGISTRATION"))
@@ -119,7 +123,58 @@ func main() {
 					http.HandlerFunc(food.PostFood)))))
 
 	logger.Info("Routes ready")
+
+	// clientTLSCert, err := tls.LoadX509KeyPair("domain.crt", "domain.key")
+	// if nil != err {
+	// 	log.Fatalf("Error loading certificate and key file: %v")
+	// 	panic(err)
+	// }
+
+	// certPool, err := x509.SystemCertPool()
+	// if nil != err {
+	// 	panic(err)
+	// }
+
+	// if caCertPEM, err := ioutil.ReadFile("domain.crt"); err != nil {
+	// 	panic(err)
+	// } else if ok := certPool.AppendCertsFromPEM(caCertPEM); !ok {
+	// 	panic("invalid cert in CA PEM")
+	// }
+
+	// tlsConfig := &tls.Config{
+	// 	RootCAs:      certPool,
+	// 	Certificates: []tls.Certificate{clientTLSCert},
+	// }
+	// tr := &http.Transport{
+	// 	TLSClientConfig: tlsConfig,
+	// }
+
 	logger.Info("Serving...")
 
-	log.Fatal(http.ListenAndServe(":" + port, mux))
+	// tlsConfig := &tls.Config{
+	// 	MinVersion:               tls.VersionTLS12,
+	// 	CurvePreferences:         []tls.CurveID{tls.CurveP521, tls.CurveP384, tls.CurveP256},
+	// 	PreferServerCipherSuites: true,
+	// 	CipherSuites: []uint16{
+	// 		tls.TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384,
+	// 		tls.TLS_ECDHE_RSA_WITH_AES_256_CBC_SHA,
+	// 		tls.TLS_RSA_WITH_AES_256_GCM_SHA384,
+	// 		tls.TLS_RSA_WITH_AES_256_CBC_SHA,
+	// 		tls.TLS_ECDHE_ECDSA_WITH_AES_128_GCM_SHA256,
+	// 	},
+	// }
+
+	server := http.Server{
+		Addr: ":" + port,
+		Handler: mux,
+		// TLSConfig: tlsConfig,
+		ReadTimeout:  time.Minute,
+		WriteTimeout: time.Minute,
+		ErrorLog: log.New(os.Stderr, "", 0),
+	}
+
+	// log.Fatal(server.ListenAndServeTLS("domain.crt", "domain.key"))
+	log.Fatal(server.ListenAndServe())
+	// log.Fatal(http.ListenAndServe(":" + port, mux))
+	// log.Fatal(http.ListenAndServeTLS(":" + port, "domain.crt", "domain.key", mux))
 }
