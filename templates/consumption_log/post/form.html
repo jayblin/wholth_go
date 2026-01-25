@@ -1,11 +1,14 @@
-{{template "consumption_log_post_form" .}}
 {{define "consumption_log_post_form"}}
+{{template "search_form" .DummyFoodList}}
+<input type="hidden" name="as_radio" value="1" form="food-search-form" >
+<input type="hidden" name="limit" value="5" form="food-search-form" >
 <form 
     id="consumption_log-post-form"
     method="post"
     action="/consumption_log#consumption_log-post-result"
     target="htmz"
-    class="{{.PostForm.ResultStatus}}"
+    onsubmit="searchOnSubmit(event)"
+    class="status {{.PostForm.ResultStatus}}"
 >
     <fieldset>
         <legend>Инфа</legend>
@@ -21,27 +24,26 @@
 
     <fieldset id="food-suggestor">
         <legend>Пища</legend>
+        {{template "search" .DummyFoodList}}
+        {{/*
         <search>
-            <label>
-                Поиск
-                <input type="search" name="food_q" >
-                <input type="hidden" name="as_suggestion" value="1" >
-                <input type="hidden" name="limit" value="5" >
-            </label>
             <button
                 formaction="/food#food-suggestor-result"
                 formmethod="get"
                 formtarget="htmz"
-                formnovalidate
-            >Найти</button>
-            {{template "food_suggestion_list"}}
+                formnovalidate=""
+            >&#8981;</button>
+            {{template "food_suggestion_list" .}}
         </search>
+        */}}
     </fieldset>
 
     <input type="hidden" name="id" value="{{.PostForm.Id}}" >
     <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" >
 
-    <button type="submit">Сохранить</button>
-    <output id="consumption_log-post-result">{{.PostForm.ResultMessage}}</output>
+    <div class="controls" >
+        {{template "consumption_log_post_result" .}}
+        <button type="submit">Сохранить</button>
+    </div>
 </form>
 {{end}}

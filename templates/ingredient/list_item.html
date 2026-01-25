@@ -1,0 +1,34 @@
+{{define "ingredient_list_item"}}
+<li class="{{.Status.Alias}}">
+    <input
+        type="hidden"
+        name="ingredient_{{.FoodId}}_id"
+        value="{{.Id}}"
+        {{if not .Checked}}disabled="1"{{end}}
+    >
+    <span {{if gt (len .Title) 22}}title="{{.Title}}"{{end}}>{{.Title}}</span>
+    <div>
+        <input
+            type="checkbox"
+            name="ingredient"
+            value="{{.FoodId}}"
+            oninput="disableElements(event,'ingredient_{{.FoodId}}_mass','ingredient_{{.FoodId}}_id')"
+            {{if .Checked}}checked{{end}}
+        >
+        <label class="mass">
+            Вес, г.
+            <input
+                type="number"
+                name="ingredient_{{.FoodId}}_mass"
+                min="0"
+                value="{{.CanonicalMass}}"
+                {{if not .Checked}}disabled="1"{{end}}
+            >
+        </label>
+        <a href="/food/{{.FoodId}}" target="_blank">&#8599;</a>
+    </div>
+    {{ if ne "" .Status.Message }}
+    <span class={{.Status.Alias}}>{{.Status.Message}}</span>
+    {{ end }}
+</li>
+{{end}}

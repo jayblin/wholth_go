@@ -1,13 +1,24 @@
-{{template "food_post_form" .}}
-{{define "food_post_form"}}
+{{block "food_post_form" .}}
+
+{{template "search_form" .PostForm.Ingredients}}
+
+{{template "search_form" .PostForm.Nutrients}}
+
 <form 
     id="food-post-form"
     method="post"
     action="/food#food-post-form"
     target="htmz"
-    class="{{.PostForm.ResultStatus}}"
+    class="status {{.PostForm.ResultStatus}}"
+    onsubmit="loaderInstall()"
 >
-    <fieldset>
+    <header>
+        <h2 style="--idx: 0;"><a href="#basics">Инфа</a></h2>
+        <h2 style="--idx: 1;"><a href="#recipe">Рецепт</a></h2>
+        <h2 style="--idx: 2;"><a href="#ingredient-search">Ингредиенты</a></h2>
+        <h2 style="--idx: 3;"><a href="#nutrient-search">Нутриенты</a></h2>
+    </header>
+    <fieldset id="basics">
         <legend>Инфа</legend>
         <label>
             Название
@@ -15,7 +26,7 @@
         </label>
         <input type="hidden" name="food_id" value="{{.PostForm.Food.Id}}" >
     </fieldset>
-    <fieldset>
+    <fieldset id="recipe">
         <legend>Рецепт</legend>
         <label style="display: grid">
             Шаги
@@ -28,46 +39,41 @@
                 type="text"
                 pattern="(\d+(h|m)\s{0,}){1,}"
                 placeholder="1h30m"
-	       	value="{{.PostForm.RecipeStep.Time}}"
+                value="{{.PostForm.RecipeStep.Time}}"
             >
         </label>
-            <input type="hidden" name="recipe_step_id" value="{{.PostForm.RecipeStep.Id}}">
+            <input
+                type="hidden"
+                name="recipe_step_id"
+                value="{{.PostForm.RecipeStep.Id}}"
+            >
     </fieldset>
-    <fieldset id="ingredient-suggestor">
+    <fieldset id="ingredient-search">
         <legend>Ингредиенты</legend>
-        <search>
-            <label>
-                Поиск
-                <input type="search" name="ingredient_q" >
-            </label>
-            <button
-                formaction="/ingredient#ingredient-suggestor-result"
-                formmethod="get"
-                formtarget="htmz"
-                formnovalidate
-            >Найти</button>
-                {{template "ingredient_suggestion_list" .PostForm.Ingredients}}
-        </search>
+        <ul class="suggestion_list">
+        {{range .PostForm.Ingredients.Values}}
+            {{template "ingredient_list_item" .}}
+        {{end}}
+        </ul>
+        <hr >
+        {{template "search" .PostForm.Ingredients}}
     </fieldset>
-    <fieldset id="nutrient-suggestor">
+    <fieldset id="nutrient-search">
         <legend>Нутриенты</legend>
-        <search>
-            <label>
-                Поиск
-                <input type="search" name="nutrient_q" >
-            </label>
-            <button
-                type="submit"
-                formaction="/nutrient#nutrient-suggestor-result"
-                formmethod="get"
-                formtarget="htmz"
-                formnovalidate
-            >Найти</button>
-            {{template "nutrient_suggestion_list" .PostForm.Nutrients}}
-        </search>
+        <ul class="suggestion_list">
+            {{range .PostForm.Nutrients.Values}}
+                {{template "nutrient_list_item" .}}
+            {{end}}
+        </ul>
+        <hr >
+        {{template "search" .PostForm.Nutrients}}
     </fieldset>
     <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" >
-    <button type="submit">Сохранить</button>
-    <output>{{.PostForm.ResultMessage}}</output>
+    <div class="controls">
+        {{ if ne "" .PostForm.ResultMessage }}
+            <output class="status {{.PostForm.ResultStatus}}">{{.PostForm.ResultMessage}}</output>
+        {{end}}
+        <button class="submit" type="submit" title="Сохранить">&#10003;</button>
+    </div>
 </form>
 {{end}}

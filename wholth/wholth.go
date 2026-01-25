@@ -6,13 +6,18 @@ import "C"
 
 import (
 	"errors"
+	"strings"
 	"time"
+
 	// "fmt"
 	"unsafe"
+	"wholth_go/cache"
 	"wholth_go/logger"
 	"wholth_go/secret"
 	"wholth_go/util"
 )
+
+var DEFAULT_LOCALE_ID string = "2"
 
 func toStr(sv C.wholth_StringView) string {
 	if nil == sv.data || 0 == sv.size {
@@ -44,7 +49,7 @@ func Setup() {
 		panic(message)
 	}
 
-	C.wholth_app_locale_id(toStrView("2"))
+	C.wholth_app_locale_id(toStrView(DEFAULT_LOCALE_ID))
 }
 
 func SetPasswordEncryptionSecret(secret string) {
@@ -64,7 +69,7 @@ func UserRegister(username string, password string) (string, error) {
 
 	wuser := C.wholth_entity_user_init()
 	wuser.name = toStrView(username)
-	wuser.locale_id = toStrView("2")
+	wuser.locale_id = toStrView(DEFAULT_LOCALE_ID)
 	wpassword := toStrView(password)
 	// fmt.Println(username, password)
 	werr := C.wholth_em_user_insert(&wuser, wpassword, scratch)
@@ -144,11 +149,19 @@ func (t *Page) Pagination() util.Pagination {
 	}
 }
 
+func (t *Page) SkipTo(to int) {
+	C.wholth_pages_skip_to(t.Handle, C.uint64_t(to))
+}
+
 type Food struct {
 	Id          string
 	Title       string
 	PrepTime    string
 	TopNutrient string
+}
+
+func (f Food) EntityAlias() string {
+	return "food"
 }
 
 type FoodPage struct {
@@ -165,6 +178,11 @@ func FoodPageNew(perPage uint64) (FoodPage, error) {
 		err = errors.New(toStr(werr.message))
 	}
 
+	werr = C.wholth_pages_food_locale_id(handle, toStrView(DEFAULT_LOCALE_ID))
+	if !C.wholth_error_ok(&werr) {
+		err = errors.New(toStr(werr.message))
+	}
+
 	return FoodPage{Page{handle}}, err
 }
 
@@ -172,12 +190,12 @@ func (t *FoodPage) SetTitle(title string) {
 	C.wholth_pages_food_title(t.Handle, toStrView(title))
 }
 
+// func (t *FoodPage) SetIngredients(titles string) {
+// 	C.wholth_pages_food_ingredients(t.Handle, toStrView(titles))
+// }
+
 func (t *FoodPage) SetId(id string) {
 	C.wholth_pages_food_id(t.Handle, toStrView(id))
-}
-
-func (t *FoodPage) SkipTo(to int) {
-	C.wholth_pages_skip_to(t.Handle, C.uint64_t(to))
 }
 
 func (t *FoodPage) At(i uint64) Food {
@@ -200,6 +218,8 @@ func (t *FoodPage) At(i uint64) Food {
 		PrepTime:    toStr(val.preparation_time),
 		TopNutrient: toStr(val.top_nutrient),
 	}
+
+	cache.Set("g_foods", result.Id, result)
 
 	return result
 }
@@ -262,6 +282,11 @@ type Ingredient struct {
 	TopNutrient   string
 	PrepTime      string
 	CanonicalMass string
+	Checked       bool
+}
+
+func (e Ingredient) EntityAlias() string {
+	return "ingredient"
 }
 
 type IngredientPage struct {
@@ -273,6 +298,11 @@ func IngredientPageNew(perPage uint64) (IngredientPage, error) {
 	werr := C.wholth_pages_ingredient(&handle, C.uint64_t(perPage))
 	var err error = nil
 
+	if !C.wholth_error_ok(&werr) {
+		err = errors.New(toStr(werr.message))
+	}
+
+	werr = C.wholth_pages_ingredient_locale_id(handle, toStrView(DEFAULT_LOCALE_ID))
 	if !C.wholth_error_ok(&werr) {
 		err = errors.New(toStr(werr.message))
 	}
@@ -303,7 +333,7 @@ func (t *IngredientPage) At(i uint64) Ingredient {
 
 	food := *ptr
 
-	return Ingredient{
+	result := Ingredient{
 		Id:            toStr(food.id),
 		FoodId:        toStr(food.food_id),
 		Title:         toStr(food.food_title),
@@ -311,6 +341,20 @@ func (t *IngredientPage) At(i uint64) Ingredient {
 		PrepTime:      "",
 		CanonicalMass: toStr(food.canonical_mass_g),
 	}
+
+	if !cache.Has("g_foods", result.FoodId) {
+		cache.Set(
+			"g_foods",
+			result.FoodId,
+			Food{
+				Id:          result.FoodId,
+				Title:       result.Title,
+				PrepTime:    "",
+				TopNutrient: "",
+			})
+	}
+
+	return result
 }
 
 type Nutrient struct {
@@ -329,6 +373,11 @@ func NutrientPageNew(perPage uint64) (NutrientPage, error) {
 
 	var err error = nil
 
+	if !C.wholth_error_ok(&werr) {
+		err = errors.New(toStr(werr.message))
+	}
+
+	werr = C.wholth_pages_nutrient_locale_id(handle, toStrView(DEFAULT_LOCALE_ID))
 	if !C.wholth_error_ok(&werr) {
 		err = errors.New(toStr(werr.message))
 	}
@@ -354,11 +403,15 @@ func (t *NutrientPage) At(i uint64) Nutrient {
 
 	nut := *ptr
 
-	return Nutrient{
+	result := Nutrient{
 		toStr(nut.id),
 		toStr(nut.title),
 		toStr(nut.unit),
 	}
+
+	cache.Set("g_nutrients", result.Id, result)
+
+	return result
 }
 
 type FoodNutrient struct {
@@ -366,6 +419,11 @@ type FoodNutrient struct {
 	util.Status
 	Value   string
 	Checked bool
+}
+
+func (e FoodNutrient) EntityAlias() string {
+	// todo rename to food_nutrient
+	return "nutrient"
 }
 
 type FoodNutrientPage struct {
@@ -377,6 +435,11 @@ func FoodNutrientPageNew(perPage uint64) (FoodNutrientPage, error) {
 	werr := C.wholth_pages_food_nutrient(&handle, C.uint64_t(perPage))
 	var err error = nil
 
+	if !C.wholth_error_ok(&werr) {
+		err = errors.New(toStr(werr.message))
+	}
+
+	werr = C.wholth_pages_food_nutrient_locale_id(handle, toStrView(DEFAULT_LOCALE_ID))
 	if !C.wholth_error_ok(&werr) {
 		err = errors.New(toStr(werr.message))
 	}
@@ -418,6 +481,10 @@ type ConsumptionLog struct {
 	Mass       string
 	ConsumedAt string
 	FoodTitle  string
+}
+
+func (p ConsumptionLog) EntityAlias() string {
+	return "consumption_log"
 }
 
 type ConsumptionLogPage struct {
@@ -494,6 +561,7 @@ type ConsumptionLogPostForm struct {
 	FoodTitle     string
 	Mass          string
 	ConsumedAt    string
+	// todo use util struct
 	ResultStatus  string
 	ResultMessage string
 }
@@ -532,37 +600,21 @@ func SaveConsumptionLog(form *ConsumptionLogPostForm, userId string) (string, er
 }
 
 type PostFoodsForm struct {
-	// Id            string
-	// Title         string
-	Food         Food
-	RecipeStep   RecipeStep
-	ResultStatus string
-	// RecipeStepId  string
+	Food          Food
+	RecipeStep    RecipeStep
+	Ingredients   util.PaginatableList[Ingredient]
+	Nutrients     util.PaginatableList[FoodNutrient]
+	ResultStatus  string
 	ResultMessage string
-	// PrepTime      string
-	Ingredients []Ingredient
-	Nutrients   []FoodNutrient
 }
 
 func PostFoodsFormDefault() PostFoodsForm {
-	return PostFoodsForm{
-		// Id:            "",
-		// ResultStatus:  "",
-		// ResultMessage: "",
-		// // RecipeStepId:  "",
-		// RecipeStep:    RecipeStep{},
-		// // PrepTime:      "",
-		// Ingredients:   []Ingredient{},
-		// Nutrients:     []FoodNutrient{},
-	}
+	result := PostFoodsForm{}
+
+	return result
 }
 
-func SaveFood(form *PostFoodsForm) (string, error) {
-	var scratch *C.wholth_Buffer = nil
-
-	defer C.wholth_buffer_del(scratch)
-
-	C.wholth_buffer_new(&scratch)
+func saveBasics(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 
 	food := C.wholth_entity_food_init()
 	food.id = toStrView(form.Food.Id)
@@ -575,77 +627,134 @@ func SaveFood(form *PostFoodsForm) (string, error) {
 	var err = C.wholth_Error_OK
 
 	if "" != form.Food.Id {
-		err = C.wholth_em_food_update(&food, scratch)
+		err = C.wholth_em_food_update(&food, toStrView(DEFAULT_LOCALE_ID), buf)
 	} else {
-		err = C.wholth_em_food_insert(&food, scratch)
+		err = C.wholth_em_food_insert(&food, toStrView(DEFAULT_LOCALE_ID), buf)
 	}
 
 	if !C.wholth_error_ok(&err) {
-		return "error", errors.New("Ошибка сохранения общей инф-ии: " + toStr(err.message))
+		return errors.New("Ошибка сохранения общей инф-ии: " + toStr(err.message))
 	}
 
-	var status = "success"
-	// copying food.id from scratch-buffer
-	foodId := toStr(food.id)
-	food.id = toStrView(foodId)
+	// copying food.id from scratch-buffer, cuz scratch may be modified!
+	form.Food.Id = toStr(food.id)
 
-	for i := range form.Nutrients {
+	return nil
+}
+
+func saveNutrients(buf *C.wholth_Buffer, form *PostFoodsForm) {
+	food := C.wholth_entity_food_init()
+	food.id = toStrView(form.Food.Id)
+
+	for i := range form.Nutrients.Values {
 		wnut := C.wholth_entity_nutrient_init()
-		wnut.id = toStrView(form.Nutrients[i].Id)
-		wnut.value = toStrView(form.Nutrients[i].Value)
+		wnut.id = toStrView(form.Nutrients.Values[i].Id)
+		wnut.value = toStrView(form.Nutrients.Values[i].Value)
 
-		var err = C.wholth_em_food_nutrient_upsert(&food, &wnut, scratch)
+		var err = C.wholth_em_food_nutrient_upsert(&food, &wnut, buf)
 
 		if !C.wholth_error_ok(&err) {
-			form.Nutrients[i].Status.Alias = "error"
-			form.Nutrients[i].Status.Message = toStr(err.message)
+			form.Nutrients.Values[i].Status.Alias = "error"
+			form.Nutrients.Values[i].Status.Message = toStr(err.message)
 		}
 	}
+}
+
+func saveSteps(buf *C.wholth_Buffer, form *PostFoodsForm) error {
+	food := C.wholth_entity_food_init()
+	food.id = toStrView(form.Food.Id)
 
 	step := C.wholth_entity_recipe_step_init()
 	step.id = toStrView(form.RecipeStep.Id)
 	step.description = toStrView(form.RecipeStep.Description)
 	step.time = toStrView(form.RecipeStep.Time)
 
+	var err = C.wholth_Error_OK
+
 	if "" != form.RecipeStep.Id {
-		err = C.wholth_em_recipe_step_update(&step, scratch)
-	} else {
-		err = C.wholth_em_recipe_step_insert(&step, &food, scratch)
+		err = C.wholth_em_recipe_step_update(&step, buf)
+	} else if "" != strings.Trim(form.RecipeStep.Description, " ") {
+		err = C.wholth_em_recipe_step_insert(&step, &food, buf)
 	}
 
 	if !C.wholth_error_ok(&err) {
-		form.RecipeStep.Alias = "error"
-		form.RecipeStep.Message = toStr(err.message)
-		status = "warning"
-		return status, errors.New("Ошибка сохранения рецепта")
+		// form.RecipeStep.Alias = "error"
+		// form.RecipeStep.Message = toStr(err.message)
+		// return "warning", errors.New("Ошибка сохранения рецепта: " + toStr(err.message))
+		return errors.New("Ошибка сохранения рецепта: " + toStr(err.message))
 	}
 
-	for i := range form.Ingredients {
-		ing := C.wholth_entity_ingredient_init()
-		ing.id = toStrView(form.Ingredients[i].Id)
-		ing.food_id = toStrView(form.Ingredients[i].FoodId)
-		ing.canonical_mass_g = toStrView(form.Ingredients[i].CanonicalMass)
+	form.RecipeStep.Id = toStr(step.id)
 
-		if "" != form.Ingredients[i].Id {
-			err = C.wholth_em_ingredient_update(&ing, &step, scratch)
+	return nil
+}
+
+func saveIngredients(buf *C.wholth_Buffer, form *PostFoodsForm) error {
+	food := C.wholth_entity_food_init()
+	food.id = toStrView(form.Food.Id)
+
+	step := C.wholth_entity_recipe_step_init()
+	step.id = toStrView(form.RecipeStep.Id)
+
+	var shouldRecalcNutrients = len(form.Ingredients.Values) > 0
+
+	for i := range form.Ingredients.Values {
+		ing := C.wholth_entity_ingredient_init()
+		ing.id = toStrView(form.Ingredients.Values[i].Id)
+		ing.food_id = toStrView(form.Ingredients.Values[i].FoodId)
+		ing.canonical_mass_g = toStrView(form.Ingredients.Values[i].CanonicalMass)
+
+		var err = C.wholth_Error_OK
+
+		if "" != form.Ingredients.Values[i].Id {
+			err = C.wholth_em_ingredient_update(&ing, &step, buf)
 		} else {
-			err = C.wholth_em_ingredient_insert(&ing, &step, scratch)
+			err = C.wholth_em_ingredient_insert(&ing, &step, buf)
 		}
 
 		if !C.wholth_error_ok(&err) {
-			form.Ingredients[i].Status.Alias = "error"
-			form.Ingredients[i].Status.Message = toStr(err.message)
-			status = "warning"
+			form.Ingredients.Values[i].Status.Alias = "error"
+			form.Ingredients.Values[i].Status.Message = toStr(err.message)
+			shouldRecalcNutrients = false
 		} else {
-			form.Ingredients[i].Id = toStr(ing.id)
+			form.Ingredients.Values[i].Id = toStr(ing.id)
 		}
 	}
 
-	err = C.wholth_em_food_nutrient_update_important(&food, scratch)
+	if shouldRecalcNutrients {
+		err := C.wholth_em_food_nutrient_update_important(&food, buf)
 
-	if !C.wholth_error_ok(&err) {
-		return "warning", errors.New("Ошибка при обнове основных нутриентов: " + toStr(err.message))
+		if !C.wholth_error_ok(&err) {
+			return errors.New("Ошибка при обновлении основных нутриентов на основе ингредиентов: " + toStr(err.message))
+		}
 	}
 
-	return status, nil
+	return nil
+}
+
+func SaveFood(form *PostFoodsForm) (string, error) {
+	var scratch *C.wholth_Buffer = nil
+
+	defer C.wholth_buffer_del(scratch)
+
+	C.wholth_buffer_new(&scratch)
+
+	err := saveBasics(scratch, form)
+	if nil != err {
+		return "error", err
+	}
+
+	saveNutrients(scratch, form)
+
+	err = saveSteps(scratch, form)
+	if nil != err {
+		return "warning", err
+	}
+
+	err = saveIngredients(scratch, form)
+	if nil != err {
+		return "warning", err
+	}
+
+	return "success", nil
 }

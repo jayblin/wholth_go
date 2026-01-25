@@ -3,8 +3,8 @@
 .DS_Store
 Session.vim
 todo.md
-static/*.css
-static/*.css.map
+# static/*.css
+# static/*.css.map
 wholth_lib/
 wholth.db
 wholth_go

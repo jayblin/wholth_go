@@ -1,0 +1,61 @@
+{{define "affect_query"}}
+<input name="affect_query" type="hidden" form="{{.EntityAlias}}-search-form" >
+{{end}}
+
+{{define "search_form"}}
+<form
+    id="{{.EntityAlias}}-search-form"
+    action="/{{.EntityAlias}}#{{.EntityAlias}}-search-result"
+    method="get"
+    target="htmz"
+    novalidate
+    onsubmit="searchOnSubmit(event)"
+>
+</form>
+{{end}}
+
+{{define "suggestion"}}{{end}}
+
+{{define "suggestion_list"}}
+<ul class="suggestion_list">
+{{range .Values}}
+    {{template "suggestion" .}}
+{{end}}
+</ul>
+{{end}}
+
+{{define "search_result"}}
+<output id="{{.EntityAlias}}-search-result" form="{{.EntityAlias}}-search-form">
+    {{template "paginator" .}}
+
+    {{template "suggestion_list" .}}
+</output>
+{{end}}
+
+{{define "search"}}
+<search>
+    <input
+        type="search"
+        name="q"
+        placeholder="Поиск"
+        form="{{.EntityAlias}}-search-form"
+        value="{{.Q}}"
+        onchange="searchOnChange(event)"
+    >
+    <button
+        name="submit_btn"
+        type="submit"
+        form="{{.EntityAlias}}-search-form"
+        onclick="searchOnClick(event)"
+        disabled
+        data-skip_enabler="1"
+    >&#8981;</button>
+    <button
+        type="button"
+        form="{{.EntityAlias}}-search-form"
+        onclick="searchOnClear(event)"
+        data-skip_disabler="1"
+    >&#9746;</button>
+    {{template "search_result" .}}
+</search>
+{{end}}

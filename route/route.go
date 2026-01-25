@@ -3,7 +3,9 @@ package route
 import (
 	"crypto/sha256"
 	"encoding/hex"
-	"errors"
+	"strings"
+
+	// "errors"
 	"html/template"
 	"net/http"
 	"wholth_go/logger"
@@ -21,7 +23,7 @@ func DefaultPageMeta(r *http.Request) PageMeta {
 	return PageMeta{
 		Title:       "",
 		Description: "",
-		Lang:        "en-US",
+		Lang:        "ru-RU",
 	}
 }
 
@@ -72,7 +74,7 @@ func parse_templates(filenames ...string) (*template.Template, error) {
 	tmpl, err := template.ParseFiles(filenames...)
 
 	if nil != err {
-		return nil, errors.New("ABAZI " + err.Error())
+		return nil, err
 	}
 
 	if secret.GetUseTemplateCache() {
@@ -93,8 +95,8 @@ func RenderHtmlTemplates(
 	tmpl, err := parse_templates(filenames...)
 
 	if nil != err {
-		logger.Error(err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error("ABAZI " + err.Error())
+		// w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 
@@ -102,7 +104,8 @@ func RenderHtmlTemplates(
 
 	if nil != err {
 		logger.Error("AGHA " + err.Error())
-		w.WriteHeader(http.StatusInternalServerError)
+		logger.Error("AGHA " + strings.Join(filenames, ","))
+		// w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
 }

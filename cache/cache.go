@@ -5,6 +5,7 @@ import "sync"
 var G_cache = make(map[string]map[string]any)
 var G_cache_mutex sync.Mutex
 
+// todo add metrics for caches
 func Set(group string, key string, value any) {
 	G_cache_mutex.Lock()
 	defer G_cache_mutex.Unlock()
@@ -30,6 +31,21 @@ func Get(group string, key string) (any, bool) {
 	val, ok := grp[key]
 
 	return val, ok
+}
+
+func Has(group string, key string) bool {
+	G_cache_mutex.Lock()
+	defer G_cache_mutex.Unlock()
+
+	grp, ok := G_cache[group]
+
+	if !ok  {
+		return ok
+	}
+
+	_, ok = grp[key]
+
+	return ok
 }
 
 func Delete(group string, key string) {

@@ -12,15 +12,21 @@ import (
 	"wholth_go/wholth"
 )
 
-type GetListPage struct {
+type DummyFoodList struct {
+	util.PaginatableList[wholth.Food]
+}
+
+type ListConsumptionLogsPage struct {
 	route.HtmlPage
-	// Values       []wholth.ConsumptionLog
-	Groups       []string
-	Values       map[string][]wholth.ConsumptionLog
-	Pagination   util.Pagination
-	PostForm     wholth.ConsumptionLogPostForm
-	ConsumedFrom string
-	ConsumedTo   string
+	util.Pagination
+	util.EntityAliasAware[wholth.ConsumptionLog]
+	Groups        []string
+	Values        map[string][]wholth.ConsumptionLog
+	Q             string
+	PostForm      wholth.ConsumptionLogPostForm
+	ConsumedFrom  string
+	ConsumedTo    string
+	DummyFoodList DummyFoodList
 }
 
 func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
@@ -67,7 +73,8 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 	groups := make([]string, 0)
 
 	if size > 0 {
-		for i := (size - 1); i > 0; i-- {
+		for i := size; i > 0; {
+			i--
 			value := page.At(i)
 
 			// 1234567890123456789
@@ -95,17 +102,17 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 	// 	return
 	// }
 
-	htmlPage := GetListPage{
-		route.DefaultHtmlPage(r),
-		groups,
-		mapped,
-		page.Pagination(),
-		wholth.ConsumptionLogPostForm{
+	htmlPage := ListConsumptionLogsPage{
+		HtmlPage: route.DefaultHtmlPage(r),
+		Groups:   groups,
+		PostForm: wholth.ConsumptionLogPostForm{
 			Mass:       "",
 			ConsumedAt: time.Now().Format(format),
 		},
-		from.Format(format),
-		to.Format(format),
+		ConsumedFrom: from.Format(format),
+		ConsumedTo:   to.Format(format),
+		Values:       mapped,
+		Pagination:   page.Pagination(),
 	}
 	htmlPage.Meta.Title = "Логи"
 	htmlPage.Meta.Description = "Логи поедания"
@@ -126,11 +133,17 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 			r,
 			htmlPage,
 			"templates/index.html",
+
+			"templates/utils/search.html",
+			"templates/utils/paginator.html",
+
 			"templates/consumption_log/get/content.html",
 			"templates/consumption_log/get/form.html",
 			"templates/consumption_log/post/form.html",
-			"templates/food/get/suggestion_list.html",
-			"templates/utils/paginator.html",
+			"templates/consumption_log/post/result.html",
+
+			"templates/food/get/as_subdoc/content.html",
+			"templates/food/get/suggestion.html",
 		)
 	}
 }
@@ -148,7 +161,7 @@ func PostConsumptionLog(w http.ResponseWriter, r *http.Request) {
 	form := wholth.ConsumptionLogPostForm{
 		Id:            r.PostForm.Get("id"),
 		FoodId:        r.PostForm.Get("food_id"),
-		FoodTitle:     r.PostForm.Get("food_q"),
+		FoodTitle:     r.PostForm.Get("q"),
 		Mass:          r.PostForm.Get("mass"),
 		ConsumedAt:    "",
 		ResultStatus:  "",

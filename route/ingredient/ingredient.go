@@ -1,93 +1,76 @@
 package ingredient
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"slices"
-	"strings"
+	"strconv"
 	"wholth_go/cache"
 	"wholth_go/logger"
 	"wholth_go/route"
 	"wholth_go/util"
+
+	// "wholth_go/util"
 	"wholth_go/wholth"
 )
 
 func IngredientsFromRequest(query url.Values) []wholth.Ingredient {
 	var values []wholth.Ingredient
+	// fmt.Println(query)
 
-	ings, ing_ok := query["ingredient"]
-	if !ing_ok || len(ings) <= 0 {
+	food_ids, ing_ok := query["ingredient"]
+	if !ing_ok || len(food_ids) <= 0 {
 		return values
 	}
 
-	ing_masses := util.ArrayFilter(
-		query["ingredient_mass"],
-		func(s string) bool {
-			return "" != s
-		},
-	)
-	ing_ids := util.ArrayFilter(
-		query["ingredient_id"],
-		func(s string) bool {
-			return "" != s
-		},
-	)
+	for _, food_id := range food_ids {
 
-	for idx, food_id := range ings {
-		if "" == food_id {
+		ingredient_id := query[fmt.Sprintf("ingredient_%s_id", food_id)]
+		ingredient_mass := query[fmt.Sprintf("ingredient_%s_mass", food_id)]
+
+		if len(ingredient_id) != 1 || len(ingredient_mass) != 1 {
 			continue
 		}
 
-		var mass = ""
-		if len(ing_masses) > idx && "" != ing_masses[idx] {
-			mass = ing_masses[idx]
+		id := ingredient_id[0]
+		mass := ingredient_mass[0]
+
+		ing := wholth.Ingredient{
+			Id:            id,
+			FoodId:        food_id,
+			Title:         food_id,
+			TopNutrient:   "",
+			PrepTime:      "",
+			CanonicalMass: mass,
+			Checked:       true,
 		}
 
-		var ing_id = ""
-		if len(ing_ids) > idx && "" != ing_ids[idx] {
-			ing_id = ing_ids[idx]
+		cached, ok := cache.Get("g_foods", food_id)
+
+		if ok && nil != cached {
+			food := cached.(wholth.Food)
+			ing.Title = food.Title
+			ing.TopNutrient = food.TopNutrient
+			ing.PrepTime = food.PrepTime
 		}
 
-		// todo change group
-		cached, ok := cache.Get("grp-food", food_id)
-
-		if !ok || nil == cached {
-			food_arr := wholth.Ingredient{
-				Id:            ing_id,
-				FoodId:        food_id,
-				Title:         food_id,
-				TopNutrient:   "",
-				PrepTime:      "",
-				CanonicalMass: mass,
-			}
-			values = append(values, food_arr)
-			continue
-		}
-
-		t, ok := cached.(wholth.Food)
-
-		if ok {
-			// val := append(t[:4], mass)
-			// values = append(values, ([5]string)(val))
-			val := wholth.Ingredient{
-				Id:            "",
-				FoodId:        t.Id,
-				Title:         t.Title,
-				TopNutrient:   t.TopNutrient,
-				PrepTime:      t.PrepTime,
-				CanonicalMass: mass,
-			}
-			values = append(values, val)
-		}
+		values = append(values, ing)
+		continue
 	}
 
 	return values
 }
 
+type ListIngredientsPage struct {
+	route.HtmlPage
+	util.PaginatableList[wholth.Ingredient]
+}
+
 func ListIngredients(w http.ResponseWriter, r *http.Request) {
 	// sess, _ := session.Get(r)
 	query := r.URL.Query()
-	titles_raw := query.Get("ingredient_q")
+	titles_raw := query.Get("q")
 
 	if "" == titles_raw {
 		w.WriteHeader(http.StatusBadRequest)
@@ -104,67 +87,61 @@ func ListIngredients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// todo optimize - should be one call of function inseated of 10 or less.
-	titles := strings.SplitN(titles_raw, ",", 10)
-
 	var values = IngredientsFromRequest(query)
 
-	for i := range titles {
-		page.SetTitle(strings.ToLower(titles[i]))
+	page.SetTitle(titles_raw)
 
-		page.Fetch()
+	page_number, page_number_err := strconv.Atoi(query.Get("page_number"))
 
-		size := page.Size()
-
-		for j := range size {
-			ing := page.At(j)
-
-			k := slices.IndexFunc(values, func(f wholth.Ingredient) bool {
-				return f.FoodId == ing.Id
-			})
-
-			if -1 != k {
-				continue
-			}
-
-			values = append(values, wholth.Ingredient{
-				Id:            "",
-				FoodId:        ing.Id,
-				Title:         ing.Title,
-				TopNutrient:   ing.TopNutrient,
-				PrepTime:      ing.PrepTime,
-				CanonicalMass: "",
-			})
-
-			// todo move to page.At()
-			cache.Set("grp-food", ing.Id, ing)
-		}
+	if nil == page_number_err && (page_number-1) >= 0 {
+		page.SkipTo(page_number - 1)
 	}
 
-	// titles := strings.Join(strings.SplitN(titles_raw, ",", 10), ",")
-	// C.wholth_pages_food_ingredients(handle, ToStrView(titles))
-	//
-	// // todo check fo errors
-	// C.wholth_pages_fetch(handle)
-	//
-	// size := C.wholth_pages_food_array_size(handle)
-	// var values = make([][4]string, size)
-	//
-	// for i := C.ulonglong(0); i < size; i++ {
-	// 	food := C.wholth_pages_food_array_at(i, handle)
-	// 	food_arr := [4]string{
-	// 		ToStr(food.title),
-	// 		ToStr(food.top_nutrient),
-	// 		ToStr(food.preparation_time),
-	// 		ToStr(food.id),
-	// 	}
-	// 	values[i] = food_arr
-	// }
+	page.Fetch()
+
+	size := page.Size()
+
+	for j := range size {
+		ing := page.At(j)
+
+		k := slices.IndexFunc(values, func(f wholth.Ingredient) bool {
+			return f.FoodId == ing.Id
+		})
+
+		if -1 != k {
+			continue
+		}
+
+		values = append(values, wholth.Ingredient{
+			Id:            "",
+			FoodId:        ing.Id,
+			Title:         ing.Title,
+			TopNutrient:   ing.TopNutrient,
+			PrepTime:      ing.PrepTime,
+			CanonicalMass: "",
+		})
+	}
+
+	htmlPage := ListIngredientsPage{
+		HtmlPage: route.DefaultHtmlPage(r),
+		PaginatableList: util.PaginatableList[wholth.Ingredient]{
+			Values:     values,
+			Pagination: page.Pagination(),
+			Q:          titles_raw,
+		},
+	}
+	// htmlPage.Meta.Title = "d"
 
 	route.RenderHtmlTemplates(
 		w,
 		r,
-		values,
-		"templates/ingredient/suggestion_list.html",
+		htmlPage,
+		"templates/ingredient/index.html",
+
+		"templates/utils/search.html",
+		"templates/utils/paginator.html",
+
+		"templates/ingredient/suggestion.html",
+		"templates/ingredient/list_item.html",
 	)
 }

@@ -199,7 +199,7 @@ type csrfTokenKeyType struct{}
 var CsrfTokenKey *csrfTokenKeyType
 
 func CsrfTokenGeneratorMiddleware(next http.Handler) http.Handler {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var ctx = r.Context()
 
 		sess, sess_ok := ctx.Value(SessionKey).(HttpSession)
@@ -211,11 +211,10 @@ func CsrfTokenGeneratorMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-	return SessionMiddleware(handler)
 }
 
 func CsrfTokenValidatorMiddleware(next http.Handler) http.Handler {
-	handler := http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var ctx = r.Context()
 
 		sess, sess_ok := ctx.Value(SessionKey).(HttpSession)
@@ -250,8 +249,6 @@ func CsrfTokenValidatorMiddleware(next http.Handler) http.Handler {
 
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
-
-	return SessionMiddleware(handler)
 }
 
 func GetCsrfToken(r *http.Request) string {

@@ -15,7 +15,26 @@ type Pagination struct {
 	Count       uint64
 }
 
+type AliasableEntity interface {
+	EntityAlias() string
+}
+
+type EntityAliasAware[T AliasableEntity] struct {
+	Dummy T
+}
+
+func (p EntityAliasAware[T]) EntityAlias() string {
+	return p.Dummy.EntityAlias()
+}
+
+type PaginatableList[T AliasableEntity] struct {
+	EntityAliasAware[T]
+	Pagination
+	Values []T
+	Q      string
+}
+
 type Status struct {
-	Alias  string
+	Alias   string
 	Message string
 }

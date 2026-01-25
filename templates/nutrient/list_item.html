@@ -1,0 +1,25 @@
+{{define "nutrient_list_item"}}
+<li>
+    <input
+        type="checkbox"
+        name="nutrient"
+        value="{{.Id}}"
+        oninput="disableElements(event,'nutrient_{{.Id}}')"
+        {{if .Checked}}checked{{end}}
+    >
+    <div {{if gt (len .Title) 22}}title="{{.Title}}"{{end}}>
+        <span>{{.Title}}</span>
+        <div>
+            <input
+                name="nutrient_{{.Id}}"
+                type="number"
+                min="0"
+                value="{{.Value}}"
+                step="any"
+                {{if not .Checked}}disabled="1"{{end}}
+            >
+            <pre>{{.Unit}}</pre>
+        </div>
+    </div>
+</li>
+{{end}}

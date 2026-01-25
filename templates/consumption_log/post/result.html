@@ -1,4 +1,3 @@
-{{template "consumption_log_post_result" .}}
-{{define "consumption_log_post_result"}}
-<output id="consumption_log-post-result">{{.PostForm.ResultMessage}}</output>
+{{block "consumption_log_post_result" .}}
+<output id="consumption_log-post-result" class="status {{.PostForm.ResultStatus}}" >{{.PostForm.ResultMessage}}</output>
 {{end}}

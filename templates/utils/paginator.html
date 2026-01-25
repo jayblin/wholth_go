@@ -1,7 +1,14 @@
 {{define "paginator"}}
+{{ if and (ne nil .PageMax) (ne nil .Count) }}
 <div class="paginator">
-    <p>{{.Count}} Шт.</p>
-    <button onclick="paginateDown(event)">&#8678;</button>
+    <button
+        {{if eq .PageCurrent 1}}
+        disabled
+        {{else}}
+        onclick="paginateDown(event)"
+        form="{{.EntityAlias}}-search-form"
+        {{end}}
+    >&#8678;</button>
     <input
         type="number"
         name="page_number"
@@ -9,8 +16,20 @@
         max="{{.PageMax}}"
         value="{{.PageCurrent}}"
         autocomplete="off"
+        form="{{.EntityAlias}}-search-form"
     >
-    <button onclick="paginateUp(event)">&#8680;</button>
+    <button
+        {{if eq .PageCurrent .PageMax}}
+        disabled
+        {{else}}
+        onclick="paginateUp(event)"
+        form="{{.EntityAlias}}-search-form"
+        {{end}}
+    >&#8680;</button>
+    <span>&nbsp;&nbsp;</span>
     <span>{{.PageCurrent}}/{{.PageMax}}</span>
+    <span>&nbsp;&nbsp;</span>
+    <span>{{.Count}} Шт.</span>
 </div>
+{{end}}
 {{end}}

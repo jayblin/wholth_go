@@ -5,8 +5,10 @@
         <meta name="description" content="{{.Meta.Description}}" >
         <meta name="viewport" content="width=device-width, initial-scale=1" >
         <link rel="apple-touch-icon" href="/static/apple-touch-icon.png" >
-        <link rel="icon" href="/static/favicon.ico" type="image/x-icon" >
+        <link rel="icon" href="/static/apple-touch-icon.png" type="image/png" >
+        <!-- <link rel="icon" href="/static/favicon.ico" type="image/x-icon" > -->
         <title>{{.Meta.Title}}</title>
+        <link rel="manifest" href="/static/manifest.json" >
         <link
             rel="stylesheet"
             href="/static/styles.css"
@@ -21,8 +23,14 @@
     </head>
 
     <body>
+        <div id="loader"></div>
         <!-- https://leanrada.com/htmz/ -->
-        <iframe hidden name=htmz onload="setTimeout(()=>document.querySelector(contentWindow.location.hash||null)?.replaceWith(...contentDocument.body.childNodes))"></iframe>
+        <iframe 
+            hidden
+            name="htmz"
+            loading="lazy"
+            onload="setTimeout(()=>htmzOnLoad(event))"
+        ></iframe>
         <header>
             <div id="logo">
                 <a href="/">
@@ -41,7 +49,7 @@
             </button>
             <dialog id="user_info_modal">
 		{{/*<button class="close" commandfor="user_info_modal" command="close"></button>*/}}
-		<button class="close" onclick="user_info_modal.close()"></button>
+		<button class="close" onclick="user_info_modal.close()" title="Закрыть">&#10007;</button>
                 <p>{{.Session.Username}}</p>
                 <p>Сессия протухнет 
                     <time datetime="{{.Session.ExpiresStr}}" >

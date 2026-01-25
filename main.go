@@ -61,8 +61,9 @@ func main() {
 
 	mux.Handle(
 		"GET /",
-		session.CsrfTokenGeneratorMiddleware(
-			http.HandlerFunc(food.ListFoods)))
+		session.SessionMiddleware(
+			session.CsrfTokenGeneratorMiddleware(
+				http.HandlerFunc(food.ListFoods))))
 
 	mux.Handle(
 		"GET /static/",
@@ -76,18 +77,21 @@ func main() {
 	http.HandleFunc("GET /palette", palette)
 	mux.Handle(
 		"GET /authenticate",
-		session.CsrfTokenGeneratorMiddleware(
-			http.HandlerFunc(auth.HandleAuthentication)))
+		session.SessionMiddleware(
+			session.CsrfTokenGeneratorMiddleware(
+				http.HandlerFunc(auth.HandleAuthentication))))
 	mux.Handle(
 		"POST /register",
-		session.CsrfTokenValidatorMiddleware(
-			session.CsrfTokenGeneratorMiddleware(
-				http.HandlerFunc(auth.HandleRegistration))))
+		session.SessionMiddleware(
+			session.CsrfTokenValidatorMiddleware(
+				session.CsrfTokenGeneratorMiddleware(
+					http.HandlerFunc(auth.HandleRegistration)))))
 	mux.Handle(
 		"POST /login",
-		session.CsrfTokenValidatorMiddleware(
-			session.CsrfTokenGeneratorMiddleware(
-				http.HandlerFunc(auth.HandleLogin))))
+		session.SessionMiddleware(
+			session.CsrfTokenValidatorMiddleware(
+				session.CsrfTokenGeneratorMiddleware(
+					http.HandlerFunc(auth.HandleLogin)))))
 	mux.Handle(
 		"GET /ingredient",
 		session.SessionMiddleware(
@@ -98,29 +102,34 @@ func main() {
 			http.HandlerFunc(nutrient.ListNutrients)))
 	mux.Handle(
 		"GET /consumption_log",
-		session.CsrfTokenGeneratorMiddleware(
-			auth.AuthenticationMiddleware(
-				http.HandlerFunc(consumption_log.ListConsumptionLogs))))
-	mux.Handle(
-		"POST /consumption_log",
-		session.CsrfTokenValidatorMiddleware(
+		session.SessionMiddleware(
 			session.CsrfTokenGeneratorMiddleware(
 				auth.AuthenticationMiddleware(
-					http.HandlerFunc(consumption_log.PostConsumptionLog)))))
+					http.HandlerFunc(consumption_log.ListConsumptionLogs)))))
+	mux.Handle(
+		"POST /consumption_log",
+		session.SessionMiddleware(
+			session.CsrfTokenValidatorMiddleware(
+				session.CsrfTokenGeneratorMiddleware(
+					auth.AuthenticationMiddleware(
+						http.HandlerFunc(consumption_log.PostConsumptionLog))))))
 	mux.Handle(
 		"GET /food",
 		session.SessionMiddleware(
-			http.HandlerFunc(food.ListFoods)))
+			session.CsrfTokenGeneratorMiddleware(
+				http.HandlerFunc(food.ListFoods))))
 	mux.Handle(
 		"GET /food/{id}",
-		session.CsrfTokenGeneratorMiddleware(
-			http.HandlerFunc(food.GetFoodById)))
+		session.SessionMiddleware(
+			session.CsrfTokenGeneratorMiddleware(
+				http.HandlerFunc(food.GetFoodById))))
 	mux.Handle(
 		"POST /food",
-		session.CsrfTokenValidatorMiddleware(
-			session.CsrfTokenGeneratorMiddleware(
-				auth.AuthenticationMiddleware(
-					http.HandlerFunc(food.PostFood)))))
+		session.SessionMiddleware(
+			session.CsrfTokenValidatorMiddleware(
+				session.CsrfTokenGeneratorMiddleware(
+					auth.AuthenticationMiddleware(
+						http.HandlerFunc(food.PostFood))))))
 
 	logger.Info("Routes ready")
 
@@ -165,12 +174,12 @@ func main() {
 	// }
 
 	server := http.Server{
-		Addr: ":" + port,
+		Addr:    ":" + port,
 		Handler: mux,
 		// TLSConfig: tlsConfig,
 		ReadTimeout:  time.Minute,
 		WriteTimeout: time.Minute,
-		ErrorLog: log.New(os.Stderr, "", 0),
+		ErrorLog:     log.New(os.Stderr, "", 0),
 	}
 
 	// log.Fatal(server.ListenAndServeTLS("domain.crt", "domain.key"))

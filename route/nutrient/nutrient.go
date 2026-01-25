@@ -1,84 +1,77 @@
 package nutrient
 
 import (
+	"fmt"
 	"net/http"
 	"net/url"
 	"slices"
-	"strings"
+	"strconv"
+
+	// "wholth_go/cache"
 	"wholth_go/cache"
 	"wholth_go/logger"
 	"wholth_go/route"
 	"wholth_go/util"
+
+	// "wholth_go/util"
 	"wholth_go/wholth"
 )
 
 func FoodNutrientsFromRequest(query url.Values) []wholth.FoodNutrient {
 	var values []wholth.FoodNutrient
 
-	nuts, nuts_ok := query["nutrient"]
-	nut_values := util.ArrayFilter(
-		query["nutrient_value"],
-		func(s string) bool {
-			return "" != s
-		},
-	)
+	ids, nuts_ok := query["nutrient"]
 
-	if !nuts_ok || len(nuts) <= 0 {
+	if !nuts_ok || len(ids) <= 0 {
 		return values
 	}
 
-	nut_values_len := len(nut_values)
+	for _, id := range ids {
+		nutrient_data := query[fmt.Sprintf("nutrient_%s", id)]
 
-	for idx, nut_id := range nuts {
-		if "" == nut_id {
+		if len(nutrient_data) != 3 {
 			continue
 		}
 
-		var nut_val = ""
-		if nut_values_len > idx && "" != nut_values[idx] {
-			nut_val = nut_values[idx]
+		value := nutrient_data[1]
+
+		fn := wholth.FoodNutrient{
+			Nutrient: wholth.Nutrient{
+				Id:    id,
+				Title: id,
+				Unit:  "попугай",
+			},
+			Value:   value,
+			Checked: true,
 		}
 
-		cached, ok := cache.Get("grp-nutrient", nut_id)
+		cached, ok := cache.Get("g_nutrients", id)
 
-		if !ok || nil == cached {
-			value := wholth.FoodNutrient{
-				Nutrient: wholth.Nutrient{
-					Id:    nut_id,
-					Title: "",
-					Unit:  "",
-				},
-				Value:   nut_val,
-				Checked: true,
-			}
-			values = append(values, value)
-			continue
+		if ok && nil != cached {
+			nut := cached.(wholth.Nutrient)
+			fn.Title = nut.Title
+			fn.Unit = nut.Unit
 		}
 
-		t, ok := cached.(wholth.Nutrient)
-
-		if ok {
-			// val := append(t[:3], nut_val)
-			// values = append(values, ([4]string)(val))
-			val := wholth.FoodNutrient{
-				Nutrient: t,
-				Value:    nut_val,
-			}
-
-			values = append(values, val)
-		}
+		values = append(values, fn)
 	}
 
 	return values
 }
 
+type ListFoodNutrientsPage struct {
+	route.HtmlPage
+	util.PaginatableList[wholth.FoodNutrient]
+}
+
 func ListNutrients(w http.ResponseWriter, r *http.Request) {
 	// sess, _ := session.Get(r)
 	query := r.URL.Query()
-	titles_raw := query.Get("nutrient_q")
+	titles_raw := query.Get("q")
 
 	if "" == titles_raw {
 		w.WriteHeader(http.StatusBadRequest)
+		w.Write([]byte("Не указан обязательный параметр: 'q'!"))
 		return
 	}
 
@@ -94,43 +87,57 @@ func ListNutrients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	// todo optimize - should be one call of function inseated of 10 or less.
-	titles := strings.SplitN(titles_raw, ",", 10)
+	page.SetTitle(titles_raw)
 
-	for i := range titles {
-		page.SetTitle(strings.ToLower(titles[i]))
+	page_number, page_number_err := strconv.Atoi(query.Get("page_number"))
 
-		page.Fetch()
+	if nil == page_number_err && (page_number-1) >= 0 {
+		page.SkipTo(page_number - 1)
+	}
 
-		size := page.Size()
+	page.Fetch()
 
-		for j := range size {
-			nutrient := page.At(j)
+	size := page.Size()
 
-			k := slices.IndexFunc(values, func(f wholth.FoodNutrient) bool {
-				return f.Id == nutrient.Id
-			})
+	for j := range size {
+		nutrient := page.At(j)
 
-			if -1 != k {
-				continue
-			}
+		k := slices.IndexFunc(values, func(fn wholth.FoodNutrient) bool {
+			return fn.Id == nutrient.Id
+		})
 
-			values = append(
-				values,
-				wholth.FoodNutrient{
-					Nutrient: nutrient,
-					Value:    "",
-				},
-			)
-
-			cache.Set("grp-nutrient", nutrient.Id, nutrient)
+		if -1 != k {
+			continue
 		}
+
+		values = append(
+			values,
+			wholth.FoodNutrient{
+				Nutrient: nutrient,
+				Value:    "",
+			},
+		)
+	}
+
+	htmlPage := ListFoodNutrientsPage{
+		HtmlPage: route.DefaultHtmlPage(r),
+		PaginatableList: util.PaginatableList[wholth.FoodNutrient]{
+			Values:     values,
+			Pagination: page.Pagination(),
+			Q:          titles_raw,
+		},
 	}
 
 	route.RenderHtmlTemplates(
 		w,
 		r,
-		values,
-		"templates/nutrient/suggestion_list.html",
+		htmlPage,
+		"templates/nutrient/index.html",
+
+		"templates/utils/search.html",
+		"templates/utils/paginator.html",
+
+		"templates/nutrient/suggestion.html",
+		"templates/nutrient/list_item.html",
 	)
 }

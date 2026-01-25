@@ -19,12 +19,10 @@ import (
 	"wholth_go/wholth"
 )
 
-type GetFoodsPage struct {
+type ListFoodsPage struct {
 	route.HtmlPage
-	Values     []wholth.Food
-	PostForm   wholth.PostFoodsForm
-	Pagination util.Pagination
-	FoodQ      string
+	util.PaginatableList[wholth.Food]
+	PostForm wholth.PostFoodsForm
 }
 
 func ListFoods(w http.ResponseWriter, r *http.Request) {
@@ -47,9 +45,7 @@ func ListFoods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	q := r.URL.Query()
-	as_subdoc := q.Get("as_subdoc")
-	as_suggestion := q.Get("as_suggestion")
-	food_q := q.Get("food_q")
+	food_q := q.Get("q")
 
 	if "" != food_q {
 		wpage.SetTitle(strings.ToLower(food_q))
@@ -70,40 +66,40 @@ func ListFoods(w http.ResponseWriter, r *http.Request) {
 	for i := range size {
 		values[i] = wpage.At(i)
 	}
+	page := ListFoodsPage{}
+	page.Q = food_q
+	page.Values = values
+	page.Pagination = wpage.Pagination()
 
-	if "" != as_subdoc {
-		page := GetFoodsPage{
-			Values:     values,
-			Pagination: wpage.Pagination(),
-			FoodQ:      food_q,
-		}
+	if "" != q.Get("as_radio") {
 		route.RenderHtmlTemplates(
 			w,
 			r,
 			page,
-			"templates/food/get/form.html",
+			"templates/food/get/as_subdoc/index.html",
+
+			"templates/utils/search.html",
 			"templates/utils/paginator.html",
+
+			"templates/food/get/as_subdoc/content.html",
+			"templates/food/get/as_radio/suggestion.html",
 		)
-	} else if "" != as_suggestion {
-		page := GetFoodsPage{
-			Values:     values,
-			Pagination: wpage.Pagination(),
-		}
+	} else if "" != q.Get("as_subdoc") {
 		route.RenderHtmlTemplates(
 			w,
 			r,
 			page,
-			"templates/food/get/suggestion_list.html",
+			"templates/food/get/as_subdoc/index.html",
+			
+			"templates/utils/search.html",
 			"templates/utils/paginator.html",
+
+			"templates/food/get/as_subdoc/content.html",
+			"templates/food/get/suggestion.html",
 		)
 	} else {
-		page := GetFoodsPage{
-			route.DefaultHtmlPage(r),
-			values,
-			wholth.PostFoodsFormDefault(),
-			wpage.Pagination(),
-			"",
-		}
+		page.HtmlPage = route.DefaultHtmlPage(r)
+		page.PostForm = wholth.PostFoodsFormDefault()
 		page.Meta.Title = "Пища"
 		page.Meta.Description = "Список/добавление/изменение пищи."
 
@@ -112,12 +108,16 @@ func ListFoods(w http.ResponseWriter, r *http.Request) {
 			r,
 			page,
 			"templates/index.html",
-			"templates/food/get/content.html",
-			"templates/food/get/form.html",
-			"templates/food/post/form.html",
-			"templates/ingredient/suggestion_list.html",
-			"templates/nutrient/suggestion_list.html",
+
+			"templates/utils/search.html",
 			"templates/utils/paginator.html",
+
+			"templates/food/get/content.html",
+			"templates/food/get/suggestion.html",
+			"templates/food/post/form.html",
+
+			"templates/ingredient/list_item.html",
+			"templates/nutrient/list_item.html",
 		)
 	}
 }
@@ -174,13 +174,16 @@ func FindRecipeStep(foodId string) wholth.RecipeStep {
 
 // todo add pagination
 // todo query
-func FindIngredients(foodId string) []wholth.Ingredient {
+func FindIngredients(foodId string) util.PaginatableList[wholth.Ingredient] {
 	var wpage, wpageErr = wholth.IngredientPageNew(50)
 
 	defer wpage.Close()
 
+	result := util.PaginatableList[wholth.Ingredient]{}
+
 	if nil != wpageErr {
-		return make([]wholth.Ingredient, 0)
+		result.Values = make([]wholth.Ingredient, 0)
+		return result
 	}
 
 	wpage.SetFoodId(foodId)
@@ -189,10 +192,11 @@ func FindIngredients(foodId string) []wholth.Ingredient {
 
 	size := wpage.Size()
 
-	result := make([]wholth.Ingredient, size)
+	result.Values = make([]wholth.Ingredient, size)
+	result.Pagination = wpage.Pagination()
 
 	for i := range size {
-		result[i] = wpage.At(i)
+		result.Values[i] = wpage.At(i)
 	}
 
 	return result
@@ -200,13 +204,16 @@ func FindIngredients(foodId string) []wholth.Ingredient {
 
 // todo add pagination
 // todo query
-func FindFoodNutrients(foodId string) []wholth.FoodNutrient {
+func FindFoodNutrients(foodId string) util.PaginatableList[wholth.FoodNutrient] {
 	var wpage, wpageErr = wholth.FoodNutrientPageNew(50)
 
 	defer wpage.Close()
 
+	result := util.PaginatableList[wholth.FoodNutrient]{}
+
 	if nil != wpageErr {
-		return make([]wholth.FoodNutrient, 0)
+		result.Values = make([]wholth.FoodNutrient, 0)
+		return result
 	}
 
 	wpage.SetFoodId(foodId)
@@ -215,12 +222,13 @@ func FindFoodNutrients(foodId string) []wholth.FoodNutrient {
 
 	size := wpage.Size()
 
-	result := make([]wholth.FoodNutrient, size)
+	result.Values = make([]wholth.FoodNutrient, size)
+	result.Pagination = wpage.Pagination()
 
 	for i := range size {
 		nut := wpage.At(i)
 		nut.Checked = false
-		result[i] = nut
+		result.Values[i] = nut
 	}
 
 	return result
@@ -252,7 +260,7 @@ func GetFoodById(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page := GetFoodsPage{
+	page := ListFoodsPage{
 		HtmlPage: route.DefaultHtmlPage(r),
 		PostForm: form,
 	}
@@ -264,10 +272,15 @@ func GetFoodById(w http.ResponseWriter, r *http.Request) {
 		r,
 		page,
 		"templates/index.html",
+
+		"templates/utils/search.html",
+		"templates/utils/paginator.html",
+
 		"templates/food/_id/get/content.html",
 		"templates/food/post/form.html",
-		"templates/ingredient/suggestion_list.html",
-		"templates/nutrient/suggestion_list.html",
+
+		"templates/ingredient/list_item.html",
+		"templates/nutrient/list_item.html",
 	)
 }
 
@@ -278,7 +291,7 @@ type PostFoodsPage struct {
 
 func PostFoodsFormFromRequest(r *http.Request) wholth.PostFoodsForm {
 	r.ParseForm()
-	return wholth.PostFoodsForm{
+	result := wholth.PostFoodsForm{
 		Food: wholth.Food{
 			Id:    r.PostForm.Get("food_id"),
 			Title: r.PostForm.Get("food_title"),
@@ -290,9 +303,11 @@ func PostFoodsFormFromRequest(r *http.Request) wholth.PostFoodsForm {
 		},
 		ResultStatus:  "",
 		ResultMessage: "",
-		Ingredients:   ingredient.IngredientsFromRequest(r.PostForm),
-		Nutrients:     nutrient.FoodNutrientsFromRequest(r.PostForm),
 	}
+	result.Ingredients.Values = ingredient.IngredientsFromRequest(r.PostForm)
+	result.Nutrients.Values = nutrient.FoodNutrientsFromRequest(r.PostForm)
+
+	return result
 }
 
 func PostFood(w http.ResponseWriter, r *http.Request) {
@@ -319,7 +334,11 @@ func PostFood(w http.ResponseWriter, r *http.Request) {
 		r,
 		page,
 		"templates/food/post/form.html",
-		"templates/ingredient/suggestion_list.html",
-		"templates/nutrient/suggestion_list.html",
+
+		"templates/utils/search.html",
+		"templates/utils/paginator.html",
+
+		"templates/ingredient/list_item.html",
+		"templates/nutrient/list_item.html",
 	)
 }

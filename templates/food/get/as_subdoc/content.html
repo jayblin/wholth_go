@@ -1,0 +1,7 @@
+{{define "suggestion_list"}}
+<ul>
+{{range .Values}}
+    {{template "suggestion" .}}
+{{end}}
+</ul>
+{{end}}

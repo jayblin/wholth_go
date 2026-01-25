@@ -1,26 +1,16 @@
 @use "variables/spacing";
 @use "variables/color";
 @use "variables/breakpoint";
-// :root {
-//     --s-0: 0px;
-//     --s-xs: 4px;
-//     --s-sm: 8px;
-//     --s-md: 16px;
-//     --s-lg: 32px;
-//     --s-xl: 64px;
-// }
 
-::backdrop {
-    backdrop-filter: blur(5px);
-}
-
-dialog {
-  overscroll-behavior: contain;
-  width: auto;
+@keyframes loaderAnimation {
+  0% {background-position-x: 0%;}
+  50% {background-position-x: 50%;}
+  100% {background-position-x: 100%;}
 }
 
 html {
   scrollbar-color: color.$primary-c color.$primary-a;
+  min-height: 200vh;
 }
 
 body {
@@ -41,6 +31,34 @@ body {
     // border: 1px dashed color.$tertiary-e;
     width: 100%;
   }
+}
+
+dialog {
+  overscroll-behavior: contain;
+  width: auto;
+
+  &[open] {
+
+    &::backdrop {
+        backdrop-filter: blur(5px);
+    }
+
+    display: grid;
+    border: 2px dashed color.$complementary-e;
+    background-color: color.$tertiary-a;
+    color: color.$secondary-e;
+    padding: spacing.$sm spacing.$sm;
+
+    button.close {
+      justify-self: end;
+    }
+  }
+}
+
+hr {
+  border-bottom: 0;
+  border-color: color.$primary-d;
+  margin: 0;
 }
 
 header {
@@ -96,31 +114,40 @@ button, .button {
     background-color: color.$primary-b;
   }
 
+  &:disabled {
+    opacity: 0.5;
+    cursor: unset!important;
+  }
+
   &.close {
     width: spacing.$lg;
     height: spacing.$lg;
-    &:after {
-      content: "\2715";
-    }
+    // &:after {
+    //   content: "\2715";
+    // }
   }
+
+  // &.submit {
+  //   &:after {
+  //     content: "\2713";
+  //   }
+  // }
 }
 
-dialog[open] {
-  display: grid;
-  border: 2px dashed color.$complementary-e;
-  background-color: color.$tertiary-a;
-  color: color.$secondary-e;
-
-  button.close {
-    justify-self: end;
-  }
+textarea, input {
+  background-color: color.$primary-a;
+  border: 1px solid color.$primary-c;
+  border-radius: spacing.$xs;
 }
 
 input {
   // border: 2px dotted color.$primary-c;
-  border: none;
-  outline: 1px solid color.$primary-c;
-  border-radius: 4px;
+  // border: none;
+  // outline: 1px solid color.$primary-c;
+
+  &:disabled {
+    background-color: unset;
+  }
 
   &[type="number"],
   &[type="text"],
@@ -131,31 +158,88 @@ input {
 
   &[type="checkbox"],
   &[type="radio"] {
-  outline: unset;
+    width: 20px;
+    height: 20px;
+    outline: unset;
+
+    &:hover {
+      cursor: pointer;
+    }
   }
 
   &:focus-visible {
     outline: 1px solid color.$complementary-d;
+  }
+
+  &[type="checkbox"] {
+    margin: 0px;
+  }
+
+  &.span {
+    border: none;
+    outline: none;
+    // background: unset !important;
+    color: inherit;
+    padding: 0;
+    height: fit-content;
+    min-height: unset;
+    font-size: 1rem;
+    text-overflow: ellipsis;
+    overflow: hidden;
+    max-width: fit-content;
   }
 }
 
 form {
   display: grid;
   gap: spacing.$xs;
+
+  header {
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+  }
+
+  h2 {
+      font-size: 1em;
+  }
+
+  .controls {
+    overflow: hidden;
+    position: sticky;
+    bottom: 0;
+    display: grid;
+    gap: spacing.$sm;
+    backdrop-filter: blur(5px);
+    border-radius: spacing.$xs;
+    justify-items: center;
+
+    button[type="submit"] {
+      width: 100%;
+    }
+
+    output {
+      word-wrap: anywhere;
+      padding: spacing.$xs;
+      border-radius: spacing.$xs;
+      color: var(--status-color-fg);
+      background-color: var(--status-color-bg);
+    }
+  }
 }
 
 fieldset {
   border: 1px solid color.$primary-d;
   display: grid;
   gap: spacing.$xs;
+  border-radius: 4px;
+}
 
-  & legend {
-    padding-left: spacing.$xs;
-    padding-right: spacing.$xs;
-    padding-bottom: 0;
-    padding-top: 0;
-    color: color.$primary-c;
-  }
+legend {
+  padding-left: spacing.$xs;
+  padding-right: spacing.$xs;
+  padding-bottom: 0;
+  padding-top: 0;
+  color: color.$primary-c;
 }
 
 pre {
@@ -169,13 +253,14 @@ menu, ul {
   margin: 0;
 }
 
+ul {
+    display: grid;
+    gap: spacing.$md;
+}
+
 select {
   width: 100%;
   overscroll-behavior: contain;
-}
-
-input[type="checkbox"] {
-  margin: 0px;
 }
 
 table {
@@ -194,7 +279,27 @@ td {
   padding: spacing.$xs;
 }
 
-.suggestions {
+.status {
+  --status-color-fg: inherit;
+  --status-color-bg: none;
+
+  &.success {
+    --status-color-fg: #{color.$primary-e};
+    --status-color-bg: #{color.$primary-b};
+  }
+
+  &.error {
+    --status-color-fg: #{color.$complementary-e};
+    --status-color-bg: #{color.$complementary-b};
+  }
+
+  &.warning {
+    --status-color-fg: #{color.$secondary-e};
+    --status-color-bg: #{color.$secondary-a};
+  }
+}
+
+.suggestion_list {
   flex: 1 0 100%;
   display: grid;
   gap: 8px;
@@ -205,37 +310,41 @@ td {
   }
 
   li {
-    display: flex;
-    flex-direction: column;
-    gap: spacing.$xs;
+    // display: flex;
+    // flex-direction: column;
+    display: grid;
+    // grid-template-columns: 24px auto;
+    gap: spacing.$sm;
     padding: spacing.$xs 0 spacing.$xs spacing.$xs;
+    overflow: hidden;
+    border-radius: 4px;
 
     &:hover {
-      background: color.$primary-c;
-      color: color.$primary-a;
+      // background: color.$primary-c;
+      // color: color.$primary-a !important;
+      outline: 1px solid color.$primary-b;
     }
 
-    label:first-child {
-      display: flex;
-      gap: spacing.$xs;
+    // > input[type="checkbox"] {
+    //   grid-column: 1;
+    // }
+    // > div {
+    //   grid-column: 2;
+    //   display: flex;
+    //   flex-direction: column;
+    //   gap: spacing.$xs;
+    // }
 
-      &:hover {
-        cursor: pointer;
-      }
-
-      span {
-        display: block;
-        text-overflow: ellipsis;
-        overflow: hidden;
-        white-space: nowrap;
-        max-width: 30ch;
-      }
+    &.error {
+      outline: 1px solid color.$complementary-d;
     }
 
-    label:nth-child(2) {
-      span {
-        font-size: 1em;
-      }
+    span {
+      // max-width: 26ch; // todo make max-width dependent on screen-size
+      overflow: hidden;
+      text-overflow: ellipsis;
+      width: fit-content;
+      text-wrap: nowrap;
     }
   }
 }
@@ -250,6 +359,10 @@ td {
   // }
 }
 
+.loading {
+  opacity: 0.5;
+}
+
 #logo {
   display: flex;
   align-items: center;
@@ -262,7 +375,6 @@ td {
   bottom: spacing.$sm;
   display: flex;
   justify-content: end;
-  // outline: 1px dotted color.$primary-d;
 }
 
 #food-get-form {
@@ -279,8 +391,6 @@ td {
   }
 
   ul {
-    display: grid;
-    gap: spacing.$md;
     max-width: 30ch;
 
     h2 {
@@ -323,42 +433,51 @@ td {
   }
 }
 
-#ingredient-suggestor {
-  
-  & input[type="search"] {
-    width: 100%;
-  }
+#ingredient-search {
+  li {
+    .mass {
+      input {
+        max-width: 7ch;
+      }
+    }
 
-  & search {
-    display: flex;
-    flex-wrap: wrap;
-    gap: spacing.$xs;
-  }
-}
-
-#ingredient-suggestor-result {
-
-  .ingredient-mass {
-    input {
-      max-width: 6ch;
+    > div {
+      display: flex;
+      align-items: center;
+      gap: spacing.$sm;
     }
   }
 }
 
-#nutrient-suggestor-result {
-  li label:nth-child(2) {
-    display: flex;
-    gap: spacing.$xs;
-    flex-wrap: nowrap;
+#food-search-result {
+  margin-top: spacing.$md;
 
-    input {
-      width: 8ch;
-    }
+  ul {
+    margin-top: spacing.$md;
+  }
 
-    pre {
-      margin: 0px
+  li {
+    display: grid;
+    gap: spacing.$sm;
+  }
+}
+
+#ingredient-search-result {
+  margin-top: spacing.$sm;
+}
+
+#nutrient-search {
+  li {
+    div > div {
+      display: flex;
+      align-items: center;
+      gap: spacing.$xs;
     }
   }
+}
+
+#nutrient-search-result {
+  margin-top: spacing.$sm;
 }
 
 #consumption_log-get-form {
@@ -366,7 +485,6 @@ td {
   > div:first-child {
     display: flex;
     align-items: center;
-    // justify-items: center;
     gap: spacing.$sm;
     flex-wrap: wrap;
     margin-bottom: spacing.$sm;
@@ -376,22 +494,27 @@ td {
 #consumption_log-get-form,
 #food-post-form {
   position: relative;
-
-  button[type="submit"] {
-    position: sticky;
-    bottom: 0;
-  }
 }
 
-// @keyframes myAnimation {
-//   from {transform: skew(-1deg,-1deg) translate(-10px);}
-//   to {transform: skew(1deg,1deg) translate(10px);}
-// }
-//
-// h2 {
-//   animation-name: myAnimation;
-//   animation-duration: 2s;
-//   animation-timing-function: linear;
-//   animation-iteration-count: infinite;
-//   animation-direction: alternate;
-// }
+#loader {
+  display: block;
+  position: fixed;
+  top: 0;
+  width: 100%;
+  height: spacing.$sm;
+  z-index: 99;
+  background: linear-gradient(
+    to right,
+    color.$primary-a,
+    color.$primary-b,
+    color.$tertiary-f,
+    color.$primary-b,
+    color.$primary-a
+  );
+  background-size: 200%;
+  animation-name: loaderAnimation;
+  animation-duration: 2s;
+  animation-timing-function: linear;
+  animation-iteration-count: infinite;
+  animation-direction: alternate;
+}

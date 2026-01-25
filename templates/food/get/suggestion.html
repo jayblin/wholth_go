@@ -1,0 +1,11 @@
+{{define "suggestion"}}
+<li>
+    <a href="/food/{{.Id}}"><h2>{{.Title}}</h2></a>
+    <span>Калории: {{.TopNutrient}}</span>
+    {{ if ne "" .PrepTime}}
+    <span>Готовится: {{.PrepTime}}</span>
+    {{end}}
+<hr >
+</li>
+{{end}}
+
