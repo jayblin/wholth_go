@@ -71,7 +71,6 @@ func UserRegister(username string, password string) (string, error) {
 	wuser.name = toStrView(username)
 	wuser.locale_id = toStrView(DEFAULT_LOCALE_ID)
 	wpassword := toStrView(password)
-	// fmt.Println(username, password)
 	werr := C.wholth_em_user_insert(&wuser, wpassword, scratch)
 
 	if !C.wholth_error_ok(&werr) {

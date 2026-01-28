@@ -29,11 +29,11 @@ func FoodNutrientsFromRequest(query url.Values) []wholth.FoodNutrient {
 	for _, id := range ids {
 		nutrient_data := query[fmt.Sprintf("nutrient_%s", id)]
 
-		if len(nutrient_data) != 3 {
+		if len(nutrient_data) != 1 {
 			continue
 		}
 
-		value := nutrient_data[1]
+		value := nutrient_data[0]
 
 		fn := wholth.FoodNutrient{
 			Nutrient: wholth.Nutrient{
@@ -77,7 +77,7 @@ func ListNutrients(w http.ResponseWriter, r *http.Request) {
 
 	var values = FoodNutrientsFromRequest(query)
 
-	page, pageErr := wholth.NutrientPageNew(10)
+	page, pageErr := wholth.NutrientPageNew(50)
 
 	defer page.Close()
 

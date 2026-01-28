@@ -17,7 +17,6 @@ import (
 
 func IngredientsFromRequest(query url.Values) []wholth.Ingredient {
 	var values []wholth.Ingredient
-	// fmt.Println(query)
 
 	food_ids, ing_ok := query["ingredient"]
 	if !ing_ok || len(food_ids) <= 0 {
@@ -29,11 +28,15 @@ func IngredientsFromRequest(query url.Values) []wholth.Ingredient {
 		ingredient_id := query[fmt.Sprintf("ingredient_%s_id", food_id)]
 		ingredient_mass := query[fmt.Sprintf("ingredient_%s_mass", food_id)]
 
-		if len(ingredient_id) != 1 || len(ingredient_mass) != 1 {
+		if len(ingredient_mass) != 1 {
 			continue
 		}
 
-		id := ingredient_id[0]
+		var id = ""
+		if len(ingredient_id) == 1 {
+			id = ingredient_id[0]
+		}
+
 		mass := ingredient_mass[0]
 
 		ing := wholth.Ingredient{
@@ -102,10 +105,10 @@ func ListIngredients(w http.ResponseWriter, r *http.Request) {
 	size := page.Size()
 
 	for j := range size {
-		ing := page.At(j)
+		food := page.At(j)
 
 		k := slices.IndexFunc(values, func(f wholth.Ingredient) bool {
-			return f.FoodId == ing.Id
+			return f.FoodId == food.Id
 		})
 
 		if -1 != k {
@@ -114,10 +117,10 @@ func ListIngredients(w http.ResponseWriter, r *http.Request) {
 
 		values = append(values, wholth.Ingredient{
 			Id:            "",
-			FoodId:        ing.Id,
-			Title:         ing.Title,
-			TopNutrient:   ing.TopNutrient,
-			PrepTime:      ing.PrepTime,
+			FoodId:        food.Id,
+			Title:         food.Title,
+			TopNutrient:   food.TopNutrient,
+			PrepTime:      food.PrepTime,
 			CanonicalMass: "",
 		})
 	}
