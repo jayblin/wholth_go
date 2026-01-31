@@ -53,6 +53,7 @@ func main() {
 	secret.SetDomain(os.Getenv("DOMAIN"))
 	secret.SetUseTemplateCache("" != os.Getenv("USE_TEMPLATE_CACHE"))
 	secret.SetAllowRegistration("1" == os.Getenv("ALLOW_REGISTRATION"))
+	secret.SetVersion(os.Getenv("VERSION"))
 	port := os.Getenv("PORT")
 
 	logger.Info("ENV ready")

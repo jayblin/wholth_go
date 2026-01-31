@@ -1,4 +1,10 @@
-build:
+minify-js:
+	sed -E "/(\/\/)|(\/\*)|(\*\/)/d" static/main.js | awk '{sub(/^ +/,"")}1' | tr -d '\n' > static/main.min.js
+
+env-set-version:
+	sed -i '' -E "s/VERSION=.{0,}$$/VERSION=$(shell git log --format=format:'%H' | head -n 1)/" .env
+
+build: env-set-version minify-js
 	go build
 
 run:

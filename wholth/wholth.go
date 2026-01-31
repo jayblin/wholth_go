@@ -268,6 +268,10 @@ func (t *RecipeStepPage) Get() RecipeStep {
 		Id:          toStr(val.id),
 		Time:        toStr(val.time),
 		Description: toStr(val.description),
+		// Status: util.Status{
+		// 	Alias: "error",
+		// 	Message: "AN_ERROR",
+		// },
 	}
 
 	return result
@@ -339,6 +343,10 @@ func (t *IngredientPage) At(i uint64) Ingredient {
 		TopNutrient:   "",
 		PrepTime:      "",
 		CanonicalMass: toStr(food.canonical_mass_g),
+		// Status: util.Status{
+		// 	Alias: "success",
+		// 	Message: "AN_ERROR",
+		// },
 	}
 
 	if !cache.Has("g_foods", result.FoodId) {
@@ -403,9 +411,9 @@ func (t *NutrientPage) At(i uint64) Nutrient {
 	nut := *ptr
 
 	result := Nutrient{
-		toStr(nut.id),
-		toStr(nut.title),
-		toStr(nut.unit),
+		Id:    toStr(nut.id),
+		Title: toStr(nut.title),
+		Unit:  toStr(nut.unit),
 	}
 
 	cache.Set("g_nutrients", result.Id, result)
@@ -464,13 +472,21 @@ func (t *FoodNutrientPage) At(i uint64) FoodNutrient {
 
 	nut := *ptr
 
+	nutrient := Nutrient{
+		Id:    toStr(nut.id),
+		Title: toStr(nut.title),
+		Unit:  toStr(nut.unit),
+	}
+	cache.Set("g_nutrients", nutrient.Id, nutrient)
+
 	return FoodNutrient{
-		Nutrient: Nutrient{
-			Id:    toStr(nut.id),
-			Title: toStr(nut.title),
-			Unit:  toStr(nut.unit),
-		},
-		Value: toStr(nut.value),
+		Nutrient: nutrient,
+		Value:    toStr(nut.value),
+
+		// Status: util.Status{
+		// 	Alias: "warning",
+		// 	Message: "AN_ERROR",
+		// },
 	}
 }
 
@@ -555,11 +571,11 @@ func ConsumptionLogPageNew(perPage uint64) (ConsumptionLogPage, error) {
 }
 
 type ConsumptionLogPostForm struct {
-	Id            string
-	FoodId        string
-	FoodTitle     string
-	Mass          string
-	ConsumedAt    string
+	Id         string
+	FoodId     string
+	FoodTitle  string
+	Mass       string
+	ConsumedAt string
 	// todo use util struct
 	ResultStatus  string
 	ResultMessage string
@@ -603,8 +619,9 @@ type PostFoodsForm struct {
 	RecipeStep    RecipeStep
 	Ingredients   util.PaginatableList[Ingredient]
 	Nutrients     util.PaginatableList[FoodNutrient]
-	ResultStatus  string
-	ResultMessage string
+	// ResultStatus  string
+	// ResultMessage string
+	util.Status
 }
 
 func PostFoodsFormDefault() PostFoodsForm {
@@ -641,10 +658,11 @@ func saveBasics(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 	return nil
 }
 
-func saveNutrients(buf *C.wholth_Buffer, form *PostFoodsForm) {
+func saveNutrients(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 	food := C.wholth_entity_food_init()
 	food.id = toStrView(form.Food.Id)
 
+	var ok = true
 	for i := range form.Nutrients.Values {
 		wnut := C.wholth_entity_nutrient_init()
 		wnut.id = toStrView(form.Nutrients.Values[i].Id)
@@ -655,8 +673,15 @@ func saveNutrients(buf *C.wholth_Buffer, form *PostFoodsForm) {
 		if !C.wholth_error_ok(&err) {
 			form.Nutrients.Values[i].Status.Alias = "error"
 			form.Nutrients.Values[i].Status.Message = toStr(err.message)
+			ok = false
 		}
 	}
+
+	if !ok {
+		return errors.New("Не удалось сохранить нутриенты!")
+	}
+
+	return nil
 }
 
 func saveSteps(buf *C.wholth_Buffer, form *PostFoodsForm) error {
@@ -677,10 +702,9 @@ func saveSteps(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 	}
 
 	if !C.wholth_error_ok(&err) {
-		// form.RecipeStep.Alias = "error"
-		// form.RecipeStep.Message = toStr(err.message)
-		// return "warning", errors.New("Ошибка сохранения рецепта: " + toStr(err.message))
-		return errors.New("Ошибка сохранения рецепта: " + toStr(err.message))
+		form.RecipeStep.Status.Alias = "error"
+		form.RecipeStep.Status.Message = toStr(err.message)
+		return errors.New("Не удалось сохранить рецепт!")
 	}
 
 	form.RecipeStep.Id = toStr(step.id)
@@ -726,6 +750,8 @@ func saveIngredients(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 		if !C.wholth_error_ok(&err) {
 			return errors.New("Ошибка при обновлении основных нутриентов на основе ингредиентов: " + toStr(err.message))
 		}
+	} else if len(form.Ingredients.Values) > 0 {
+		return errors.New("Не удалось сохранить ингридиенты!")
 	}
 
 	return nil
@@ -743,14 +769,13 @@ func SaveFood(form *PostFoodsForm) (string, error) {
 		return "error", err
 	}
 
-	saveNutrients(scratch, form)
+	err = errors.Join(
+		err,
+		saveNutrients(scratch, form),
+		saveSteps(scratch, form),
+		saveIngredients(scratch, form),
+	)
 
-	err = saveSteps(scratch, form)
-	if nil != err {
-		return "warning", err
-	}
-
-	err = saveIngredients(scratch, form)
 	if nil != err {
 		return "warning", err
 	}

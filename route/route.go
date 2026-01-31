@@ -42,12 +42,14 @@ func DefaultSessionMeta(r *http.Request) SessionMeta {
 type HtmlPage struct {
 	Meta    PageMeta
 	Session SessionMeta
+	Version string
 }
 
 func DefaultHtmlPage(r *http.Request) HtmlPage {
 	return HtmlPage{
-		DefaultPageMeta(r),
-		DefaultSessionMeta(r),
+		Meta: DefaultPageMeta(r),
+		Session: DefaultSessionMeta(r),
+		Version: secret.GetVersion(),
 	}
 }
 

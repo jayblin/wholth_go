@@ -8,14 +8,14 @@
         <link rel="icon" href="/static/apple-touch-icon.png" type="image/png" >
         <!-- <link rel="icon" href="/static/favicon.ico" type="image/x-icon" > -->
         <title>{{.Meta.Title}}</title>
-        <link rel="manifest" href="/static/manifest.json" >
+        <link rel="manifest" href="/static/manifest.json?version={{.Version}}" >
         <link
             rel="stylesheet"
-            href="/static/styles.css"
+            href="/static/styles.css?version={{.Version}}"
             fetchpriority="high"
         >
         <!-- <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script> -->
-        <script src="/static/main.js"></script>
+        <script src="/static/main.min.js?version={{.Version}}"></script>
 
         {{define "head"}}
         {{end}}

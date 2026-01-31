@@ -1,20 +1,14 @@
 {{define "ingredient_list_item"}}
-<li class="{{.Status.Alias}}">
+<li class="status {{.Status.Alias}}">
     <input
-        type="hidden"
-        name="ingredient_{{.FoodId}}_id"
-        value="{{.Id}}"
-        {{if not .Checked}}disabled="1"{{end}}
+        type="checkbox"
+        name="ingredient"
+        value="{{.FoodId}}"
+        oninput="disableElements(event,'ingredient_{{.FoodId}}_mass','ingredient_{{.FoodId}}_id')"
+        {{if .Checked}}checked{{end}}
     >
-    <span {{if gt (len .Title) 22}}title="{{.Title}}"{{end}}>{{.Title}}</span>
     <div>
-        <input
-            type="checkbox"
-            name="ingredient"
-            value="{{.FoodId}}"
-            oninput="disableElements(event,'ingredient_{{.FoodId}}_mass','ingredient_{{.FoodId}}_id')"
-            {{if .Checked}}checked{{end}}
-        >
+        <span {{if gt (len .Title) 22}}title="{{.Title}}"{{end}}>{{.Title}}</span>
         <label class="mass">
             Вес, г.
             <input
@@ -26,9 +20,15 @@
             >
         </label>
         <a href="/food/{{.FoodId}}" target="_blank">&#8599;</a>
+        {{ if ne "" .Status.Message }}
+        <span>{{.Status.Message}}</span>
+        {{ end }}
+        <input
+            type="hidden"
+            name="ingredient_{{.FoodId}}_id"
+            value="{{.Id}}"
+            {{if not .Checked}}disabled="1"{{end}}
+        >
     </div>
-    {{ if ne "" .Status.Message }}
-    <span class={{.Status.Alias}}>{{.Status.Message}}</span>
-    {{ end }}
 </li>
 {{end}}

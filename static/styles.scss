@@ -158,8 +158,8 @@ input {
 
   &[type="checkbox"],
   &[type="radio"] {
-    width: 20px;
-    height: 20px;
+    min-width: 20px;
+    min-height: 20px;
     outline: unset;
 
     &:hover {
@@ -282,6 +282,10 @@ td {
 .status {
   --status-color-fg: inherit;
   --status-color-bg: none;
+  outline: 1px solid var(--status-color-bg) !important;
+  color: var(--status-color-fg) !important;
+  background: var(--status-color-bg);
+  border-radius: spacing.$xs;
 
   &.success {
     --status-color-fg: #{color.$primary-e};
@@ -312,10 +316,10 @@ td {
   li {
     // display: flex;
     // flex-direction: column;
-    display: grid;
+    display: flex;
     // grid-template-columns: 24px auto;
     gap: spacing.$sm;
-    padding: spacing.$xs 0 spacing.$xs spacing.$xs;
+    // padding: spacing.$xs 0 spacing.$xs spacing.$xs;
     overflow: hidden;
     border-radius: 4px;
 
@@ -335,16 +339,21 @@ td {
     //   gap: spacing.$xs;
     // }
 
-    &.error {
-      outline: 1px solid color.$complementary-d;
-    }
-
-    span {
-      // max-width: 26ch; // todo make max-width dependent on screen-size
+    > div {
+      display: flex;
+      gap: spacing.$xs;
+      flex-wrap: wrap;
+      align-items: center;
       overflow: hidden;
-      text-overflow: ellipsis;
-      width: fit-content;
-      text-wrap: nowrap;
+
+      > span {
+        // max-width: 26ch; // todo make max-width dependent on screen-size
+        overflow: hidden;
+        text-overflow: ellipsis;
+        // width: fit-content;
+        text-wrap: nowrap;
+        flex: 1 0 100%;
+      }
     }
   }
 }
@@ -397,10 +406,10 @@ td {
       font-size: 1.2em;
     }
 
-    li {
-      display: flex;
-      flex-direction: column;
-    }
+    // li {
+    //   display: flex;
+    //   flex-direction: column;
+    // }
 
     a {
       width: fit-content;
@@ -441,11 +450,11 @@ td {
       }
     }
 
-    > div {
-      display: flex;
-      align-items: center;
-      gap: spacing.$sm;
-    }
+    // > div {
+    //   display: flex;
+    //   align-items: center;
+    //   gap: spacing.$sm;
+    // }
   }
 }
 
@@ -456,10 +465,10 @@ td {
     margin-top: spacing.$md;
   }
 
-  li {
-    display: grid;
-    gap: spacing.$sm;
-  }
+  // li {
+  //   display: grid;
+  //   gap: spacing.$sm;
+  // }
 }
 
 #ingredient-search-result {
@@ -467,12 +476,15 @@ td {
 }
 
 #nutrient-search {
-  li {
-    div > div {
-      display: flex;
-      align-items: center;
-      gap: spacing.$xs;
-    }
+  // li {
+  //   div > div {
+  //     display: flex;
+  //     align-items: center;
+  //     gap: spacing.$xs;
+  //   }
+  // }
+
+  input[type="number"] {
   }
 }
 

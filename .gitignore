@@ -5,6 +5,7 @@ Session.vim
 todo.md
 # static/*.css
 # static/*.css.map
+static/main.min.js
 wholth_lib/
 wholth.db
 wholth_go

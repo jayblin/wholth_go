@@ -234,7 +234,7 @@ func FindFoodNutrients(foodId string) util.PaginatableList[wholth.FoodNutrient] 
 	return result
 }
 
-func PostFoodsFormFromDb(foodId string) (wholth.PostFoodsForm, int) {
+func fetchPostFoodsFormFromDb(foodId string) (wholth.PostFoodsForm, int) {
 	form := wholth.PostFoodsFormDefault()
 
 	food := FindFood(foodId)
@@ -253,7 +253,7 @@ func PostFoodsFormFromDb(foodId string) (wholth.PostFoodsForm, int) {
 
 func GetFoodById(w http.ResponseWriter, r *http.Request) {
 	foodId := r.PathValue("id")
-	form, status := PostFoodsFormFromDb(foodId)
+	form, status := fetchPostFoodsFormFromDb(foodId)
 
 	if http.StatusOK != status {
 		w.WriteHeader(status)
@@ -301,8 +301,10 @@ func PostFoodsFormFromRequest(r *http.Request) wholth.PostFoodsForm {
 			Time:        r.PostForm.Get("recipe_step_time"),
 			Description: r.PostForm.Get("recipe_step_description"),
 		},
-		ResultStatus:  "",
-		ResultMessage: "",
+		// Status: util.Status{},
+
+		// ResultStatus:  "",
+		// ResultMessage: "",
 	}
 	result.Ingredients.Values = ingredient.IngredientsFromRequest(r.PostForm)
 	result.Nutrients.Values = nutrient.FoodNutrientsFromRequest(r.PostForm)
@@ -318,13 +320,17 @@ func PostFood(w http.ResponseWriter, r *http.Request) {
 	status, err := wholth.SaveFood(&page.PostForm)
 
 	if nil != err {
-		page.PostForm.ResultStatus = status
-		page.PostForm.ResultMessage = err.Error()
+		page.PostForm.Status.Alias = status
+		page.PostForm.Status.Message = err.Error()
+		// page.PostForm.ResultStatus = status
+		// page.PostForm.ResultMessage = err.Error()
 	} else {
-		formEnriched, _ := PostFoodsFormFromDb(page.PostForm.Food.Id)
+		formEnriched, _ := fetchPostFoodsFormFromDb(page.PostForm.Food.Id)
 
-		formEnriched.ResultStatus = status
-		formEnriched.ResultMessage = "Успешно сохранено!"
+		// formEnriched.ResultStatus = status
+		// formEnriched.ResultMessage = "Успешно сохранено!"
+		page.PostForm.Status.Alias = status
+		page.PostForm.Status.Message =  "Успешно сохранено!"
 
 		page.PostForm = formEnriched
 	}
