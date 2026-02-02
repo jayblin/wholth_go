@@ -4,7 +4,7 @@
         type="checkbox"
         name="nutrient"
         value="{{.Id}}"
-        oninput="disableElements(event,'nutrient_{{.Id}}')"
+        oninput="disableSiblings(event)"
         {{if .Checked}}checked{{end}}
     >
     <div {{if gt (len .Title) 22}}title="{{.Title}}"{{end}}>

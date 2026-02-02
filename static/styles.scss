@@ -20,7 +20,6 @@ body {
   display: grid;
   justify-items: center;
   gap: spacing.$sm;
-  font-size: 18px;
   margin: spacing.$sm spacing.$sm;
 
   & * {
@@ -58,7 +57,7 @@ dialog {
 hr {
   border-bottom: 0;
   border-color: color.$primary-d;
-  margin: 0;
+  margin: spacing.$sm 0;
 }
 
 header {
@@ -69,6 +68,8 @@ header {
 }
 
 nav {
+  margin-bottom: spacing.$sm;
+
   menu {
     display: flex;
     gap: spacing.$md;
@@ -134,6 +135,15 @@ button, .button {
   // }
 }
 
+body, textarea, label, select, input, span, p, legend, pre, button {
+  font-size: 1rem;
+  font-family: tahoma, verdana, sans-serif;
+}
+
+// textarea {
+//   font-size: 16px;
+// }
+
 textarea, input {
   background-color: color.$primary-a;
   border: 1px solid color.$primary-c;
@@ -144,6 +154,7 @@ input {
   // border: 2px dotted color.$primary-c;
   // border: none;
   // outline: 1px solid color.$primary-c;
+  // font-size: 1em;
 
   &:disabled {
     background-color: unset;
@@ -174,20 +185,6 @@ input {
   &[type="checkbox"] {
     margin: 0px;
   }
-
-  &.span {
-    border: none;
-    outline: none;
-    // background: unset !important;
-    color: inherit;
-    padding: 0;
-    height: fit-content;
-    min-height: unset;
-    font-size: 1rem;
-    text-overflow: ellipsis;
-    overflow: hidden;
-    max-width: fit-content;
-  }
 }
 
 form {
@@ -200,13 +197,13 @@ form {
   }
 
   h2 {
-      font-size: 1em;
+      // font-size: 1em;
   }
 
   .controls {
     overflow: hidden;
     position: sticky;
-    bottom: 0;
+    bottom: spacing.$xs;
     display: grid;
     gap: spacing.$sm;
     backdrop-filter: blur(5px);
@@ -243,7 +240,7 @@ legend {
 }
 
 pre {
-  font-size: 0.8em;
+  // font-size: 0.8em;
   margin: 0px;
 }
 
@@ -403,7 +400,7 @@ td {
     max-width: 30ch;
 
     h2 {
-      font-size: 1.2em;
+      // font-size: 1.2em;
     }
 
     // li {

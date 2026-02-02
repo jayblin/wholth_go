@@ -4,7 +4,7 @@
         type="checkbox"
         name="ingredient"
         value="{{.FoodId}}"
-        oninput="disableElements(event,'ingredient_{{.FoodId}}_mass','ingredient_{{.FoodId}}_id')"
+        oninput="disableSiblings(event)"
         {{if .Checked}}checked{{end}}
     >
     <div>
