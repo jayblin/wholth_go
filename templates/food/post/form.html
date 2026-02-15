@@ -9,7 +9,6 @@
     method="post"
     action="/food#food-post-form"
     target="htmz"
-    class="status {{.PostForm.ResultStatus}}"
     onsubmit="loaderInstall()"
 >
     <header>
@@ -18,7 +17,9 @@
         <h2 style="--idx: 2;"><a href="#ingredient-search">Ингредиенты</a></h2>
         <h2 style="--idx: 3;"><a href="#nutrient-search">Нутриенты</a></h2>
     </header>
-    <fieldset id="basics">
+    <fieldset
+        id="basics"
+    >
         <legend>Инфа</legend>
         <label>
             Название
@@ -26,11 +27,20 @@
         </label>
         <input type="hidden" name="food_id" value="{{.PostForm.Food.Id}}" >
     </fieldset>
-    <fieldset id="recipe">
+    <fieldset
+        id="recipe"
+        {{if ne "" .PostForm.RecipeStep.Status.Alias}}
+        class="status {{.PostForm.RecipeStep.Status.Alias}}"
+        {{end}}
+    >
         <legend>Рецепт</legend>
         <label style="display: grid">
             Шаги
-            <textarea name="recipe_step_description" maxlength="5120" rows="10">{{.PostForm.RecipeStep.Description}}</textarea>
+            <textarea
+                name="recipe_step_description"
+                maxlength="5120"
+                rows="10"
+            >{{.PostForm.RecipeStep.Description}}</textarea>
         </label>
         <label>
             Сколько времени займёт
@@ -42,14 +52,19 @@
                 value="{{.PostForm.RecipeStep.Time}}"
             >
         </label>
-            <input
-                type="hidden"
-                name="recipe_step_id"
-                value="{{.PostForm.RecipeStep.Id}}"
-            >
+        {{if ne "" .PostForm.RecipeStep.Status.Message}}
+        <span>{{.PostForm.RecipeStep.Status.Message}}</span>
+        {{end}}
+        <input
+            type="hidden"
+            name="recipe_step_id"
+            value="{{.PostForm.RecipeStep.Id}}"
+        >
     </fieldset>
     <fieldset id="ingredient-search">
-        <legend>Ингредиенты</legend>
+        <legend>Ингредиенты
+            - {{len .PostForm.Ingredients.Values}}шт.
+            {{if ne "" .PostForm.Food.IngredientsMass}} - {{.PostForm.Food.IngredientsMass}}г.{{end}}</legend>
         <ul class="suggestion_list">
         {{range .PostForm.Ingredients.Values}}
             {{template "ingredient_list_item" .}}
@@ -59,7 +74,7 @@
         {{template "search" .PostForm.Ingredients}}
     </fieldset>
     <fieldset id="nutrient-search">
-        <legend>Нутриенты</legend>
+        <legend>Нутриенты - {{len .PostForm.Nutrients.Values}}шт.</legend>
         <ul class="suggestion_list">
             {{range .PostForm.Nutrients.Values}}
                 {{template "nutrient_list_item" .}}
@@ -70,8 +85,8 @@
     </fieldset>
     <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" >
     <div class="controls">
-        {{ if ne "" .PostForm.ResultMessage }}
-            <output class="status {{.PostForm.ResultStatus}}">{{.PostForm.ResultMessage}}</output>
+        {{ if ne "" .PostForm.Status.Message }}
+            <output class="status {{.PostForm.Status.Alias}}">{{.PostForm.Status.Message}}</output>
         {{end}}
         <button class="submit" type="submit" title="Сохранить">&#10003;</button>
     </div>

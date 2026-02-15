@@ -93,3 +93,13 @@ func SetAllowRegistration(val bool) {
 func GetAllowRegistration() bool {
 	return G_allowRegistration
 }
+
+var G_version string
+
+func SetVersion(val string) {
+	G_version = val
+}
+
+func GetVersion() string {
+	return G_version
+}

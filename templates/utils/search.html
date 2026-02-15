@@ -40,7 +40,7 @@
         placeholder="Поиск"
         form="{{.EntityAlias}}-search-form"
         value="{{.Q}}"
-        onchange="searchOnChange(event)"
+        oninput="searchOnInput(event)"
     >
     <button
         name="submit_btn"

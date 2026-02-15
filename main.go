@@ -4,10 +4,14 @@ package main
 import "C"
 
 import (
+	"compress/gzip"
 	"fmt"
+	"io"
 	"log"
 	"net/http"
 	"os"
+	"strings"
+
 	// "crypto/tls"
 	// "crypto/x509"
 	// "io"
@@ -40,6 +44,31 @@ func palette(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+type gzipResponseWriter struct {
+	io.Writer
+	http.ResponseWriter
+}
+
+func (w gzipResponseWriter) Write(b []byte) (int, error) {
+	return w.Writer.Write(b)
+}
+
+func gzipMiddleware(next http.Handler) http.Handler {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
+		if !strings.Contains(r.Header.Get("Accept-Encoding"), "gzip") {
+			next.ServeHTTP(w, r)
+			return
+		}
+
+		w.Header().Set("Content-Encoding", "gzip")
+		gz := gzip.NewWriter(w)
+		defer gz.Close()
+		gzr := gzipResponseWriter{Writer: gz, ResponseWriter: w}
+
+		next.ServeHTTP(gzr, r)
+	})
+}
+
 func main() {
 	fmt.Println("Starting up...")
 
@@ -53,6 +82,7 @@ func main() {
 	secret.SetDomain(os.Getenv("DOMAIN"))
 	secret.SetUseTemplateCache("" != os.Getenv("USE_TEMPLATE_CACHE"))
 	secret.SetAllowRegistration("1" == os.Getenv("ALLOW_REGISTRATION"))
+	secret.SetVersion(os.Getenv("VERSION"))
 	port := os.Getenv("PORT")
 
 	logger.Info("ENV ready")
@@ -77,59 +107,69 @@ func main() {
 	http.HandleFunc("GET /palette", palette)
 	mux.Handle(
 		"GET /authenticate",
-		session.SessionMiddleware(
-			session.CsrfTokenGeneratorMiddleware(
-				http.HandlerFunc(auth.HandleAuthentication))))
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenGeneratorMiddleware(
+					http.HandlerFunc(auth.HandleAuthentication)))))
 	mux.Handle(
 		"POST /register",
-		session.SessionMiddleware(
-			session.CsrfTokenValidatorMiddleware(
-				session.CsrfTokenGeneratorMiddleware(
-					http.HandlerFunc(auth.HandleRegistration)))))
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenValidatorMiddleware(
+					session.CsrfTokenGeneratorMiddleware(
+						http.HandlerFunc(auth.HandleRegistration))))))
 	mux.Handle(
 		"POST /login",
-		session.SessionMiddleware(
-			session.CsrfTokenValidatorMiddleware(
-				session.CsrfTokenGeneratorMiddleware(
-					http.HandlerFunc(auth.HandleLogin)))))
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenValidatorMiddleware(
+					session.CsrfTokenGeneratorMiddleware(
+						http.HandlerFunc(auth.HandleLogin))))))
 	mux.Handle(
 		"GET /ingredient",
-		session.SessionMiddleware(
-			http.HandlerFunc(ingredient.ListIngredients)))
+		gzipMiddleware(
+			session.SessionMiddleware(
+				http.HandlerFunc(ingredient.ListIngredients))))
 	mux.Handle(
 		"GET /nutrient",
-		session.SessionMiddleware(
-			http.HandlerFunc(nutrient.ListNutrients)))
+		gzipMiddleware(
+			session.SessionMiddleware(
+				http.HandlerFunc(nutrient.ListNutrients))))
 	mux.Handle(
 		"GET /consumption_log",
-		session.SessionMiddleware(
-			session.CsrfTokenGeneratorMiddleware(
-				auth.AuthenticationMiddleware(
-					http.HandlerFunc(consumption_log.ListConsumptionLogs)))))
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenGeneratorMiddleware(
+					auth.AuthenticationMiddleware(
+						http.HandlerFunc(consumption_log.ListConsumptionLogs))))))
 	mux.Handle(
 		"POST /consumption_log",
-		session.SessionMiddleware(
-			session.CsrfTokenValidatorMiddleware(
-				session.CsrfTokenGeneratorMiddleware(
-					auth.AuthenticationMiddleware(
-						http.HandlerFunc(consumption_log.PostConsumptionLog))))))
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenValidatorMiddleware(
+					session.CsrfTokenGeneratorMiddleware(
+						auth.AuthenticationMiddleware(
+							http.HandlerFunc(consumption_log.PostConsumptionLog)))))))
 	mux.Handle(
 		"GET /food",
-		session.SessionMiddleware(
-			session.CsrfTokenGeneratorMiddleware(
-				http.HandlerFunc(food.ListFoods))))
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenGeneratorMiddleware(
+					http.HandlerFunc(food.ListFoods)))))
 	mux.Handle(
 		"GET /food/{id}",
-		session.SessionMiddleware(
-			session.CsrfTokenGeneratorMiddleware(
-				http.HandlerFunc(food.GetFoodById))))
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenGeneratorMiddleware(
+					http.HandlerFunc(food.GetFoodById)))))
 	mux.Handle(
 		"POST /food",
-		session.SessionMiddleware(
-			session.CsrfTokenValidatorMiddleware(
-				session.CsrfTokenGeneratorMiddleware(
-					auth.AuthenticationMiddleware(
-						http.HandlerFunc(food.PostFood))))))
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenValidatorMiddleware(
+					session.CsrfTokenGeneratorMiddleware(
+						auth.AuthenticationMiddleware(
+							http.HandlerFunc(food.PostFood)))))))
 
 	logger.Info("Routes ready")
 

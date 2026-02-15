@@ -40,6 +40,11 @@ function htmzReplaceElements(event) {
         if (!input.dataset.skip_enabler) {
             input.disabled = false;
         }
+
+        if ("search" === input.type) {
+            input.focus();
+            break;
+        }
     }
 
     // // container.previousElementSibling?.scrollIntoView({
@@ -97,10 +102,16 @@ function paginateDown(event) {
     paginate(event);
 }
 
-function disableElements(event, ...names) {
-    for (const n of names) {
-        event.target.form.elements[n].disabled = !event.target.checked
-    }
+// function disableElements(event, ...names) {
+//     for (const n of names) {
+//         event.target.form.elements[n].disabled = !event.target.checked
+//     }
+// }
+
+function disableSiblings(event) {
+    event.target.parentElement.querySelectorAll("input").forEach(
+        (e) => e !== event.target && (e.disabled = !event.target.checked)
+    );
 }
 
 function searchOnSubmit(event) {
@@ -119,8 +130,10 @@ function searchOnSubmit(event) {
     }
 }
 
-function searchOnChange(event) {
-    event.target.form.submit_btn.disabled = !(event.target.value.length > 0);
+function searchOnInput(event) {
+    debounce(() => 
+        event.target.form.submit_btn.disabled = !(event.target.value.length > 0)
+    );
 }
 
 function searchOnClick(event) {
