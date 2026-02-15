@@ -116,17 +116,19 @@ func SaveConsumptionLog(form *ConsumptionLogPostForm, userId string) (string, er
 	wlog.consumed_at = toStrView(form.ConsumedAt)
 	wlog.mass = toStrView(form.Mass)
 
-	var err = C.wholth_Error_OK
-
 	if "" != form.Id {
 		wlog.id = toStrView(form.Id)
-		err = C.wholth_em_consumption_log_update(&wlog, &wuser, scratch)
-	} else {
-		err = C.wholth_em_consumption_log_insert(&wlog, &wuser, scratch)
-	}
+		err := C.wholth_em_consumption_log_update(&wlog, &wuser, scratch)
 
-	if !C.wholth_error_ok(&err) {
-		return "error", errors.New("Ошибка сохранения лога: " + toStr(err.message))
+		if !C.wholth_error_ok(&err) {
+			return "error", errors.New("Ошибка сохранения лога: " + toStr(err.message))
+		}
+	} else {
+		err := C.wholth_em_consumption_log_insert(&wlog, &wuser, scratch)
+
+		if !C.wholth_error_ok(&err) {
+			return "error", errors.New("Ошибка сохранения лога: " + toStr(err.message))
+		}
 	}
 
 	form.Id = toStr(wlog.id)

@@ -81,17 +81,20 @@ func saveBasics(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 	// 	food.description = svs[2]
 	// }
 
-	var err = C.wholth_Error_OK
-
 	if "" != form.Food.Id {
-		err = C.wholth_em_food_update(&food, toStrView(DEFAULT_LOCALE_ID), buf)
+		err := C.wholth_em_food_update(&food, toStrView(DEFAULT_LOCALE_ID), buf)
+
+		if !C.wholth_error_ok(&err) {
+			return errors.New("Ошибка сохранения общей инф-ии: " + toStr(err.message))
+		}
 	} else {
-		err = C.wholth_em_food_insert(&food, toStrView(DEFAULT_LOCALE_ID), buf)
+		err := C.wholth_em_food_insert(&food, toStrView(DEFAULT_LOCALE_ID), buf)
+
+		if !C.wholth_error_ok(&err) {
+			return errors.New("Ошибка сохранения общей инф-ии: " + toStr(err.message))
+		}
 	}
 
-	if !C.wholth_error_ok(&err) {
-		return errors.New("Ошибка сохранения общей инф-ии: " + toStr(err.message))
-	}
 
 	// copying food.id from scratch-buffer, cuz scratch may be modified!
 	form.Food.Id = toStr(food.id)
@@ -134,19 +137,24 @@ func saveSteps(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 	step.description = toStrView(form.RecipeStep.Description)
 	step.time = toStrView(form.RecipeStep.Time)
 
-	var err = C.wholth_Error_OK
-
 	if "" != form.RecipeStep.Id {
-		err = C.wholth_em_recipe_step_update(&step, buf)
+		err := C.wholth_em_recipe_step_update(&step, buf)
+
+		if !C.wholth_error_ok(&err) {
+			form.RecipeStep.Status.Alias = "error"
+			form.RecipeStep.Status.Message = toStr(err.message)
+			return errors.New("Не удалось сохранить рецепт!")
+		}
 	} else if "" != strings.Trim(form.RecipeStep.Description, " ") {
-		err = C.wholth_em_recipe_step_insert(&step, &food, buf)
+		err := C.wholth_em_recipe_step_insert(&step, &food, buf)
+
+		if !C.wholth_error_ok(&err) {
+			form.RecipeStep.Status.Alias = "error"
+			form.RecipeStep.Status.Message = toStr(err.message)
+			return errors.New("Не удалось сохранить рецепт!")
+		}
 	}
 
-	if !C.wholth_error_ok(&err) {
-		form.RecipeStep.Status.Alias = "error"
-		form.RecipeStep.Status.Message = toStr(err.message)
-		return errors.New("Не удалось сохранить рецепт!")
-	}
 
 	form.RecipeStep.Id = toStr(step.id)
 
@@ -168,20 +176,26 @@ func saveIngredients(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 		ing.food_id = toStrView(form.Ingredients.Values[i].FoodId)
 		ing.canonical_mass_g = toStrView(form.Ingredients.Values[i].CanonicalMass)
 
-		var err = C.wholth_Error_OK
-
 		if "" != form.Ingredients.Values[i].Id {
-			err = C.wholth_em_ingredient_update(&ing, &step, buf)
-		} else {
-			err = C.wholth_em_ingredient_insert(&ing, &step, buf)
-		}
+			err := C.wholth_em_ingredient_update(&ing, &step, buf)
 
-		if !C.wholth_error_ok(&err) {
-			form.Ingredients.Values[i].Status.Alias = "error"
-			form.Ingredients.Values[i].Status.Message = toStr(err.message)
-			shouldRecalcNutrients = false
+			if !C.wholth_error_ok(&err) {
+				form.Ingredients.Values[i].Status.Alias = "error"
+				form.Ingredients.Values[i].Status.Message = toStr(err.message)
+				shouldRecalcNutrients = false
+			} else {
+				form.Ingredients.Values[i].Id = toStr(ing.id)
+			}
 		} else {
-			form.Ingredients.Values[i].Id = toStr(ing.id)
+			err := C.wholth_em_ingredient_insert(&ing, &step, buf)
+
+			if !C.wholth_error_ok(&err) {
+				form.Ingredients.Values[i].Status.Alias = "error"
+				form.Ingredients.Values[i].Status.Message = toStr(err.message)
+				shouldRecalcNutrients = false
+			} else {
+				form.Ingredients.Values[i].Id = toStr(ing.id)
+			}
 		}
 	}
 

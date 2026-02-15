@@ -11,13 +11,13 @@ minify-js:
 		> static/main.min.js
 
 env-set-version:
-	sed -i '' -E "s/VERSION=.{0,}$$/VERSION=$(shell git log --format=format:'%H' | head -n 1)/" .env
+	sed -i '' -E -e "s/VERSION=.{0,}$$/VERSION=$(shell git log --format=format:'%H' | head -n 1)/" ./.env
 
 build: update-dependencies env-set-version minify-js
 	go build
 
 run:
-	env $(shell grep -v '^#' .env | xargs) go run . < .secrets
+	env $(shell grep -v '^#' .env | xargs) ./wholth_go < .secrets
 
 css-palette:
 	sass -s compressed static/palette.scss static/palette.css
