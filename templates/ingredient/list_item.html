@@ -15,7 +15,7 @@
                 type="number"
                 name="ingredient_{{.FoodId}}_mass"
                 min="0"
-                value="{{.CanonicalMass}}"
+                value="{{if eq "" .IngredientsMass}}{{.CanonicalMass}}{{else}}{{.IngredientsMass}}{{end}}"
                 {{if not .Checked}}disabled="1"{{end}}
             >
         </label>

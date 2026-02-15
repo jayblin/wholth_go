@@ -13,13 +13,14 @@ import (
 
 type Ingredient struct {
 	util.Status
-	Id            string
-	FoodId        string
-	Title         string
-	TopNutrient   string
-	PrepTime      string
-	CanonicalMass string
-	Checked       bool
+	Id              string
+	FoodId          string
+	Title           string
+	TopNutrient     string
+	PrepTime        string
+	CanonicalMass   string
+	IngredientsMass string
+	Checked         bool
 }
 
 func (e Ingredient) EntityAlias() string {
@@ -68,19 +69,17 @@ func (t *IngredientPage) At(i uint64) Ingredient {
 		return Ingredient{}
 	}
 
-	food := *ptr
+	ing := *ptr
 
 	result := Ingredient{
-		Id:            toStr(food.id),
-		FoodId:        toStr(food.food_id),
-		Title:         toStr(food.food_title),
-		TopNutrient:   "",
-		PrepTime:      "",
-		CanonicalMass: toStr(food.canonical_mass_g),
-		// Status: util.Status{
-		// 	Alias: "success",
-		// 	Message: "AN_ERROR",
-		// },
+		Id:              toStr(ing.id),
+		FoodId:          toStr(ing.food_id),
+		Title:           toStr(ing.food_title),
+		TopNutrient:     "",
+		PrepTime:        "",
+		CanonicalMass:   toStr(ing.canonical_mass_g),
+		IngredientsMass: "",
+		// IngredientsMass: toStr(ing.ingredients_mass_g),
 	}
 
 	if !cache.Has("g_foods", result.FoodId) {

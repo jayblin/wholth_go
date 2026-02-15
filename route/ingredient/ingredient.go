@@ -56,6 +56,7 @@ func IngredientsFromRequest(query url.Values) []wholth.Ingredient {
 			ing.Title = food.Title
 			ing.TopNutrient = food.TopNutrient
 			ing.PrepTime = food.PrepTime
+			ing.IngredientsMass = food.IngredientsMass
 		}
 
 		values = append(values, ing)
@@ -116,12 +117,13 @@ func ListIngredients(w http.ResponseWriter, r *http.Request) {
 		}
 
 		values = append(values, wholth.Ingredient{
-			Id:            "",
-			FoodId:        food.Id,
-			Title:         food.Title,
-			TopNutrient:   food.TopNutrient,
-			PrepTime:      food.PrepTime,
-			CanonicalMass: "",
+			Id:              "",
+			FoodId:          food.Id,
+			Title:           food.Title,
+			TopNutrient:     food.TopNutrient,
+			PrepTime:        food.PrepTime,
+			IngredientsMass: food.IngredientsMass,
+			CanonicalMass:   "",
 		})
 	}
 

@@ -62,7 +62,9 @@
         >
     </fieldset>
     <fieldset id="ingredient-search">
-        <legend>Ингредиенты</legend>
+        <legend>Ингредиенты
+            - {{len .PostForm.Ingredients.Values}}шт.
+            {{if ne "" .PostForm.Food.IngredientsMass}} - {{.PostForm.Food.IngredientsMass}}г.{{end}}</legend>
         <ul class="suggestion_list">
         {{range .PostForm.Ingredients.Values}}
             {{template "ingredient_list_item" .}}
@@ -72,7 +74,7 @@
         {{template "search" .PostForm.Ingredients}}
     </fieldset>
     <fieldset id="nutrient-search">
-        <legend>Нутриенты</legend>
+        <legend>Нутриенты - {{len .PostForm.Nutrients.Values}}шт.</legend>
         <ul class="suggestion_list">
             {{range .PostForm.Nutrients.Values}}
                 {{template "nutrient_list_item" .}}

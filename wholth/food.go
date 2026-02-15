@@ -11,10 +11,11 @@ import (
 )
 
 type Food struct {
-	Id          string
-	Title       string
-	PrepTime    string
-	TopNutrient string
+	Id              string
+	Title           string
+	PrepTime        string
+	TopNutrient     string
+	IngredientsMass string
 }
 
 func (f Food) EntityAlias() string {
@@ -74,6 +75,7 @@ func (t *FoodPage) At(i uint64) Food {
 		Title:       toStr(val.title),
 		PrepTime:    toStr(val.preparation_time),
 		TopNutrient: toStr(val.top_nutrient),
+		IngredientsMass: toStr(val.ingredients_mass_g),
 	}
 
 	cache.Set("g_foods", result.Id, result)
