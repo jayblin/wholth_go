@@ -1,3 +1,5 @@
+"use strict";
+
 function windowQueryParameterSet(key, value) {
     const query = new URLSearchParams(window.location.search);
 
@@ -168,6 +170,58 @@ function loaderUninstall(event) {
         loader.style.display = "none";
     }
 }
+
+// Утилита для расчёта веса ингредиентов в порции.
+const portionSize = {
+    _inited: false,
+    _numbers: [],
+    _ingredientsMass: 0,
+
+    init(ingredientsMass) {
+        if (this.inited) {
+            return;
+        }
+
+        this._inited = true;
+        this._numbers = document.querySelectorAll(
+            `#portion_items input[type="number"]`
+        );
+        this._ingredientsMass = Number(ingredientsMass);
+    },
+
+    handleInput(event) {
+        const dialog = event.currentTarget;
+        switch(event.target.name) {
+            case "portion_mass_range": {
+                const portionMass = this._ingredientsMass * event.target.value;
+                dialog.children.portion_mass_number.value = portionMass.toFixed(0);
+                this.updateNumbers(portionMass);
+                return;
+            }
+            case "portion_mass_number": {
+                const portionMass = Number(event.target.value); 
+                dialog.children.portion_mass_range.value = portionMass / this._ingredientsMass;
+                this.updateNumbers(portionMass);
+                return;
+            }
+        }
+
+        if (event.target.dataset.initial) {
+            const portionMass = this._ingredientsMass * Number(event.target.value) / Number(event.target.dataset.initial);
+
+            dialog.children.portion_mass_number.value = portionMass.toFixed(0);
+            dialog.children.portion_mass_range.value = portionMass / this._ingredientsMass;
+            this.updateNumbers(portionMass);
+        }
+    },
+
+    updateNumbers(portionMass) {
+        this._numbers.forEach(n => {
+            n.value = (Number(n.dataset.initial)/this._ingredientsMass * portionMass)
+                .toFixed(0);
+        });
+    },
+};
 
 window.addEventListener("pageshow", () => {
     loaderUninstall();

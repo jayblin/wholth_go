@@ -62,6 +62,62 @@
         >
     </fieldset>
     <fieldset id="ingredient-search">
+        {{if ne "" .PostForm.Food.IngredientsMass}}
+        <button
+            form="none"
+            onclick="
+            portionSize.init({{.PostForm.Food.IngredientsMass}});
+            portion_size_modal.showModal()"
+        >Рассчитать порцию</button>
+        <dialog
+            id="portion_size_modal"
+            oninput="portionSize.handleInput(event)"
+        >
+            <button class="close" onclick="portion_size_modal.close()" title="Закрыть">&#10007;</button>
+            <input
+                name="portion_mass_number"
+                type="number"
+                value="{{.PostForm.Food.IngredientsMass}}"
+                autocomplete="off"
+            >
+            <input
+                name="portion_mass_range"
+                type="range"
+                min="0"
+                max="1"
+                step="0.001"
+                value="1"
+                autocomplete="off"
+                list="portion_mass_markers"
+            >
+            <datalist id="portion_mass_markers">
+                <option value="0"></option>
+                <option value="0.167"></option>
+                <option value="0.333"></option>
+                <option value="0.5"></option>
+                <option value="0.667"></option>
+                <option value="0.833"></option>
+                <option value="1"></option>
+            </datalist>
+            <table id="portion_items">
+                <thead>
+                    <th>Название</th>
+                    <th>Масса, г.</th>
+                </thead>
+                {{range .PostForm.Ingredients.Values}}
+                <tr>
+                    <td>{{.Title}}</td>
+                    <td><input
+                        type="number"
+                        value="{{.CanonicalMass}}"
+                        data-initial="{{.CanonicalMass}}"
+                        autocomplete="off"
+                    ></td>
+                </tr>
+                {{end}}
+            </table>
+        </dialog>
+        {{end}}
         <legend>Ингредиенты
             - {{len .PostForm.Ingredients.Values}}шт.
             {{if ne "" .PostForm.Food.IngredientsMass}} - {{.PostForm.Food.IngredientsMass}}г.{{end}}</legend>

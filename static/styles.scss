@@ -47,6 +47,7 @@ dialog {
     background-color: color.$tertiary-a;
     color: color.$secondary-e;
     padding: spacing.$sm spacing.$sm;
+    gap: spacing.$sm;
 
     button.close {
       justify-self: end;
@@ -534,4 +535,10 @@ td {
   animation-timing-function: linear;
   animation-iteration-count: infinite;
   animation-direction: alternate;
+}
+
+#portion_items {
+  input {
+    max-width: 10ch;
+  }
 }
