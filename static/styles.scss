@@ -54,6 +54,10 @@ dialog {
   }
 }
 
+main {
+  overflow: hidden;
+}
+
 hr {
   border-bottom: 0;
   border-color: color.$primary-d;
@@ -284,6 +288,9 @@ td {
   background: var(--status-color-bg);
   border-radius: spacing.$xs;
 
+  &.nooutline {
+    outline: unset !important;
+  }
   &.success {
     --status-color-fg: #{color.$primary-e};
     --status-color-bg: #{color.$primary-b};
@@ -490,6 +497,7 @@ td {
 }
 
 #consumption_log-get-form {
+  overflow-x: scroll;
 
   > div:first-child {
     display: flex;

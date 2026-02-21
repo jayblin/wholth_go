@@ -36,16 +36,32 @@
         <thead>
             <th>Пища</th>
             <th>Масса</th>
+            <th>Калорий</th>
             <th>Когда?</th>
         </thead>
         {{range $date := .Groups}}
         <tr>
-            <td colspan="3">{{$date}}</td>
+            <td colspan="2">{{$date}}</td>
+            <td
+                colspan="2"
+                {{if eq 0.0 (index $.Map $date).NutrientAmountSum}}
+                class="status nooutline error"
+                {{end}}
+            >{{(index $.Map $date).NutrientAmountSum}}</td>
         </tr>
-        {{range (index $.Values $date)}}
+        {{range (index $.Map $date).Values}}
         <tr>
-            <td>{{.FoodTitle}}</td>
+            <td><a href="/food/{{.FoodId}}" target="_blank">{{.FoodTitle}}</a></td>
             <td>{{.Mass}}</td>
+            {{if eq 0.0 .NutrientAmount}}
+            <td class="status nooutline error">
+                <a href="/food/{{.FoodId}}#nutrient-search" target="_blank">
+                    У пищи не указаны калории! Нажми, чтобы указать!
+                </a>
+            </td>
+            {{else}}
+            <td>{{.NutrientAmount}}</td>
+            {{end}}
             <td>{{.ConsumedAt}}</td>
         </tr>
         {{end}}

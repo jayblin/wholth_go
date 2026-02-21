@@ -16,12 +16,17 @@ type DummyFoodList struct {
 	util.PaginatableList[wholth.Food]
 }
 
+type MapElement struct {
+	NutrientAmountSum float64
+	Values            []wholth.ConsumptionLog
+}
+
 type ListConsumptionLogsPage struct {
 	route.HtmlPage
 	util.Pagination
 	util.EntityAliasAware[wholth.ConsumptionLog]
-	Groups        []string
-	Values        map[string][]wholth.ConsumptionLog
+	Groups []string
+	Map map[string]MapElement
 	Q             string
 	PostForm      wholth.ConsumptionLogPostForm
 	ConsumedFrom  string
@@ -69,7 +74,7 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 
 	size := page.Size()
 
-	mapped := make(map[string][]wholth.ConsumptionLog)
+	mapped := make(map[string]MapElement)
 	groups := make([]string, 0)
 
 	if size > 0 {
@@ -80,18 +85,27 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 			// 1234567890123456789
 			// 2025-12-14T23:48:53
 			grp := value.ConsumedAt[0:10]
-			values, ok := mapped[grp]
 
 			value.ConsumedAt = value.ConsumedAt[11:]
 
-			if ok {
-				mapped[grp] = append(values, value)
-			} else {
-				values = make([]wholth.ConsumptionLog, 1)
-				values[0] = value
-				mapped[grp] = values
+			entry, ok := mapped[grp]
+
+			if !ok {
+				entry = MapElement{
+					Values: make([]wholth.ConsumptionLog, 0),
+					NutrientAmountSum: 0,
+				}
+				mapped[grp] = entry
 				groups = append(groups, grp)
 			}
+
+			if 0.0 != value.NutrientAmount {
+				entry.NutrientAmountSum += value.NutrientAmount
+			}
+
+			entry.Values = append(entry.Values, value)
+
+			mapped[grp] = entry
 		}
 	}
 
@@ -111,7 +125,7 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 		},
 		ConsumedFrom: from.Format(format),
 		ConsumedTo:   to.Format(format),
-		Values:       mapped,
+		Map:          mapped,
 		Pagination:   page.Pagination(),
 	}
 	htmlPage.Meta.Title = "Логи"

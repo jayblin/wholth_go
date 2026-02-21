@@ -6,16 +6,18 @@ package wholth
 import "C"
 import (
 	"errors"
+	"strconv"
 	"time"
 	"unsafe"
 )
 
 type ConsumptionLog struct {
-	Id         string
-	FoodId     string
-	Mass       string
-	ConsumedAt string
-	FoodTitle  string
+	Id             string
+	FoodId         string
+	Mass           string
+	NutrientAmount float64
+	ConsumedAt     string
+	FoodTitle      string
 }
 
 func (p ConsumptionLog) EntityAlias() string {
@@ -67,12 +69,19 @@ func (t *ConsumptionLogPage) At(i uint64) ConsumptionLog {
 
 	val := *ptr
 
+	topNut, topNutErr := strconv.ParseFloat(toStr(val.nutrient_amount), 64)
+
+	if nil != topNutErr {
+		topNut = 0.0
+	}
+
 	result := ConsumptionLog{
-		Id:         toStr(val.id),
-		FoodId:     toStr(val.food_id),
-		Mass:       toStr(val.mass),
-		ConsumedAt: toStr(val.consumed_at),
-		FoodTitle:  toStr(val.food_title),
+		Id:             toStr(val.id),
+		FoodId:         toStr(val.food_id),
+		Mass:           toStr(val.mass),
+		NutrientAmount: topNut,
+		ConsumedAt:     toStr(val.consumed_at),
+		FoodTitle:      toStr(val.food_title),
 	}
 
 	return result
