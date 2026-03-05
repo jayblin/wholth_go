@@ -8,11 +8,12 @@
         {{if .Checked}}checked{{end}}
     >
     <div>
-        <span {{if gt (len .Title) 22}}title="{{.Title}}"{{end}}>{{.Title}}</span>
+        <span>{{.Title}}</span>
         <label class="mass">
             Вес, г.
             <input
                 type="number"
+                inputmode="numeric"
                 name="ingredient_{{.FoodId}}_mass"
                 min="0"
                 value="{{if eq "" .IngredientsMass}}{{.CanonicalMass}}{{else}}{{.IngredientsMass}}{{end}}"

@@ -11,10 +11,16 @@ minify-js:
 		> static/main.min.js
 
 env-set-version:
-	sed -i '' -E "s/VERSION=.{0,}$$/VERSION=$(shell git log --format=format:'%H' | head -n 1)/" .env
+ifeq (,$(findstring darwin, $(shell uname -s)))
+	sed -i '' -E -e "s/VERSION=.{0,}$$/VERSION=$(shell git log --format=format:'%H' | head -n 1)/" .env
+else
+	sed -i -E -e "s/VERSION=.{0,}$$/VERSION=$(shell git log --format=format:'%H' | head -n 1)/" .env
+endif
 
-build: update-dependencies env-set-version minify-js
+go-build:
 	go build
+
+build: update-dependencies env-set-version minify-js go-build
 
 run:
 	env $(shell grep -v '^#' .env | xargs) go run . < .secrets

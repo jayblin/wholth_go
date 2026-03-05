@@ -47,7 +47,7 @@
         type="submit"
         form="{{.EntityAlias}}-search-form"
         onclick="searchOnClick(event)"
-        disabled
+        {{if eq "" .Q}}disabled{{end}}
         data-skip_enabler="1"
     >&#8981;</button>
     <button

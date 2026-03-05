@@ -13,7 +13,14 @@
         <legend>Инфа</legend>
         <label>
             Вес, г.
-            <input name="mass" type="number" min="1" value="{{.PostForm.Mass}}" required>
+            <input
+                name="mass"
+                type="number"
+                inputmode="numeric"
+                min="1"
+                value="{{.PostForm.Mass}}"
+                required
+            >
         </label>
         <label>
             Когда поглащена

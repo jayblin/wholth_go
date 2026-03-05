@@ -74,14 +74,14 @@ type ListIngredientsPage struct {
 func ListIngredients(w http.ResponseWriter, r *http.Request) {
 	// sess, _ := session.Get(r)
 	query := r.URL.Query()
-	titles_raw := query.Get("q")
+	titles_raw := util.ModifyQueryForSearch(query.Get("q"))
 
 	if "" == titles_raw {
 		w.WriteHeader(http.StatusBadRequest)
 		return
 	}
 
-	page, pageErr := wholth.FoodPageNew(10)
+	page, pageErr := wholth.FoodPageNew(50)
 
 	defer page.Close()
 

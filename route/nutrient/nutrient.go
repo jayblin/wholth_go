@@ -67,7 +67,7 @@ type ListFoodNutrientsPage struct {
 func ListNutrients(w http.ResponseWriter, r *http.Request) {
 	// sess, _ := session.Get(r)
 	query := r.URL.Query()
-	titles_raw := query.Get("q")
+	titles_raw := util.ModifyQueryForSearch(query.Get("q"))
 
 	if "" == titles_raw {
 		w.WriteHeader(http.StatusBadRequest)

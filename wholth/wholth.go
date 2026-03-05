@@ -3,11 +3,15 @@ package wholth
 // #cgo CFLAGS: -I${SRCDIR}/../wholth_lib/include
 // #define WHOLTH_GO_INIT
 // #include "wholth/wholth.h"
+// #include "wholth/c/exec_stmt.h"
 import "C"
 
 import (
 	"errors"
-	"strings"
+	"regexp"
+	"runtime"
+	"strconv"
+	"unsafe"
 
 	// "fmt"
 
@@ -46,20 +50,17 @@ func Setup() {
 		logger.Emergency(message)
 		panic(message)
 	}
-
-	C.wholth_app_locale_id(toStrView(DEFAULT_LOCALE_ID))
 }
 
 func SetPasswordEncryptionSecret(secret string) {
 	C.wholth_app_password_encryption_secret(toStrView(secret))
 }
 
-
 type PostFoodsForm struct {
-	Food          Food
-	RecipeStep    RecipeStep
-	Ingredients   util.PaginatableList[Ingredient]
-	Nutrients     util.PaginatableList[FoodNutrient]
+	Food        Food
+	RecipeStep  RecipeStep
+	Ingredients util.PaginatableList[Ingredient]
+	Nutrients   util.PaginatableList[FoodNutrient]
 	// ResultStatus  string
 	// ResultMessage string
 	util.Status
@@ -125,22 +126,60 @@ func saveNutrients(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 	return nil
 }
 
-func saveSteps(buf *C.wholth_Buffer, form *PostFoodsForm) error {
-	food := C.wholth_entity_food_init()
-	food.id = toStrView(form.Food.Id)
+func saveSteps(form *PostFoodsForm) error {
+	pinner := &runtime.Pinner{}
+	defer pinner.Unpin()
 
-	step := C.wholth_entity_recipe_step_init()
-	step.id = toStrView(form.RecipeStep.Id)
-	step.description = toStrView(form.RecipeStep.Description)
-	step.time = toStrView(form.RecipeStep.Time)
+	var resultPtr *C.wholth_exec_stmt_Result = nil
+	defer C.wholth_exec_stmt_Result_del(resultPtr)
+	C.wholth_exec_stmt_Result_new(&resultPtr)
+	pinner.Pin(resultPtr)
+
+	re := regexp.MustCompile(`((\d+)(h|ч)){0,1}((\d+)(m|м)){0,1}((\d+)(s|с)){0,1}`)
+	res := re.FindAllSubmatch([]byte(form.RecipeStep.Time), 1)
+
+	var seconds int64 = 0
+	if nil != res && len(res) == 1 {
+		if len(res[0][2]) > 0 {
+			hour, err := strconv.ParseInt(string(res[0][2]), 10, 64)
+			if nil == err {
+				seconds += hour * 60 * 60
+			}
+		}
+		if len(res[0][5]) > 0 {
+			minute, err := strconv.ParseInt(string(res[0][5]), 10, 64)
+			if nil == err {
+				seconds += minute * 60
+			}
+		}
+		if len(res[0][8]) > 0 {
+			secs, err := strconv.ParseInt(string(res[0][8]), 10, 64)
+			if nil == err {
+				seconds += secs
+			}
+		}
+	}
+	secondsStr := strconv.FormatInt(seconds, 10)
 
 	var err = C.wholth_Error_OK
 
-	if "" != form.RecipeStep.Id {
-		err = C.wholth_em_recipe_step_update(&step, buf)
-	} else if "" != strings.Trim(form.RecipeStep.Description, " ") {
-		err = C.wholth_em_recipe_step_insert(&step, &food, buf)
+	binds := [5]C.wholth_exec_stmt_Bindable{
+		{toStrView(form.Food.Id)},
+		{toStrView(secondsStr)},
+		{toStrView(form.Food.Id)},
+		{toStrView(DEFAULT_LOCALE_ID)},
+		{toStrView(form.RecipeStep.Description)},
 	}
+	b := (*C.wholth_exec_stmt_Bindable)(unsafe.Pointer(&binds[0]))
+	pinner.Pin(b)
+	args := C.wholth_exec_stmt_Args{
+		toStrView("recipe_step_upsert.sql"),
+		5,
+		b,
+	}
+	pinner.Pin(&args)
+
+	err = C.wholth_exec_stmt(&args, resultPtr)
 
 	if !C.wholth_error_ok(&err) {
 		form.RecipeStep.Status.Alias = "error"
@@ -148,7 +187,7 @@ func saveSteps(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 		return errors.New("Не удалось сохранить рецепт!")
 	}
 
-	form.RecipeStep.Id = toStr(step.id)
+	form.RecipeStep.Id = toStr(C.wholth_exec_stmt_Result_at(resultPtr, 0, 0))
 
 	return nil
 }
@@ -213,7 +252,7 @@ func SaveFood(form *PostFoodsForm) (string, error) {
 	err = errors.Join(
 		err,
 		saveNutrients(scratch, form),
-		saveSteps(scratch, form),
+		saveSteps(form),
 		saveIngredients(scratch, form),
 	)
 

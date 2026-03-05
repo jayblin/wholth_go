@@ -7,11 +7,12 @@
         oninput="disableSiblings(event)"
         {{if .Checked}}checked{{end}}
     >
-    <div {{if gt (len .Title) 22}}title="{{.Title}}"{{end}}>
+    <div>
         <span>{{.Title}}</span>
         <input
             name="nutrient_{{.Id}}"
             type="number"
+            inputmode="numeric"
             min="0"
             value="{{.Value}}"
             step="any"

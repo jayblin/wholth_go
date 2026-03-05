@@ -5,7 +5,6 @@ import (
 	"net/http"
 	// "net/url"
 	"strconv"
-	"strings"
 
 	// "net/url"
 	// "slices"
@@ -45,10 +44,10 @@ func ListFoods(w http.ResponseWriter, r *http.Request) {
 	}
 
 	q := r.URL.Query()
-	food_q := q.Get("q")
+	food_q := util.ModifyQueryForSearch(q.Get("q"))
 
 	if "" != food_q {
-		wpage.SetTitle(strings.ToLower(food_q))
+		wpage.SetTitle(food_q)
 	}
 
 	page_number, page_number_err := strconv.Atoi(r.URL.Query().Get("page_number"))
@@ -266,6 +265,32 @@ func GetFoodById(w http.ResponseWriter, r *http.Request) {
 	}
 	page.Meta.Title = form.Food.Title
 	// page.Meta.Description = "Форма алол прикол карбидол"
+
+	route.RenderHtmlTemplates(
+		w,
+		r,
+		page,
+		"templates/index.html",
+
+		"templates/utils/search.html",
+		"templates/utils/paginator.html",
+
+		"templates/food/_id/get/content.html",
+		"templates/food/post/form.html",
+
+		"templates/ingredient/list_item.html",
+		"templates/nutrient/list_item.html",
+	)
+}
+
+func GetRecipeForm(w http.ResponseWriter, r *http.Request) {
+	form := wholth.PostFoodsForm{}
+
+	page := ListFoodsPage{
+		HtmlPage: route.DefaultHtmlPage(r),
+		PostForm: form,
+	}
+	page.Meta.Title = form.Food.Title
 
 	route.RenderHtmlTemplates(
 		w,

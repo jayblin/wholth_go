@@ -30,11 +30,13 @@ func RecipeStepNew() (RecipeStepPage, error) {
 		err = errors.New(toStr(werr.message))
 	}
 
+	C.wholth_pages_recipe_step_locale_id(handle, toStrView(DEFAULT_LOCALE_ID))
+
 	return RecipeStepPage{Page{handle}}, err
 }
 
 func (t *RecipeStepPage) SetId(id string) {
-	C.wholth_pages_recipe_step_recipe_id(t.Handle, toStrView(id))
+       C.wholth_pages_recipe_step_recipe_id(t.Handle, toStrView(id))
 }
 
 func (t *RecipeStepPage) Get() RecipeStep {

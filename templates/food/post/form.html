@@ -47,8 +47,9 @@
             <input
                 name="recipe_step_time"
                 type="text"
-                pattern="(\d+(h|m)\s{0,}){1,}"
-                placeholder="1h30m"
+                pattern="((\d+)(h|ч)){0,1}((\d+)(m|м)){0,1}((\d+)(s|с)){0,1}"
+                placeholder="1ч30м10с"
+                autocomplete="off"
                 value="{{.PostForm.RecipeStep.Time}}"
             >
         </label>
@@ -77,6 +78,7 @@
             <input
                 name="portion_mass_number"
                 type="number"
+                inputmode="numeric"
                 value="{{.PostForm.Food.IngredientsMass}}"
                 autocomplete="off"
             >
@@ -109,6 +111,7 @@
                     <td>{{.Title}}</td>
                     <td><input
                         type="number"
+                        inputmode="numeric"
                         value="{{.CanonicalMass}}"
                         data-initial="{{.CanonicalMass}}"
                         autocomplete="off"

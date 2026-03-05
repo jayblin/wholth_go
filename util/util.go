@@ -1,5 +1,9 @@
 package util
 
+import (
+	"strings"
+)
+
 func ArrayFilter(ss []string, test func(string) bool) (ret []string) {
 	for _, s := range ss {
 		if test(s) {
@@ -37,4 +41,33 @@ type PaginatableList[T AliasableEntity] struct {
 type Status struct {
 	Alias   string
 	Message string
+}
+
+func ModifyQueryForSearch(q string) string {
+	q = strings.ToLower(q)
+
+	if "" == q {
+		return q
+	}
+
+	split := strings.SplitN(q, ",", 20)
+
+	for i, subq := range split {
+		subq = strings.Trim(subq, " \t\v\r\n")
+
+		if "" == subq {
+			continue
+
+		}
+
+		if '*' != subq[len(subq)-1] {
+			split[i] = subq + "*"
+		} else {
+			split[i] = subq
+		}
+	}
+
+	res := strings.Join(split, ",")
+
+	return res
 }

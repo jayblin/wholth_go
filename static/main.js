@@ -38,7 +38,7 @@ function htmzReplaceElements(event) {
         return;
     }
 
-    for(input of container.form.elements ?? []) {
+    for(const input of container.form.elements ?? []) {
         if (!input.dataset.skip_enabler) {
             input.disabled = false;
         }
@@ -125,7 +125,7 @@ function searchOnSubmit(event) {
 
     form.submit();
 
-    for(input of form.elements) {
+    for(const input of form.elements) {
         if (!input.dataset.skip_disabler) {
             input.disabled = true;
         }

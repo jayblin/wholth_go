@@ -157,6 +157,13 @@ func main() {
 				session.CsrfTokenGeneratorMiddleware(
 					http.HandlerFunc(food.ListFoods)))))
 	mux.Handle(
+		"GET /recipe/add",
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenGeneratorMiddleware(
+					http.HandlerFunc(food.GetRecipeForm)))))
+
+	mux.Handle(
 		"GET /food/{id}",
 		gzipMiddleware(
 			session.SessionMiddleware(
