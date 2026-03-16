@@ -126,14 +126,109 @@ func saveNutrients(buf *C.wholth_Buffer, form *PostFoodsForm) error {
 	return nil
 }
 
-func saveSteps(form *PostFoodsForm) error {
-	pinner := &runtime.Pinner{}
-	defer pinner.Unpin()
+type ExecStmtResult struct {
+	Handle        *C.wholth_exec_stmt_Result
+	Pinner        *runtime.Pinner
+	FirstBindable *C.wholth_exec_stmt_Bindable
+	BindableCount uint
+}
 
-	var resultPtr *C.wholth_exec_stmt_Result = nil
-	defer C.wholth_exec_stmt_Result_del(resultPtr)
-	C.wholth_exec_stmt_Result_new(&resultPtr)
-	pinner.Pin(resultPtr)
+func ExecStmtResultNew() (ExecStmtResult, error) {
+	result := ExecStmtResult{
+		Handle:        nil,
+		Pinner:        &runtime.Pinner{},
+		FirstBindable: nil,
+		BindableCount: 0,
+	}
+	result.Pinner.Pin(result.Handle)
+	err := C.wholth_exec_stmt_Result_new(&result.Handle)
+
+	if !C.wholth_error_ok(&err) {
+		return result, errors.New(toStr(err.message))
+	}
+
+	return result, nil
+}
+
+func _ExecStmtResultDelete(r *ExecStmtResult) error {
+	defer r.Pinner.Unpin()
+
+	err := C.wholth_exec_stmt_Result_del(r.Handle)
+
+	if !C.wholth_error_ok(&err) {
+		return errors.New(toStr(err.message))
+	}
+
+	return nil
+}
+
+func (r *ExecStmtResult) Delete() error {
+	if nil == r.Pinner {
+		return errors.New("ExecStmtResult_Delete_NULL_PINNER")
+	}
+
+	return _ExecStmtResultDelete(r)
+}
+
+func (r *ExecStmtResult) Bind(values ...string) error {
+	if nil == r.Pinner {
+		return errors.New("ExecStmtResult_Bind_NULL_PINNER")
+	}
+
+	// binds := [len(values)]C.wholth_exec_stmt_Bindable{}
+	if 0 == len(values) {
+		return nil
+	}
+	binds := make([]C.wholth_exec_stmt_Bindable, len(values))
+
+	for i, value := range values {
+		binds[i] = C.wholth_exec_stmt_Bindable{toStrView(value)}
+	}
+
+	r.BindableCount = uint(len(values))
+	r.FirstBindable = (*C.wholth_exec_stmt_Bindable)(unsafe.Pointer(&binds[0]))
+	r.Pinner.Pin(r.FirstBindable)
+
+	return nil
+}
+
+func (r *ExecStmtResult) Fetch(filename string) error {
+	if nil == r.Pinner {
+		return errors.New("ExecStmtResult_Fetch_NULL_PINNER")
+	}
+
+	args := C.wholth_exec_stmt_Args{
+		toStrView(filename),
+		C.ulonglong(r.BindableCount),
+		r.FirstBindable,
+	}
+	r.Pinner.Pin(&args)
+
+	werr := C.wholth_exec_stmt(&args, r.Handle)
+
+	if !C.wholth_error_ok(&werr) {
+		return errors.New(toStr(werr.message))
+	}
+
+	return nil
+}
+
+func (r *ExecStmtResult) At(row uint, column uint) string {
+	return toStr(C.wholth_exec_stmt_Result_at(
+		r.Handle,
+		C.ulonglong(row),
+		C.ulonglong(column),
+	))
+}
+
+func saveSteps(form *PostFoodsForm) error {
+	result, err := ExecStmtResultNew()
+
+	defer result.Delete()
+
+	if nil != err {
+		return err
+	}
 
 	re := regexp.MustCompile(`((\d+)(h|ч)){0,1}((\d+)(m|м)){0,1}((\d+)(s|с)){0,1}`)
 	res := re.FindAllSubmatch([]byte(form.RecipeStep.Time), 1)
@@ -161,33 +256,25 @@ func saveSteps(form *PostFoodsForm) error {
 	}
 	secondsStr := strconv.FormatInt(seconds, 10)
 
-	var err = C.wholth_Error_OK
+	err = result.Bind(
+		form.Food.Id,
+		secondsStr,
+		form.Food.Id,
+		DEFAULT_LOCALE_ID,
+		form.RecipeStep.Description,
+	)
 
-	binds := [5]C.wholth_exec_stmt_Bindable{
-		{toStrView(form.Food.Id)},
-		{toStrView(secondsStr)},
-		{toStrView(form.Food.Id)},
-		{toStrView(DEFAULT_LOCALE_ID)},
-		{toStrView(form.RecipeStep.Description)},
-	}
-	b := (*C.wholth_exec_stmt_Bindable)(unsafe.Pointer(&binds[0]))
-	pinner.Pin(b)
-	args := C.wholth_exec_stmt_Args{
-		toStrView("recipe_step_upsert.sql"),
-		5,
-		b,
-	}
-	pinner.Pin(&args)
-
-	err = C.wholth_exec_stmt(&args, resultPtr)
-
-	if !C.wholth_error_ok(&err) {
-		form.RecipeStep.Status.Alias = "error"
-		form.RecipeStep.Status.Message = toStr(err.message)
-		return errors.New("Не удалось сохранить рецепт!")
+	if nil != err {
+		return err
 	}
 
-	form.RecipeStep.Id = toStr(C.wholth_exec_stmt_Result_at(resultPtr, 0, 0))
+	err = result.Fetch("recipe_step_upsert.sql")
+
+	if nil != err {
+		return err
+	}
+
+	form.RecipeStep.Id = result.At(0, 0)
 
 	return nil
 }
@@ -249,12 +336,18 @@ func SaveFood(form *PostFoodsForm) (string, error) {
 		return "error", err
 	}
 
-	err = errors.Join(
-		err,
-		saveNutrients(scratch, form),
-		saveSteps(form),
-		saveIngredients(scratch, form),
-	)
+	errNutrients := saveNutrients(scratch, form)
+
+	errSteps := saveSteps(form)
+	if nil != errSteps {
+		form.RecipeStep.Status.Alias = "error"
+		form.RecipeStep.Status.Message = errSteps.Error()
+		errors.Join(errors.New("Не удалось сохранить рецепт!"), errSteps)
+	}
+
+	errIngredients := saveIngredients(scratch, form)
+
+	err = errors.Join(err, errNutrients, errSteps, errIngredients)
 
 	if nil != err {
 		return "warning", err
