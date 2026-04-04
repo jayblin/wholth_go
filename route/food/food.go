@@ -89,7 +89,7 @@ func ListFoods(w http.ResponseWriter, r *http.Request) {
 			r,
 			page,
 			"templates/food/get/as_subdoc/index.html",
-			
+
 			"templates/utils/search.html",
 			"templates/utils/paginator.html",
 
@@ -146,7 +146,7 @@ func FindFood(foodId string) wholth.Food {
 	return wpage.At(0)
 }
 
-func FindRecipeStep(foodId string) wholth.RecipeStep {
+func findRecipeStep(foodId string) wholth.RecipeStep {
 	result := wholth.RecipeStep{}
 
 	var wpage, wpageErr = wholth.RecipeStepNew()
@@ -173,7 +173,7 @@ func FindRecipeStep(foodId string) wholth.RecipeStep {
 
 // todo add pagination
 // todo query
-func FindIngredients(foodId string) util.PaginatableList[wholth.Ingredient] {
+func findIngredients(foodId string) util.PaginatableList[wholth.Ingredient] {
 	var wpage, wpageErr = wholth.IngredientPageNew(50)
 
 	defer wpage.Close()
@@ -203,7 +203,7 @@ func FindIngredients(foodId string) util.PaginatableList[wholth.Ingredient] {
 
 // todo add pagination
 // todo query
-func FindFoodNutrients(foodId string) util.PaginatableList[wholth.FoodNutrient] {
+func findFoodNutrients(foodId string) util.PaginatableList[wholth.FoodNutrient] {
 	var wpage, wpageErr = wholth.FoodNutrientPageNew(50)
 
 	defer wpage.Close()
@@ -243,9 +243,9 @@ func fetchPostFoodsFormFromDb(foodId string) (wholth.PostFoodsForm, int) {
 	}
 
 	form.Food = food
-	form.RecipeStep = FindRecipeStep(food.Id)
-	form.Ingredients = FindIngredients(food.Id)
-	form.Nutrients = FindFoodNutrients(food.Id)
+	form.RecipeStep = findRecipeStep(food.Id)
+	form.Ingredients = findIngredients(food.Id)
+	form.Nutrients = findFoodNutrients(food.Id)
 
 	return form, http.StatusOK
 }
@@ -402,7 +402,7 @@ func PostFood(w http.ResponseWriter, r *http.Request) {
 		// formEnriched.ResultStatus = status
 		// formEnriched.ResultMessage = "Успешно сохранено!"
 		page.PostForm.Status.Alias = status
-		page.PostForm.Status.Message =  "Успешно сохранено!"
+		page.PostForm.Status.Message = "Успешно сохранено!"
 
 		page.PostForm = formEnriched
 	}
