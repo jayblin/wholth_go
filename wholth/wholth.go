@@ -221,6 +221,10 @@ func (r *ExecStmtResult) At(row uint, column uint) string {
 	))
 }
 
+func (r *ExecStmtResult) RowCount() uint64 {
+	return uint64(C.wholth_exec_stmt_Result_row_count(r.Handle))
+}
+
 func saveSteps(form *PostFoodsForm) error {
 	result, err := ExecStmtResultNew()
 

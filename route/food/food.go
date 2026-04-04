@@ -283,8 +283,55 @@ func GetFoodById(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+func populateTopNutrients(form *wholth.PostFoodsForm) {
+	result, err := wholth.ExecStmtResultNew()
+	defer result.Delete()
+
+	if nil != err {
+		logger.Error("populateTopNutrients_STMT_RES_INIT: " + err.Error())
+		return
+	}
+
+	err = result.Bind(wholth.DEFAULT_LOCALE_ID)
+
+	if nil != err {
+		logger.Error("populateTopNutrients_STMT_RES_BIND: " + err.Error())
+		return
+	}
+
+	err = result.Fetch("nutrient_top_select.sql")
+
+	if nil != err {
+		logger.Error("populateTopNutrients_STMT_RES_FETCH: " + err.Error())
+		return
+	}
+
+	sz := result.RowCount()
+
+	if sz == 0 {
+		return
+	}
+
+	form.Nutrients.Count = sz
+	form.Nutrients.PageCurrent = 0
+	form.Nutrients.PageMax = 0
+	form.Nutrients.Values = make([]wholth.FoodNutrient, sz)
+	for i := range uint(sz) {
+		form.Nutrients.Values[i] = wholth.FoodNutrient{
+			Nutrient: wholth.Nutrient{
+				Id:    result.At(i, 0),
+				Title: result.At(i, 1),
+				Unit:  result.At(i, 2),
+			},
+			Checked: false,
+		}
+	}
+}
+
 func GetRecipeForm(w http.ResponseWriter, r *http.Request) {
 	form := wholth.PostFoodsForm{}
+
+	populateTopNutrients(&form)
 
 	page := ListFoodsPage{
 		HtmlPage: route.DefaultHtmlPage(r),
