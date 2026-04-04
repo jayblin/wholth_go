@@ -385,6 +385,7 @@ func PostFoodsFormFromRequest(r *http.Request) wholth.PostFoodsForm {
 }
 
 func PostFood(w http.ResponseWriter, r *http.Request) {
+
 	page := PostFoodsPage{
 		route.DefaultHtmlPage(r),
 		PostFoodsFormFromRequest(r)}
@@ -405,6 +406,13 @@ func PostFood(w http.ResponseWriter, r *http.Request) {
 		page.PostForm.Status.Message = "Успешно сохранено!"
 
 		page.PostForm = formEnriched
+
+		// http.Redirect(
+		// 	w,
+		// 	r,
+		// 	fmt.Sprintf("/food/%s", formEnriched.Food.Id),
+		// 	http.StatusSeeOther,
+		// )
 	}
 
 	route.RenderHtmlTemplates(
