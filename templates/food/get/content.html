@@ -18,7 +18,7 @@
 >
 <div id="actions">
     {{/* Эта можалка пока не выводится, т.к. для создания пищи есть отдельная страница. */}}
-    {{if .Session.IsAuthenticated and false}}
+    {{if and .Session.IsAuthenticated false}}
     {{/*<button command="show-modal" commandfor="food_post_modal">Создать запись</button>*/}}
     <button onclick="food_post_modal.showModal()">Создать запись</button>
     <dialog id="food_post_modal">
