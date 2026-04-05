@@ -1,5 +1,6 @@
 .env
 .secrets
+.secrets.gpg
 .DS_Store
 Session.vim
 todo.md

@@ -23,7 +23,11 @@ go-build:
 build: update-dependencies env-set-version minify-js go-build
 
 run:
-	env $(shell grep -v '^#' .env | xargs) go run . < .secrets
+	@-rm .secrets.tmp
+	@echo "> SECRETS.DECRYPT.START"
+	@gpg --decrypt --output .secrets.tmp .secrets.gpg
+	@echo "> SECRETS.DECRYPT.END"
+	@env $(shell grep -v '^#' .env | xargs) go run . < .secrets.tmp & rm -f .secrets.tmp ; wait
 
 css-palette:
 	sass -s compressed static/palette.scss static/palette.css
