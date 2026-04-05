@@ -160,7 +160,7 @@ function searchOnClear(event) {
 function loaderInstall(event) {
     const loader = document.querySelector("#loader");
     if (loader) {
-        loader.style.display = "block";
+        loader.style.display = "flex";
     }
 }
 

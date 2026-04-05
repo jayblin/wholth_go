@@ -18,6 +18,7 @@
         value="{{.PageCurrent}}"
         autocomplete="off"
         form="{{.EntityAlias}}-search-form"
+        oninput="paginate(event)"
     >
     <button
         {{if eq .PageCurrent .PageMax}}

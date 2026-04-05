@@ -1,11 +1,43 @@
 @use "variables/spacing";
 @use "variables/color";
 @use "variables/breakpoint";
+// @use "variables/root";
 
 @keyframes loaderAnimation {
   0% {background-position-x: 0%;}
   50% {background-position-x: 50%;}
   100% {background-position-x: 100%;}
+}
+
+@keyframes dots {
+ // ⠿ ⠿ ⠿ ⠿ ⠿ ⠿ ⠿ ⠿ ⠿ ⠿ ⠿ ⠿ ⠿ ⠿ ⠿
+
+ // ⠿ ⠁ ⠂ ⠄ ⠃ ⠅ ⠆ ⠇ ⠧ ⠷ ⠟ ⠏ ⠯
+
+ // ⠿ ⠈ ⠨   ⠘ ⠸ ⠼ ⠾ ⠻ ⠹ ⠽
+
+ // ⠿ ⠍ ⠭ ⠡ ⠗ ⠺
+
+ // ⠿ ⠓ ⠚ ⠋ ⠙ ⠖ ⠲ ⠦ ⠴ ⠎ ⠌
+
+ // ⠿ ⠛ ⠶   ⠒ ⠤ ⠑ ⠢ ⠔ ⠊ ⠕ ⠜ ⠝ ⠞
+
+ // ⠿ ⠣ ⠥ ⠩ ⠪ ⠫ ⠬ ⠮
+
+ // ⠿ ⠱ ⠳ ⠵
+
+  0%   {content: "   ⠄   ";}
+  9%   {content: "   ⠤   ";}
+  18%  {content: "  ⠈⠦⠄  ";}
+  27%  {content: "  ⠨⠧⠅  ";}
+  36%  {content: "  ⠩⠯⠇  ";}
+  45%  {content: " ⠈⠹⠿⠏⠁ ";}
+  54%  {content: " ⠌⠽⠽⠟⠃ ";}
+  63%  {content: "⠁⠎⠼⠵⠗⠇⠂";}
+  72%  {content: "⠉⠆⠴⠥⠓⠆⠒";}
+  81%  {content: "⠈⠄⠔⠤⠑⠂⠂";}
+  90%  {content: "  ⠈⠄⠁  ";}
+  100% {content: "   ⠄   ";}
 }
 
 html {
@@ -63,7 +95,7 @@ dialog {
 }
 
 main {
-  overflow: hidden;
+  // overflow: hidden;
 }
 
 hr {
@@ -86,6 +118,7 @@ nav {
     display: flex;
     gap: spacing.$md;
     justify-content: center;
+    text-align: center;
   }
 }
 
@@ -111,14 +144,17 @@ a {
 
 button, .button {
   text-decoration: none;
-  padding: spacing.$xs;
+  // padding: spacing.$xs;
   border: 1px solid color.$primary-c;
-  border-radius: 5px;
+  border-radius: var(--s-b-r);
   background-color: color.$primary-a;
   color: color.$primary-e;
   outline: none;
   min-width: 2rem;
   min-height: 2rem;
+  display: flex;
+  justify-content: center;
+  align-items: center;
 
   &:hover {
     text-decoration: none;
@@ -145,7 +181,7 @@ body, textarea, label, select, input, span, p, legend, pre, button {
 textarea, input {
   background-color: color.$primary-a;
   border: 1px solid color.$primary-c;
-  border-radius: spacing.$xs;
+  border-radius: var(--s-b-r);
 }
 
 input {
@@ -159,6 +195,7 @@ input {
   &[type="password"] {
     min-height: 2rem;
     height: fit-content;
+    padding: 0 spacing.$sm;
   }
 
   &[type="checkbox"],
@@ -191,13 +228,14 @@ form {
   }
 
   .controls {
+    margin-top: spacing.$sm;
     overflow: hidden;
     position: sticky;
     bottom: spacing.$xs;
     display: grid;
     gap: spacing.$sm;
     backdrop-filter: blur(5px);
-    border-radius: spacing.$xs;
+    border-radius: var(--s-b-r);
     justify-items: center;
 
     button[type="submit"] {
@@ -207,7 +245,7 @@ form {
     output {
       word-wrap: anywhere;
       padding: spacing.$xs;
-      border-radius: spacing.$xs;
+      border-radius: var(--s-b-r);
       color: var(--status-color-fg);
       background-color: var(--status-color-bg);
     }
@@ -218,7 +256,7 @@ fieldset {
   border: 1px solid color.$primary-d;
   display: grid;
   gap: spacing.$xs;
-  border-radius: 4px;
+  border-radius: var(--s-b-r);
 }
 
 legend {
@@ -271,7 +309,6 @@ td {
   outline: 1px solid var(--status-color-bg) !important;
   color: var(--status-color-fg) !important;
   background: var(--status-color-bg);
-  border-radius: spacing.$xs;
 
   &.nooutline {
     outline: unset !important;
@@ -292,6 +329,13 @@ td {
   }
 }
 
+.search-controls {
+  display: grid;
+  grid-template-columns: minmax(10ch, 40ch) max-content max-content;
+  gap: spacing.$xs;
+  margin-bottom: spacing.$sm;
+}
+
 .suggestion_list {
   flex: 1 0 100%;
   display: grid;
@@ -306,7 +350,7 @@ td {
     display: flex;
     gap: spacing.$sm;
     overflow: hidden;
-    border-radius: 4px;
+    border-radius: var(--s-b-r);
 
     &:hover {
       outline: 1px solid color.$primary-b;
@@ -331,10 +375,20 @@ td {
   opacity: 0.5;
 }
 
+.paginator {
+  display: flex;
+  gap: spacing.$xs;
+  align-items: center;
+}
+
 #logo {
   display: flex;
   align-items: center;
   gap: spacing.$sm;
+
+  img {
+    border-radius: var(--s-b-r);
+  }
 }
 
 #actions {
@@ -376,7 +430,7 @@ td {
   row-gap: spacing.$sm;
   column-gap: spacing.$xs;
   border: 1px solid color.$secondary-c;
-  border-radius: 5px;
+  border-radius: var(--s-b-r);
   padding: spacing.$sm;
   margin: 0 auto;
 
@@ -403,19 +457,17 @@ td {
 }
 
 #food-search-result {
-  margin-top: spacing.$md;
-
   ul {
     margin-top: spacing.$md;
   }
 }
 
-#ingredient-search-result {
-  margin-top: spacing.$sm;
-}
-
-#nutrient-search-result {
-  margin-top: spacing.$sm;
+#nutrient-search {
+  ul {
+    input[type="number"] {
+      width: 12ch;
+    }
+  }
 }
 
 #consumption_log-get-form {
@@ -436,26 +488,49 @@ td {
 }
 
 #loader {
-  display: block;
+  display: flex;
   position: fixed;
   top: 0;
   width: 100%;
   height: spacing.$sm;
   z-index: 99;
-  background: linear-gradient(
-    to right,
-    color.$primary-a,
-    color.$primary-b,
-    color.$tertiary-f,
-    color.$primary-b,
-    color.$primary-a
-  );
-  background-size: 200%;
-  animation-name: loaderAnimation;
-  animation-duration: 2s;
-  animation-timing-function: linear;
-  animation-iteration-count: infinite;
-  animation-direction: alternate;
+
+  &:before {
+    content: "загрузка";
+    position: absolute;
+    left: spacing.$sm;
+    opacity: 0.2;
+  }
+  &:after {
+    animation-name: dots;
+    animation-duration: 2s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: infinite;
+    content: "";
+  }
+  display: flex;
+  background: var(--c-p-b);
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  height: spacing.$lg;
+  color: var(--c-p-a);
+
+  // alternative loader animation below
+  // background: linear-gradient(
+  //   to right,
+  //   color.$primary-a,
+  //   color.$primary-b,
+  //   color.$tertiary-f,
+  //   color.$primary-b,
+  //   color.$primary-a
+  // );
+  // background-size: 200%;
+  // animation-name: loaderAnimation;
+  // animation-duration: 2s;
+  // animation-timing-function: linear;
+  // animation-iteration-count: infinite;
+  // animation-direction: alternate;
 }
 
 #portion_items {

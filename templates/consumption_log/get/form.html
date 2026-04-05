@@ -5,6 +5,7 @@
     method="get"
     target="htmz"
     onsubmit="searchOnSubmit(event)"
+    onchange="this.elements.do_query.disabled=false"
 >
     <div>
         <label>
@@ -27,9 +28,17 @@
                 onchange="windowQueryParameterSet(`consumed_to`,value)"
             >
         </label>
-        <button onclick="form.submit()">&#9745;</button>
-        <button onclick="form.submit()">&#9850;</button>
+        <button
+            name="do_query"
+            onclick="form.submit()"
+            disabled
+        >&#9745;</button>
+        <button
+            name="do_refresh"
+            onclick="form._refresh_tag.value=(new Date()).getTime();form.submit()"
+        >&#9850;</button>
         <input type="hidden" name="as_subdoc" value="1">
+        <input type="hidden" name="_refresh_tag" value="0">
     </div>
 
     <table>
@@ -69,7 +78,5 @@
     </table>
 
     {{template "paginator" .}}
-
-    <input type="hidden" name="as_subdoc" value="1">
 </form>
 {{end}}

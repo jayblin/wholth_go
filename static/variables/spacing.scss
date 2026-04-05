@@ -4,3 +4,8 @@ $sm: 8px;
 $md: 16px;
 $lg: 32px;
 $xl: 64px;
+$border-radius: 16px;
+
+:root {
+  --s-b-r: #{$border-radius};
+}
