@@ -1,6 +1,8 @@
 package consumption_log
 
 import (
+	"fmt"
+	"math"
 	"net/http"
 	"time"
 
@@ -25,8 +27,8 @@ type ListConsumptionLogsPage struct {
 	route.HtmlPage
 	util.Pagination
 	util.EntityAliasAware[wholth.ConsumptionLog]
-	Groups []string
-	Map map[string]MapElement
+	Groups        []string
+	Map           map[string]MapElement
 	Q             string
 	PostForm      wholth.ConsumptionLogPostForm
 	ConsumedFrom  string
@@ -92,7 +94,7 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 
 			if !ok {
 				entry = MapElement{
-					Values: make([]wholth.ConsumptionLog, 0),
+					Values:            make([]wholth.ConsumptionLog, 0),
 					NutrientAmountSum: 0,
 				}
 				mapped[grp] = entry
@@ -138,8 +140,12 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 			w,
 			r,
 			htmlPage,
-			"templates/consumption_log/get/form.html",
+			"templates/consumption_log/get/as_subdoc.html",
+
 			"templates/utils/paginator.html",
+			"templates/utils/toggleable.html",
+
+			"templates/consumption_log/get/form.html",
 		)
 	} else {
 		route.RenderHtmlTemplates(
@@ -150,6 +156,7 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 
 			"templates/utils/search.html",
 			"templates/utils/paginator.html",
+			"templates/utils/toggleable.html",
 
 			"templates/consumption_log/get/content.html",
 			"templates/consumption_log/get/form.html",
@@ -229,4 +236,109 @@ func PostConsumptionLog(w http.ResponseWriter, r *http.Request) {
 		page,
 		"templates/consumption_log/post/result.html",
 	)
+}
+
+type BatchAction int
+
+const (
+	BatchDelete BatchAction = iota
+	BatchPatch
+)
+
+func batchConsumptionLog(action BatchAction, w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	var msg = ""
+	switch action {
+	case BatchPatch:
+		{
+			msg = "изменять"
+			break
+		}
+	case BatchDelete:
+		{
+			msg = "удалять"
+			break
+		}
+	}
+
+	if !r.PostForm.Has("consumption_log") {
+		route.RenderHtmlTemplatesWithStatus(
+			w,
+			r,
+			400,
+			fmt.Sprintf("Нечего %s!", msg),
+			"templates/400/index.html",
+		)
+		return
+	}
+
+	ids := r.PostForm["consumption_log"]
+
+	if len(ids) <= 0 {
+		route.RenderHtmlTemplatesWithStatus(
+			w,
+			r,
+			400,
+			fmt.Sprintf("Нечего %s!", msg),
+			"templates/400/index.html",
+		)
+		return
+	}
+
+	sess_v := r.Context().Value(session.SessionKey)
+	sess := sess_v.(session.HttpSession)
+
+	var successes = 0
+	var errors = make([]string, 0)
+	for _, id := range ids {
+		var err error = nil
+
+		switch action {
+		case BatchPatch:
+			{
+				msg = "изменено"
+				mass := r.PostForm.Get(fmt.Sprintf("mass_%s", id))
+				err = wholth.UpdateConsumptionLog(id, mass, sess.UserId)
+				break
+			}
+		case BatchDelete:
+			{
+				msg = "удалено"
+				err = wholth.DeleteConsumptionLog(id, sess.UserId)
+				break
+			}
+		}
+
+		if nil != err {
+			errors = append(errors, fmt.Sprintf("id=%s; %s", id, err.Error()))
+		} else {
+			successes++
+		}
+	}
+
+	result := make([][2]string, int(math.Min(1, float64(successes)))+len(errors))
+
+	if successes > 0 {
+		result[0] = [2]string{"success", fmt.Sprintf("Успешно %s %dшт.", msg, successes)}
+	}
+
+	for i, error := range errors {
+		result[successes+i] = [2]string{"error", error}
+	}
+
+	route.RenderHtmlTemplates(
+		w,
+		r,
+		result,
+		"templates/consumption_log/batch/result.html",
+	)
+}
+
+func BatchPatchConsumptionLog(w http.ResponseWriter, r *http.Request) {
+	batchConsumptionLog(BatchPatch, w, r)
+}
+
+func BatchDeleteConsumptionLog(w http.ResponseWriter, r *http.Request) {
+	batchConsumptionLog(BatchDelete, w, r)
 }

@@ -47,7 +47,7 @@ type HtmlPage struct {
 
 func DefaultHtmlPage(r *http.Request) HtmlPage {
 	return HtmlPage{
-		Meta: DefaultPageMeta(r),
+		Meta:    DefaultPageMeta(r),
 		Session: DefaultSessionMeta(r),
 		Version: secret.GetVersion(),
 	}
@@ -86,9 +86,10 @@ func parse_templates(filenames ...string) (*template.Template, error) {
 	return tmpl, nil
 }
 
-func RenderHtmlTemplates(
+func RenderHtmlTemplatesWithStatus(
 	w http.ResponseWriter,
 	r *http.Request,
+	statusCode int,
 	data any,
 	filenames ...string,
 ) {
@@ -102,6 +103,8 @@ func RenderHtmlTemplates(
 		return
 	}
 
+	w.WriteHeader(statusCode)
+
 	err = tmpl.Execute(w, data)
 
 	if nil != err {
@@ -110,4 +113,13 @@ func RenderHtmlTemplates(
 		// w.WriteHeader(http.StatusInternalServerError)
 		return
 	}
+}
+
+func RenderHtmlTemplates(
+	w http.ResponseWriter,
+	r *http.Request,
+	data any,
+	filenames ...string,
+) {
+	RenderHtmlTemplatesWithStatus(w, r, 200, data, filenames...)
 }

@@ -16,23 +16,20 @@ function windowQueryParameterDelete(key, value) {
     history.replaceState(null, "", `?${query}`);
 }
 
-function htmzReplaceElements(event) {
-    const iframe = event.target;
-    const hash = iframe.contentWindow.location.hash || null;
-
-    if (!hash) {
-        return;
-    }
-
-    let container = document.querySelector(hash);
-
+function htmzReplaceElements(replacement, container) {
     if (!container) {
         return;
     }
 
-    container.replaceWith(...iframe.contentDocument.body.childNodes);
+    const id = container.id;
 
-    container = document.querySelector(hash);
+    container.replaceWith(...replacement);
+
+    if (!id) {
+        return;
+    }
+
+    container = document.getElementById(id);
 
     if (!container || !container.form) {
         return;
@@ -57,11 +54,55 @@ function htmzReplaceElements(event) {
     // });
 }
 
+function htmzHandleResponse(event) {
+    const iframe = event.target;
+    const id = iframe.contentWindow.location.hash || null;
+
+    const notificationsReceived = iframe.contentDocument.getElementById("notifications");
+    if (notificationsReceived) {
+        const notificationCount = notificationsReceived?.children?.length;
+        const counter = document.getElementById("notifications-counter");
+
+        if (counter) {
+            if ("flex" !== counter.style.display) {
+                counter.style.display = "flex";
+            }
+
+            const currentCount = Number(counter.innerText ?? 0);
+            const newCount = currentCount + notificationCount;
+            if  (newCount >= 100) {
+                counter.innerText = "∞";
+            } else {
+                counter.innerText = newCount;
+            }
+        }
+
+        htmzReplaceElements([], )
+        document.getElementById("notifications")?.prepend(...notificationsReceived.childNodes);
+        document.getElementById('notifications-container')?.style?.removeProperty('display');
+
+        const replacement = iframe.contentDocument.body.querySelectorAll("body > *:not(#notifications)")
+        let container = document.querySelector(id);
+
+        if (replacement && container) {
+            htmzReplaceElements(replacement, container)
+        }
+    } else if (id) {
+        let container = document.querySelector(id);
+
+        if (!container) {
+            return;
+        }
+
+        htmzReplaceElements(iframe.contentDocument.body.childNodes, container)
+    }
+}
+
 /**
  * @see https://leanrada.com/htmz/
  */
 function htmzOnLoad(event) {
-    htmzReplaceElements(event);
+    htmzHandleResponse(event);
     loaderUninstall(event);
 }
 
@@ -111,7 +152,7 @@ function paginateDown(event) {
 // }
 
 function disableSiblings(event) {
-    event.target.parentElement.querySelectorAll("input").forEach(
+    event.target.parentElement.querySelectorAll("input,button").forEach(
         (e) => e !== event.target && (e.disabled = !event.target.checked)
     );
 }

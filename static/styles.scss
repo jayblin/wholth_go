@@ -108,7 +108,6 @@ header {
   display: flex;
   gap: spacing.$xs;
   align-items: center;
-  justify-content: space-between;
 }
 
 nav {
@@ -142,7 +141,7 @@ a {
   }
 }
 
-button, .button {
+button {
   text-decoration: none;
   // padding: spacing.$xs;
   border: 1px solid color.$primary-c;
@@ -167,10 +166,42 @@ button, .button {
     cursor: unset!important;
   }
 
-  &.close {
+  &.open, &.close {
     width: spacing.$lg;
     height: spacing.$lg;
   }
+
+  &.close {
+    &:after {
+      // content: "△";
+      content: "✕";
+    }
+  }
+
+  &.trash {
+    &:after {
+      content: "♻";
+    }
+  }
+
+  &.refresh {
+    &:after {
+      content: "↺";
+    }
+  }
+
+  &.search {
+    &:after {
+      content: "⌕";
+    }
+  }
+
+  // &.open {
+  //   &:after {
+  //     content: "▽";
+  //     align-self: end;
+  //   }
+  // }
 }
 
 body, textarea, label, select, input, span, p, legend, pre, button {
@@ -385,6 +416,7 @@ td {
   display: flex;
   align-items: center;
   gap: spacing.$sm;
+  flex-grow: 1;
 
   img {
     border-radius: var(--s-b-r);
@@ -392,11 +424,13 @@ td {
 }
 
 #actions {
-  margin-top: spacing.$sm;
   position: sticky;
-  bottom: spacing.$sm;
+  top: spacing.$sm;
   display: flex;
   justify-content: end;
+  margin-bottom: spacing.$sm;
+  z-index: 9;
+  gap: spacing.$xs;
 }
 
 #food-get-form {
@@ -471,14 +505,36 @@ td {
 }
 
 #consumption_log-get-form {
-  overflow-x: scroll;
-
-  > div:first-child {
-    display: flex;
+  .consumption_log-query {
+    display: grid;
     align-items: center;
     gap: spacing.$sm;
-    flex-wrap: wrap;
     margin-bottom: spacing.$sm;
+  }
+
+  .consumption_log-table {
+    overflow-x: scroll;
+  }
+
+  td:nth-child(1) {
+    pre {
+      font-size: 0.7rem;
+      border-radius: 5px;
+      background: var(--c-s-a);
+      width: fit-content;
+      padding: 0 4px;
+    }
+  }
+
+  td:nth-child(2) {
+    div {
+      display: flex;
+      gap: spacing.$xs;
+    }
+
+    input[type="number"] {
+      width: 7ch;
+    }
   }
 }
 
@@ -536,5 +592,41 @@ td {
 #portion_items {
   input {
     max-width: 10ch;
+  }
+}
+
+#notifications-counter {
+  background: var(--c-s-f);
+  color: var(--c-p-a);
+  border-radius: var(--s-b-r);
+  padding: spacing.$xs;
+  width: 2ch;
+  height: 2ch;
+  text-align: center;
+  justify-content: center;
+  align-items: center;
+  cursor: pointer;
+}
+
+#notifications-container {
+  position: fixed;
+  top: spacing.$sm;
+  z-index: 999;
+  display: grid;
+  gap: spacing.$xs;
+  backdrop-filter: blur(5px);
+  justify-items: flex-end;
+  width: fit-content;
+  justify-self: end;
+  border-radius: var(--s-b-r);
+
+  > div {
+    display: flex;
+    gap: spacing.$xs;
+  }
+
+  li {
+    padding: spacing.$sm;
+    border-radius: var(--s-b-r);
   }
 }

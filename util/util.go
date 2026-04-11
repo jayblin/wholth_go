@@ -71,3 +71,17 @@ func ModifyQueryForSearch(q string) string {
 
 	return res
 }
+
+// type ToggleableData struct {
+// 	Checked bool
+// 	// Name    string
+// 	// Value   string
+// }
+
+type Toggleable interface {
+	Toggleable_Checked() bool
+	Toggleable_Name()    string
+	Toggleable_Value()   string
+}
+
+// func

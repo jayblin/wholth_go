@@ -9,9 +9,11 @@ import (
 	"strconv"
 	"time"
 	"unsafe"
+	"wholth_go/util"
 )
 
 type ConsumptionLog struct {
+	// util.Toggleable
 	Id             string
 	FoodId         string
 	Mass           string
@@ -22,6 +24,18 @@ type ConsumptionLog struct {
 
 func (p ConsumptionLog) EntityAlias() string {
 	return "consumption_log"
+}
+
+func (p *ConsumptionLog) Toggleable_Checked() bool {
+	return false
+}
+
+func (p *ConsumptionLog) Toggleable_Name() string {
+	return "consumption_log"
+}
+
+func (p *ConsumptionLog) Toggleable_Value() string {
+	return p.Id
 }
 
 type ConsumptionLogPage struct {
@@ -100,6 +114,7 @@ func ConsumptionLogPageNew(perPage uint64) (ConsumptionLogPage, error) {
 }
 
 type ConsumptionLogPostForm struct {
+	util.Toggleable
 	Id         string
 	FoodId     string
 	FoodTitle  string
@@ -141,4 +156,51 @@ func SaveConsumptionLog(form *ConsumptionLogPostForm, userId string) (string, er
 	form.Id = toStr(wlog.id)
 
 	return "success", nil
+}
+
+
+func UpdateConsumptionLog(id string, mass string, userId string) error {
+	result, err := ExecStmtResultNew()
+	defer result.Delete()
+
+	if nil != err {
+		return err
+	}
+
+	err = result.Bind(id, userId, mass)
+
+	if nil != err {
+		return err
+	}
+
+	err = result.Fetch("consumption_log_update.sql")
+
+	if nil != err {
+		return err
+	}
+
+	return nil
+}
+
+func DeleteConsumptionLog(id string, userId string) error {
+	result, err := ExecStmtResultNew()
+	defer result.Delete()
+
+	if nil != err {
+		return err
+	}
+
+	err = result.Bind(id, userId)
+
+	if nil != err {
+		return err
+	}
+
+	err = result.Fetch("consumption_log_delete.sql")
+
+	if nil != err {
+		return err
+	}
+
+	return nil
 }

@@ -1,4 +1,19 @@
-{{block "consumption_log_get_form" .}}
+{{define "toggleable_attributes"}}
+form="consumption_log_batch_modal"
+{{end}}
+
+{{define "toggleable_content"}}
+<input
+    type="number" 
+    inputmode="numeric"
+    value="{{.Mass}}"
+    disabled
+    form="consumption_log_batch_modal"
+    name="mass_{{.Id}}"
+>
+{{end}}
+
+{{define "consumption_log_get_form"}}
 <form
     id="consumption_log-get-form"
     action="/consumption_log#consumption_log-get-form"
@@ -7,7 +22,7 @@
     onsubmit="searchOnSubmit(event)"
     onchange="this.elements.do_query.disabled=false"
 >
-    <div>
+    <div class="consumption_log-query">
         <label>
             Дата от
             <input
@@ -29,53 +44,62 @@
             >
         </label>
         <button
+            class="search"
             name="do_query"
             onclick="form.submit()"
             disabled
-        >&#9745;</button>
+        ></button>
         <button
+            class="refresh"
             name="do_refresh"
             onclick="form._refresh_tag.value=(new Date()).getTime();form.submit()"
-        >&#9850;</button>
+        ></button>
         <input type="hidden" name="as_subdoc" value="1">
         <input type="hidden" name="_refresh_tag" value="0">
     </div>
 
-    <table>
-        <thead>
-            <th>Пища</th>
-            <th>Масса</th>
-            <th>Калорий</th>
-            <th>Когда?</th>
-        </thead>
-        {{range $date := .Groups}}
-        <tr>
-            <td colspan="2">{{$date}}</td>
-            <td
-                colspan="2"
-                {{if eq 0.0 (index $.Map $date).NutrientAmountSum}}
-                class="status nooutline error"
+    <div class="consumption_log-table">
+        <table>
+            <thead>
+                <th>Пища</th>
+                <th>Масса</th>
+                <th>Калорий</th>
+                <th>Когда?</th>
+            </thead>
+            {{range $date := .Groups}}
+            <tr>
+                <td colspan="2">{{$date}}</td>
+                <td
+                    colspan="2"
+                    {{if eq 0.0 (index $.Map $date).NutrientAmountSum}}
+                    class="status nooutline error"
+                    {{end}}
+                >{{(index $.Map $date).NutrientAmountSum}}</td>
+            </tr>
+            {{range (index $.Map $date).Values}}
+            <tr>
+                <td>
+                    <pre>{{.Id}}</pre>
+                    <a href="/food/{{.FoodId}}" target="_blank">{{.FoodTitle}}</a>
+                </td>
+                <td>
+                    <div>{{template "toggleable" .}}<div>
+                </td>
+                {{if eq 0.0 .NutrientAmount}}
+                <td class="status nooutline error">
+                    <a href="/food/{{.FoodId}}#nutrient-search" target="_blank">
+                        У пищи не указаны калории! Нажми, чтобы указать!
+                    </a>
+                </td>
+                {{else}}
+                <td>{{.NutrientAmount}}</td>
                 {{end}}
-            >{{(index $.Map $date).NutrientAmountSum}}</td>
-        </tr>
-        {{range (index $.Map $date).Values}}
-        <tr>
-            <td><a href="/food/{{.FoodId}}" target="_blank">{{.FoodTitle}}</a></td>
-            <td>{{.Mass}}</td>
-            {{if eq 0.0 .NutrientAmount}}
-            <td class="status nooutline error">
-                <a href="/food/{{.FoodId}}#nutrient-search" target="_blank">
-                    У пищи не указаны калории! Нажми, чтобы указать!
-                </a>
-            </td>
-            {{else}}
-            <td>{{.NutrientAmount}}</td>
+                <td>{{.ConsumedAt}}</td>
+            </tr>
             {{end}}
-            <td>{{.ConsumedAt}}</td>
-        </tr>
-        {{end}}
-        {{end}}
-    </table>
+            {{end}}
+        </table>
+    <div>
 
     {{template "paginator" .}}
 </form>

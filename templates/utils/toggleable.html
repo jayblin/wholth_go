@@ -1,0 +1,18 @@
+{{define "toggleable_attributes"}}{{end}}
+{{define "toggleable_content"}}{{end}}
+
+{{define "toggleable"}}
+<input
+    type="checkbox"
+
+    {{/* name="ingredient" */}}
+    name="{{.Toggleable_Name}}"
+
+    {{/* value="{{.FoodId}}" */}}
+    value="{{.Toggleable_Value}}"
+    oninput="disableSiblings(event)"
+    {{if .Toggleable_Checked}}checked{{end}}
+    {{template "toggleable_attributes" .}}
+>
+{{template "toggleable_content" . }}
+{{end}}

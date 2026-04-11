@@ -25,6 +25,23 @@
 
     <body>
         <div id="loader"></div>
+        <div id="notifications-container" style="display:none;">
+            <div>
+                <button
+                    class="close"
+                    onclick="document.getElementById('notifications-container').style.display='none'"
+                ></button>
+                <button
+                    class="trash"
+                    onclick="
+                        document.getElementById('notifications-container').style.display='none';
+                        document.getElementById('notifications')?.replaceChildren('');
+                        c=document.getElementById('notifications-counter'),c.innerText='',c.style.display='none';
+                    "
+                ></button>
+            </div>
+            <ul id="notifications"></ul>
+        </div>
         <!-- https://leanrada.com/htmz/ -->
         <iframe 
             hidden
@@ -41,6 +58,11 @@
             </div>
 	    {{/* commandfor и command не работают на ios */}}
 	    {{/*<button commandfor="user_info_modal" command="show-modal" title="User info" >*/}}
+            <pre
+                id="notifications-counter"
+                style="display:none;"
+                onclick="document.getElementById('notifications-container').style.removeProperty('display')"
+            ></pre>
             <button onclick="user_info_modal.showModal()" title="User info" >
                 {{if .Session.IsAuthenticated}}
                 &#127773;
@@ -49,8 +71,8 @@
                 {{end}}
             </button>
             <dialog id="user_info_modal">
-		{{/*<button class="close" commandfor="user_info_modal" command="close"></button>*/}}
-		<button class="close" onclick="user_info_modal.close()" title="Закрыть">&#10007;</button>
+                {{/*<button class="close" commandfor="user_info_modal" command="close"></button>*/}}
+                <button class="close" onclick="user_info_modal.close()" title="Закрыть">&#10007;</button>
                 <p>{{.Session.Username}}</p>
                 <p>Сессия протухнет 
                     <time datetime="{{.Session.ExpiresStr}}" >

@@ -136,6 +136,22 @@ func main() {
 			session.SessionMiddleware(
 				http.HandlerFunc(nutrient.ListNutrients))))
 	mux.Handle(
+		"POST /consumption_log/batch-patch",
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenValidatorMiddleware(
+					session.CsrfTokenGeneratorMiddleware(
+						auth.AuthenticationMiddleware(
+							http.HandlerFunc(consumption_log.BatchPatchConsumptionLog)))))))
+	mux.Handle(
+		"POST /consumption_log/batch-delete",
+		gzipMiddleware(
+			session.SessionMiddleware(
+				session.CsrfTokenValidatorMiddleware(
+					session.CsrfTokenGeneratorMiddleware(
+						auth.AuthenticationMiddleware(
+							http.HandlerFunc(consumption_log.BatchDeleteConsumptionLog)))))))
+	mux.Handle(
 		"GET /consumption_log",
 		gzipMiddleware(
 			session.SessionMiddleware(
