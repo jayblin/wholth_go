@@ -69,11 +69,11 @@ func ListNutrients(w http.ResponseWriter, r *http.Request) {
 	query := r.URL.Query()
 	titles_raw := util.ModifyQueryForSearch(query.Get("q"))
 
-	if "" == titles_raw {
-		w.WriteHeader(http.StatusBadRequest)
-		w.Write([]byte("Не указан обязательный параметр: 'q'!"))
-		return
-	}
+	// if "" == titles_raw {
+	// 	w.WriteHeader(http.StatusBadRequest)
+	// 	w.Write([]byte("Не указан обязательный параметр: 'q'!"))
+	// 	return
+	// }
 
 	var values = FoodNutrientsFromRequest(query)
 
@@ -87,7 +87,9 @@ func ListNutrients(w http.ResponseWriter, r *http.Request) {
 		return
 	}
 
-	page.SetTitle(titles_raw)
+	if "" != titles_raw {
+		page.SetTitle(titles_raw)
+	}
 
 	page_number, page_number_err := strconv.Atoi(query.Get("page_number"))
 
