@@ -50,13 +50,13 @@
             onclick="searchOnClick(event)"
             {{if eq "" .Q}}disabled{{end}}
             data-skip_enabler="1"
-        >&#8981;</button>
+        >⌕</button>
         <button
             type="button"
             form="{{.EntityAlias}}-search-form"
             onclick="searchOnClear(event)"
             data-skip_disabler="1"
-        >&#9746;</button>
+        >⌫</button>
     </div>
     {{template "search_result" .}}
 </search>

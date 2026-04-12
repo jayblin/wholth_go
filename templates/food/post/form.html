@@ -9,7 +9,6 @@
     method="post"
     action="/food#food-post-form"
     target="htmz"
-    onsubmit="loaderInstall()"
 >
     <header>
         <h2 style="--idx: 0;"><a href="#basics">Инфа</a></h2>
@@ -74,7 +73,7 @@
             id="portion_size_modal"
             oninput="portionSize.handleInput(event)"
         >
-            <button class="close" onclick="portion_size_modal.close()" title="Закрыть">&#10007;</button>
+            <button class="close" onclick="portion_size_modal.close()" title="Закрыть"></button>
             <input
                 name="portion_mass_number"
                 type="number"

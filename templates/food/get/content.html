@@ -7,6 +7,18 @@
 {{end}}
 
 {{define "content"}}
+<div id="actions">
+    {{/* Эта можалка пока не выводится, т.к. для создания пищи есть отдельная страница. */}}
+    {{if and .Session.IsAuthenticated false}}
+    {{/*<button command="show-modal" commandfor="food_post_modal">Создать запись</button>*/}}
+    <button onclick="food_post_modal.showModal()">Создать запись</button>
+    <dialog id="food_post_modal">
+        {{/*<button class="close" commandfor="food_post_modal" command="close"></button>*/}}
+        <button class="close" onclick="food_post_modal.close()"  title="Закрыть"></button>
+        {{template "food_post_form" .}}
+    </dialog>
+    {{end}}
+</div>
 {{ template "search_form" . }}
 {{ template "search" . }}
 {{ template "affect_query" . }}
@@ -16,16 +28,4 @@
     value="1"
     form="food-search-form"
 >
-<div id="actions">
-    {{/* Эта можалка пока не выводится, т.к. для создания пищи есть отдельная страница. */}}
-    {{if and .Session.IsAuthenticated false}}
-    {{/*<button command="show-modal" commandfor="food_post_modal">Создать запись</button>*/}}
-    <button onclick="food_post_modal.showModal()">Создать запись</button>
-    <dialog id="food_post_modal">
-        {{/*<button class="close" commandfor="food_post_modal" command="close">&#9746;</button>*/}}
-        <button class="close" onclick="food_post_modal.close()"  title="Закрыть">&#10007;</button>
-        {{template "food_post_form" .}}
-    </dialog>
-    {{end}}
-</div>
 {{end}}
