@@ -1,0 +1,16 @@
+{{define "suggestion"}}
+    <li>
+        <h2>
+            {{.Title}}
+            <a href="/exercise/{{.Id}}" target="_blank">↗</a>
+        </h2>
+        <pre>[{{.PreferredType.Alias}}]</pre>
+        <pre>[{{range .BodyParts}}{{.Title}};{{end}}]</pre>
+        {{if gt (len .Description) 0 }}
+        <details>
+            <summary>Описание</summary>
+            <pre>{{.Description}}</pre>
+        </details>
+        {{end}}
+    </li>
+{{end}}

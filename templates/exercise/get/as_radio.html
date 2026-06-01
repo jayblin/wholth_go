@@ -1,0 +1,16 @@
+{{define "suggestion"}}
+<li>
+    <article>
+        <label>
+            <input type="radio" name="exercise_id" value="{{.Id}}" >
+            {{.Title}}
+        </label>
+        <a href="/exercise/{{.Id}}" target="_blank">↗</a>
+    </article>
+</li>
+{{end}}
+
+<!-- H1 это Костыль. Убрать, когда почину все роуты перейдут на схему пожгрузки элементов через айдишники -->
+<h1 title="{{.Meta.Title}}">{{.Meta.Title}}</h1>
+
+{{template "search_result" .}}

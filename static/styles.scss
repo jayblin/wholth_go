@@ -94,6 +94,11 @@ dialog {
   }
 }
 
+search, output {
+  display: grid;
+  gap: spacing.$sm;
+}
+
 main {
   // overflow: hidden;
 }
@@ -101,6 +106,7 @@ main {
 hr {
   border-bottom: 0;
   border-color: color.$primary-d;
+  border-style: dashed;
   margin: spacing.$sm 0;
 }
 
@@ -108,17 +114,38 @@ header {
   display: flex;
   gap: spacing.$xs;
   align-items: center;
+  overflow: hidden;
 }
 
 nav {
+  background-color: var(--c-p-a);
+  border-radius: var(--s-b-r);
   margin-bottom: spacing.$sm;
+  padding: spacing.$sm 0;
+
+  summary {
+    padding-left: spacing.$sm;
+  }
 
   menu {
     display: flex;
     gap: spacing.$md;
     justify-content: center;
     text-align: center;
+    flex-wrap: wrap;
   }
+}
+
+h1 {
+  font-size: 1.8em;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+h2 {
+  font-size: 1.6em;
+  font-weight: normal;
+  align-items: center;
 }
 
 h1, h2 {
@@ -170,43 +197,15 @@ button {
     width: spacing.$lg;
     height: spacing.$lg;
   }
-
-  &.close {
-    &:after {
-      // content: "△";
-      content: "✕";
-    }
-  }
-
-  &.trash {
-    &:after {
-      content: "♻";
-    }
-  }
-
-  &.refresh {
-    &:after {
-      content: "↺";
-    }
-  }
-
-  &.search {
-    &:after {
-      content: "⌕";
-    }
-  }
-
-  // &.open {
-  //   &:after {
-  //     content: "▽";
-  //     align-self: end;
-  //   }
-  // }
 }
 
-body, textarea, label, select, input, span, p, legend, pre, button {
+body, label, select, input, span, p, legend, button {
   font-size: 1rem;
   font-family: tahoma, verdana, sans-serif;
+}
+
+textarea {
+  font-family: monospace;
 }
 
 textarea, input {
@@ -223,6 +222,7 @@ input {
   &[type="number"],
   &[type="text"],
   &[type="search"],
+  &[type="datetime-local"],
   &[type="password"] {
     min-height: 2rem;
     height: fit-content;
@@ -300,6 +300,13 @@ legend {
 
 pre {
   margin: 0px;
+  font-size: 0.8rem;
+  font-family: monospace;
+  border-radius: 5px;
+  background: var(--c-s-a);
+  width: fit-content;
+  padding: 0 spacing.$xs;
+  align-content: center;
 }
 
 menu, ul {
@@ -364,9 +371,9 @@ td {
   display: grid;
   grid-template-columns: minmax(10ch, 40ch) max-content max-content;
   gap: spacing.$xs;
-  margin-bottom: spacing.$sm;
 }
 
+// todo move to food?
 .suggestion_list {
   flex: 1 0 100%;
   display: grid;
@@ -381,10 +388,28 @@ td {
     display: flex;
     gap: spacing.$sm;
     overflow: hidden;
-    border-radius: var(--s-b-r);
+    // border-radius: var(--s-b-r);
+    position: relative;
 
-    &:hover {
-      outline: 1px solid color.$primary-b;
+    &::before {
+      content: "";
+      position: absolute;
+      // right: spacing.$sm;
+      right: 0;
+      height: 100%;
+      width: 2px;
+      border-right: 2px dotted var(--c-p-b);
+    }
+
+    &::after {
+      content: "";
+      position: absolute;
+      // right: spacing.$sm;
+      right: 0;
+      bottom: 0;
+      height: 2px;
+      width: 50%;
+      border-top: 2px dotted var(--c-p-b);
     }
 
     > div {
@@ -412,11 +437,58 @@ td {
   align-items: center;
 }
 
+.query-controls {
+  display: grid;
+  align-items: center;
+  gap: spacing.$sm;
+  margin-bottom: spacing.$sm;
+}
+
+.consumption_log-table {
+  overflow-x: scroll;
+
+  // td:nth-child(1) {
+  //   pre {
+  //     font-size: 0.7rem;
+  //     border-radius: 5px;
+  //     background: var(--c-s-a);
+  //     width: fit-content;
+  //     padding: 0 spacing.$xs;
+  //   }
+  // }
+
+  td:nth-child(2) {
+    div {
+      display: flex;
+      gap: spacing.$xs;
+    }
+
+    input[type="number"] {
+      width: 7ch;
+    }
+  }
+
+}
+
+details {
+  display: grid;
+  gap: spacing.$sm;
+
+  summary {
+    cursor: pointer;
+
+    &::marker {
+        color: var(--c-p-e);
+    }
+  }
+}
+
 #logo {
   display: flex;
   align-items: center;
   gap: spacing.$sm;
   flex-grow: 1;
+  overflow: hidden;
 
   img {
     border-radius: var(--s-b-r);
@@ -504,39 +576,7 @@ td {
   }
 }
 
-#consumption_log-get-form {
-  .consumption_log-query {
-    display: grid;
-    align-items: center;
-    gap: spacing.$sm;
-    margin-bottom: spacing.$sm;
-  }
 
-  .consumption_log-table {
-    overflow-x: scroll;
-  }
-
-  td:nth-child(1) {
-    pre {
-      font-size: 0.7rem;
-      border-radius: 5px;
-      background: var(--c-s-a);
-      width: fit-content;
-      padding: 0 4px;
-    }
-  }
-
-  td:nth-child(2) {
-    div {
-      display: flex;
-      gap: spacing.$xs;
-    }
-
-    input[type="number"] {
-      width: 7ch;
-    }
-  }
-}
 
 #consumption_log-get-form,
 #food-post-form {
@@ -551,13 +591,13 @@ td {
   height: spacing.$sm;
   z-index: 99;
 
-  &:before {
+  &::before {
     content: "загрузка";
     position: absolute;
     left: spacing.$sm;
     opacity: 0.2;
   }
-  &:after {
+  &::after {
     animation-name: dots;
     animation-duration: 2s;
     animation-timing-function: ease-in-out;
@@ -595,6 +635,10 @@ td {
   }
 }
 
+#notifications {
+  gap: spacing.$xs;
+}
+
 #notifications-counter {
   background: var(--c-s-f);
   color: var(--c-p-a);
@@ -628,5 +672,67 @@ td {
   li {
     padding: spacing.$sm;
     border-radius: var(--s-b-r);
+  }
+}
+
+#body-part-tree {
+  overflow-x: hidden;
+  ul {
+    position: relative;
+    // display: flex;
+    // list-style: square;
+    margin-left: spacing.$md;
+    // list-style-position: inside;
+    gap: unset;
+
+    &::before {
+      content: "";
+      position: absolute;
+      width: 2px;
+      background: var(--c-p-b);
+      height: 100%;
+      // left: calc(-#{spacing.$md} + 3px);
+      left: -#{spacing.$md - 3px};
+    }
+  }
+}
+
+select#body-parts {
+  option {
+    padding: 0;
+  }
+  optgroup {
+    // margin-left: spacing.$xs;
+  }
+}
+
+#exercise-search-result {
+  li {
+    display: grid;
+
+    > h2 {
+      display: flex;
+      justify-content: space-between;
+    }
+
+    details {
+      pre {
+        width: 100%;
+        background: var(--c-p-a);
+      }
+    }
+  }
+}
+
+#consumption_log-table {
+  td:nth-child(2) {
+    > div {
+      display: grid;
+      gap: spacing.$xs;
+
+      input[type="number"] {
+        width: 8ch;
+      }
+    }
   }
 }

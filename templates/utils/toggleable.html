@@ -1,7 +1,7 @@
 {{define "toggleable_attributes"}}{{end}}
 {{define "toggleable_content"}}{{end}}
 
-{{define "toggleable"}}
+{{define "toggleable_checkbox"}}
 <input
     type="checkbox"
 
@@ -14,5 +14,9 @@
     {{if .Toggleable_Checked}}checked{{end}}
     {{template "toggleable_attributes" .}}
 >
+{{end}}
+
+{{define "toggleable"}}
+{{template "toggleable_checkbox" . }}
 {{template "toggleable_content" . }}
 {{end}}

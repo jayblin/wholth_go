@@ -10,6 +10,7 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"slices"
 	"strings"
 
 	// "crypto/tls"
@@ -18,10 +19,13 @@ import (
 	// "io/ioutil"
 
 	"time"
+	"wholth_go/container"
 	"wholth_go/logger"
 	"wholth_go/route"
 	"wholth_go/route/auth"
+	"wholth_go/route/body_part"
 	"wholth_go/route/consumption_log"
+	"wholth_go/route/exercise"
 	"wholth_go/route/food"
 	"wholth_go/route/ingredient"
 	"wholth_go/route/nutrient"
@@ -69,8 +73,48 @@ func gzipMiddleware(next http.Handler) http.Handler {
 	})
 }
 
+func matchMiddleware(alias string) func(next http.Handler) http.Handler {
+	switch alias {
+	case "gzip":
+		return gzipMiddleware
+	case "container":
+		return container.ContainerMiddleware
+	case "session":
+		return session.SessionMiddleware
+	case "csrf-generator":
+		return session.CsrfTokenGeneratorMiddleware
+	case "csrf-validator":
+		return session.CsrfTokenValidatorMiddleware
+	case "authentication":
+		return auth.AuthenticationMiddleware
+	}
+
+	return nil
+}
+
+func applyMiddleware(handler func(w http.ResponseWriter, r *http.Request), middleware ...string) http.Handler {
+	var chain http.Handler = http.HandlerFunc(handler)
+
+	slices.Reverse(middleware)
+
+	for _, m := range middleware {
+		chain = matchMiddleware(m)(chain)
+	}
+
+	return chain
+}
+
+func Index(w http.ResponseWriter, r *http.Request) {
+	route.RenderHtmlTemplates(
+		w,
+		r,
+		route.DefaultHtmlPage(r),
+		"templates/index.html",
+	)
+}
+
 func main() {
-	fmt.Println("Starting up...")
+	logger.Info("Starting up...")
 
 	secrets := secret.LoadSecrets()
 
@@ -88,12 +132,12 @@ func main() {
 	logger.Info("ENV ready")
 
 	mux := http.NewServeMux()
-
-	mux.Handle(
-		"GET /",
-		session.SessionMiddleware(
-			session.CsrfTokenGeneratorMiddleware(
-				http.HandlerFunc(food.ListFoods))))
+	//
+	// mux.Handle(
+	// 	"GET /",
+	// 	session.SessionMiddleware(
+	// 		session.CsrfTokenGeneratorMiddleware(
+	// 			http.HandlerFunc(food.ListFoods))))
 
 	mux.Handle(
 		"GET /static/",
@@ -104,95 +148,119 @@ func main() {
 
 	// https://matthewsetter.com/restrict-allowed-route-methods-go-122/
 	// https://www.alexedwards.net/blog/making-and-using-middleware
-	http.HandleFunc("GET /palette", palette)
-	mux.Handle(
-		"GET /authenticate",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenGeneratorMiddleware(
-					http.HandlerFunc(auth.HandleAuthentication)))))
-	mux.Handle(
-		"POST /register",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenValidatorMiddleware(
-					session.CsrfTokenGeneratorMiddleware(
-						http.HandlerFunc(auth.HandleRegistration))))))
-	mux.Handle(
-		"POST /login",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenValidatorMiddleware(
-					session.CsrfTokenGeneratorMiddleware(
-						http.HandlerFunc(auth.HandleLogin))))))
-	mux.Handle(
-		"GET /ingredient",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				http.HandlerFunc(ingredient.ListIngredients))))
-	mux.Handle(
-		"GET /nutrient",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				http.HandlerFunc(nutrient.ListNutrients))))
-	mux.Handle(
-		"POST /consumption_log/batch-patch",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenValidatorMiddleware(
-					session.CsrfTokenGeneratorMiddleware(
-						auth.AuthenticationMiddleware(
-							http.HandlerFunc(consumption_log.BatchPatchConsumptionLog)))))))
-	mux.Handle(
-		"POST /consumption_log/batch-delete",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenValidatorMiddleware(
-					session.CsrfTokenGeneratorMiddleware(
-						auth.AuthenticationMiddleware(
-							http.HandlerFunc(consumption_log.BatchDeleteConsumptionLog)))))))
-	mux.Handle(
-		"GET /consumption_log",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenGeneratorMiddleware(
-					auth.AuthenticationMiddleware(
-						http.HandlerFunc(consumption_log.ListConsumptionLogs))))))
-	mux.Handle(
-		"POST /consumption_log",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenValidatorMiddleware(
-					session.CsrfTokenGeneratorMiddleware(
-						auth.AuthenticationMiddleware(
-							http.HandlerFunc(consumption_log.PostConsumptionLog)))))))
-	mux.Handle(
-		"GET /food",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenGeneratorMiddleware(
-					http.HandlerFunc(food.ListFoods)))))
-	mux.Handle(
-		"GET /recipe/add",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenGeneratorMiddleware(
-					http.HandlerFunc(food.GetRecipeForm)))))
+	// http.HandleFunc("GET /palette", palette)
 
-	mux.Handle(
-		"GET /food/{id}",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenGeneratorMiddleware(
-					http.HandlerFunc(food.GetFoodById)))))
-	mux.Handle(
-		"POST /food",
-		gzipMiddleware(
-			session.SessionMiddleware(
-				session.CsrfTokenValidatorMiddleware(
-					session.CsrfTokenGeneratorMiddleware(
-						auth.AuthenticationMiddleware(
-							http.HandlerFunc(food.PostFood)))))))
+	routes := []struct {
+		RouteName      string
+		Handler        func(http.ResponseWriter, *http.Request)
+		MiddlewareList []string
+	}{
+		{
+			"GET /",
+			Index,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"GET /authenticate",
+			auth.HandleAuthentication,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator"},
+		},
+		{
+			"POST /register",
+			auth.HandleRegistration,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator"},
+		},
+		{
+			"POST /login",
+			auth.HandleLogin,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator"},
+		},
+		{
+			"GET /ingredient",
+			ingredient.ListIngredients,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"GET /nutrient",
+			nutrient.ListNutrients,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"POST /consumption_log/batch-patch",
+			consumption_log.BatchPatchConsumptionLog,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
+		},
+		{
+			"POST /consumption_log/batch-delete",
+			consumption_log.BatchDeleteConsumptionLog,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
+		},
+		{
+			"GET /consumption_log",
+			consumption_log.ListConsumptionLogs,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"POST /consumption_log",
+			consumption_log.PostConsumptionLog,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
+		},
+		{
+			"GET /food",
+			food.ListFoods,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"GET /recipe/add",
+			food.GetRecipeForm,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"POST /food",
+			food.PostFood,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
+		},
+		{
+			"GET /exercise",
+			exercise.ListExercises,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"GET /exercise/{id}",
+			exercise.GetExerciseForm,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"POST /exercise",
+			exercise.PostExercise,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
+		},
+		{
+			"GET /exercise_log",
+			exercise.ListExerciseLogs,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"POST /exercise_log",
+			exercise.PostExerciseLog,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
+		},
+		{
+			"GET /body_part",
+			body_part.ListBodyParts,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"POST /body_part",
+			body_part.PostBodyPart,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
+		},
+	}
+
+	for _, r := range routes {
+		mux.Handle(r.RouteName, applyMiddleware(r.Handler, r.MiddlewareList...))
+		logger.Info(fmt.Sprintf("Registered '%s'", r.RouteName))
+	}
 
 	logger.Info("Routes ready")
 

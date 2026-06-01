@@ -16,6 +16,19 @@ function windowQueryParameterDelete(key, value) {
     history.replaceState(null, "", `?${query}`);
 }
 
+function enableFormElements(form) {
+    for(const input of form?.elements ?? []) {
+        if (!input.dataset.skip_enabler) {
+            input.disabled = false;
+        }
+
+        if ("search" === input.type) {
+            input.focus();
+            break;
+        }
+    }
+}
+
 function htmzReplaceElements(replacement, container) {
     if (!container) {
         return;
@@ -35,52 +48,102 @@ function htmzReplaceElements(replacement, container) {
         return;
     }
 
-    for(const input of container.form.elements ?? []) {
-        if (!input.dataset.skip_enabler) {
-            input.disabled = false;
-        }
-
-        if ("search" === input.type) {
-            input.focus();
-            break;
-        }
-    }
+    enableFormElements(container.form);
 
     // // container.previousElementSibling?.scrollIntoView({
     // container.form.scrollIntoView({
-    //     block:'start',
-    //     container:'all',
-    //     behavior:'smooth'
+    //     block:"start",
+    //     container:"all",
+    //     behavior:"smooth"
     // });
+}
+
+function notificationsUpdateCounter(byHowMuch) {
+    const counter = document.getElementById("notifications-counter");
+
+    if (!counter) {
+        return;
+    }
+
+    if ("flex" !== counter.style.display) {
+        counter.style.display = "flex";
+    }
+
+    const currentCount = Number(counter.innerText ?? 0);
+    const newCount = currentCount + byHowMuch;
+    if  (newCount >= 100) {
+        counter.innerText = "∞";
+    } else {
+        counter.innerText = newCount;
+    }
 }
 
 function htmzHandleResponse(event) {
     const iframe = event.target;
+
+    // TODO сделать так, чтобы все страницы перешли на схему с выдачей
+    // элементов по id.
+    const h1 = iframe.contentDocument.querySelector("h1");
+    
+    if (h1) {
+        // TODO if body contains only text then push that text as a notification
+        for (const ch of iframe.contentDocument.body.childNodes) {
+            const id = ch.getAttribute?.('id');
+
+            if (!id) {
+                continue;
+            }
+
+            if ("notifications" === id) {
+                const notificationCount = ch?.children?.length;
+                notificationsUpdateCounter(notificationCount);
+
+                document.getElementById("notifications")?.prepend(...(ch.childNodes));
+                document.getElementById("notifications-container")?.style?.removeProperty("display");
+            } else {
+                document.getElementById(id)?.replaceWith(ch);
+                enableFormElements(document.getElementById(id)?.form);
+            }
+        }
+        // window.top.history.replaceState(null, "", iframe.contentDocument.location.pathname);
+
+        return;
+    }
+
+    // console.log(window.location, window.top.location);
     const id = iframe.contentWindow.location.hash || null;
 
+    // TODO сделать так, чтобы заменялись все элементы с id.
     const notificationsReceived = iframe.contentDocument.getElementById("notifications");
     if (notificationsReceived) {
         const notificationCount = notificationsReceived?.children?.length;
-        const counter = document.getElementById("notifications-counter");
+        notificationsUpdateCounter(notificationCount);
 
-        if (counter) {
-            if ("flex" !== counter.style.display) {
-                counter.style.display = "flex";
-            }
-
-            const currentCount = Number(counter.innerText ?? 0);
-            const newCount = currentCount + notificationCount;
-            if  (newCount >= 100) {
-                counter.innerText = "∞";
-            } else {
-                counter.innerText = newCount;
-            }
-        }
-
-        htmzReplaceElements([], )
         document.getElementById("notifications")?.prepend(...notificationsReceived.childNodes);
-        document.getElementById('notifications-container')?.style?.removeProperty('display');
+        document.getElementById("notifications-container")?.style?.removeProperty("display");
+    } else if (!id) {
+        const plainText = iframe.contentDocument.body.innerText;
+        notificationsUpdateCounter(1);
 
+        const li = document.createElement("li");
+        li.innerHTML = `<li class="status error">${plainText}</li>`;
+        document.getElementById("notifications")?.prepend(li);
+        document.getElementById("notifications-container")?.style?.removeProperty("display");
+    }
+
+    // TODO check that origin is the same
+    // const iframeLoc = iframe.contentDocument.location.toString();
+    // console.log(iframeLoc, document.location.toString(), iframe.contentDocument.location.pathname, document.location.pathname);
+    // if (iframeLoc && iframeLoc != "about:blank" && iframeLoc !== document.location.toString()) {
+    //     // document.location = iframeLoc;
+    //     // return;
+    //     // window.history.pushState(null, "", iframe.contentDocument.location.toString());
+    //     // document.body.replaceWith(iframe.contentDocument.body);
+    //     // return;
+    // }
+
+    if(notificationsReceived) {
+        // add other elements from response to the document. 
         const replacement = iframe.contentDocument.body.querySelectorAll("body > *:not(#notifications)")
         let container = document.querySelector(id);
 
@@ -152,8 +215,18 @@ function paginateDown(event) {
 // }
 
 function disableSiblings(event) {
-    event.target.parentElement.querySelectorAll("input,button").forEach(
-        (e) => e !== event.target && (e.disabled = !event.target.checked)
+    let parent = event.target.parentElement;
+    let i = 0;
+
+    while (undefined !== parent.dataset.toggleable_bubble && i < 10) {
+        i++;
+        parent = parent.parentElement;
+    }
+
+    parent.querySelectorAll("input,button").forEach(
+        (e) => e !== event.target
+            && "hidden" !== e.type
+            && (e.disabled = !event.target.checked)
     );
 }
 
@@ -167,7 +240,7 @@ function searchOnSubmit(event) {
     form.submit();
 
     for(const input of form.elements) {
-        if (!input.dataset.skip_disabler) {
+        if (!input.dataset.skip_disabler && "hidden" !== input.type) {
             input.disabled = true;
         }
     }

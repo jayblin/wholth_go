@@ -1,3 +1,46 @@
+{{define "content"}}
+<pre style="margin: 0 auto; overflow: scroll; max-width: 38ch; background-color: transparent; color: var(--c-p-e); border: 1px solid var(--c-p-a);">
+         X                                  
+        X X            XXXXXXXXXXXXXXX      
+      XX╔╦ X            X ══╗  ╔═╗  X       
+     X ═╩╣  X            X  ╚═╦╬═╝ X        
+    X ═══╩═  X            XX  ╠╝ XX         
+   XXXXXXXXXXXX             X ║ X           
+                             X X            
+       XXXXXXXXXXXX           X             
+        X ╔╗ ╔═╗ X                          
+         X║╚═╚╗║ X                          
+         X╚═══╬╝X         X                 
+          X  ╦╝ X        X X                
+           X ║ X        X══X                
+            X║X        XXXXXX               
+            X X                             
+             X                              
+    XXXXXXXXX     X                         
+     X════XX     X X                        
+      XX X      X ║ X     XXXXXXXX          
+        X      X ╔╝  X     X ╦═╗X           
+              X  ╩══  X     X║═╝X           
+             XXXXXXXXXXX    X╚╗X            
+                             X║X            
+XXXXXXXXXXXXXXXX              X             
+ X   ══╦══╦╗  X                             
+  XX  ═╝╔═╝║ X                              
+    X  ╦╬══╝X                               
+     X ╚╝ X                                 
+      XX X                         X        
+        X        XXXXXXX         XX X       
+                  X═╦═X         X ╔══╗X     
+         X         X X        XX ╔╩╦═╣ X    
+       XX X         X        X╔═╦╣ ╠═╬╗ X   
+      X ╔╗ XX              XX ║ ╚╩═╝ ╚╝  XX 
+     X  ║╚═╗ X            XXXXXXXXXXXXXXXXXX
+   XX══╗║  ║  X                       X     
+  X  ══╩╩══╩   XX                   X╔═X    
+ XXXXXXXXXXXXXXXXX                XX ║══XX  
+                                 XXXXXXXXXX
+</pre>
+{{end}}
 <!doctype html>
 <html lang="{{.Meta.Lang}}">
     <head>
@@ -16,7 +59,8 @@
             fetchpriority="high"
         >
         <!-- <script src="https://cdn.jsdelivr.net/npm/htmx.org@2.0.8/dist/htmx.min.js"></script> -->
-        <script src="/static/main.min.js?version={{.Version}}"></script>
+        <!-- <script src="/static/main.min.js?version={{.Version}}"></script> -->
+        <script src="/static/main.js?version={{.Version}}"></script>
 
         {{define "head"}}
         {{end}}
@@ -30,15 +74,14 @@
                 <button
                     class="close"
                     onclick="document.getElementById('notifications-container').style.display='none'"
-                ></button>
+                >✕</button>
                 <button
-                    class="trash"
                     onclick="
                         document.getElementById('notifications-container').style.display='none';
                         document.getElementById('notifications')?.replaceChildren('');
                         c=document.getElementById('notifications-counter'),c.innerText='',c.style.display='none';
                     "
-                ></button>
+                >♻</button>
             </div>
             <ul id="notifications"></ul>
         </div>
@@ -47,6 +90,7 @@
             hidden
             name="htmz"
             loading="lazy"
+            referrerpolicy="strict-origin"
             onload="setTimeout(()=>htmzOnLoad(event))"
         ></iframe>
         <header>
@@ -54,7 +98,7 @@
                 <a href="/">
                     <img src="/static/apple-touch-icon.png" width="60" height="60" alt="Site Logo" >
                 </a>
-                <h1>{{.Meta.Title}}</h1>
+                <h1 id="h1">{{.Meta.Title}}</h1>
             </div>
 	    {{/* commandfor и command не работают на ios */}}
 	    {{/*<button commandfor="user_info_modal" command="show-modal" title="User info" >*/}}
@@ -72,7 +116,7 @@
             </button>
             <dialog id="user_info_modal">
                 {{/*<button class="close" commandfor="user_info_modal" command="close"></button>*/}}
-                <button class="close" onclick="user_info_modal.close()" title="Закрыть">&#10007;</button>
+                <button class="close" onclick="user_info_modal.close()" title="Закрыть">✕</button>
                 <p>{{.Session.Username}}</p>
                 <p>Сессия протухнет 
                     <time datetime="{{.Session.ExpiresStr}}" >
@@ -86,12 +130,21 @@
         </header>
 
         <nav>
-            <menu>
-                <li><a href="/food">Пища</a></li>
-                <li><a href="/recipe/add">Добавить рецерт</a></li>
-                <li><a href="/consumption_log">Логи поедания</a></li>
-                <!-- <li><a href="/test#test-target" target="htmz">test</a></li> -->
-            </menu>
+            <details open>
+                <summary>Разделы</summary>
+                <menu>
+                    <li><a href="/food">Пища</a></li>
+                    <li><a href="/recipe/add">Добавить рецерт</a></li>
+                    <li><a href="/consumption_log">Логи поедания</a></li>
+                </menu>
+                <hr>
+                <menu>
+                    <li><a href="/body_part">Части тела</a></li>
+                    <li><a href="/exercise">Упражнения</a></li>
+                    <li><a href="/exercise/add">Добавить упражнение</a></li>
+                    <li><a href="/exercise_log">Логи упражнений</a></li>
+                </menu>
+            </details>
         </nav>
 
         <!-- <div id="test-target"></div> -->

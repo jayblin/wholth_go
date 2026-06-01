@@ -1,0 +1,54 @@
+{{define "body_part_tree_element"}}
+<label>
+    <input name="body_parts" type="checkbox" value="{{.Id}}" {{if .Toggleable_Checked}}checked{{end}}>
+    {{.Title}}
+</label>
+{{end}}
+
+{{block "exercise_post_form" .}}
+<form 
+    id="exercise-post-form"
+    method="post"
+    action="/exercise"
+    target="htmz"
+>
+    <input type="hidden" name="id" value="{{.PostForm.Exercise.Id}}" >
+    <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" >
+    <fieldset>
+        <legend>Инфа {{if ne "" .PostForm.Exercise.Id}}[id:{{.PostForm.Exercise.Id}}]{{end}}</legend>
+        <label>
+            Название
+            <input name="title" type="text" maxlength="255" value="{{.PostForm.Exercise.Title}}" required>
+        </label>
+        <label style="display: grid">
+            Описание
+            <textarea
+                name="description"
+                maxlength="5120"
+                rows="10"
+                autocomplete="off"
+            >{{.PostForm.Exercise.Description}}</textarea>
+        </label>
+        <label>
+            Тип
+            <select name="preffered_type_id">
+            {{if eq "" .PostForm.Exercise.Id}}
+                {{range .ExerciseTypes }}
+                <option {{if eq "1" .Id}}selected{{end}} value="{{.Id}}">{{.Alias}} ({{.Unit}})</option>
+                {{end}}
+            {{else}}
+                {{range .ExerciseTypes }}
+                <option {{if $.IsExerciseTypeSelected .Id}}selected{{end}} value="{{.Id}}">{{.Alias}} ({{.Unit}})</option>
+                {{end}}
+            {{end}}
+            </select>
+        </label>
+
+        {{template "body_part_tree" $.BodyParts.Values}}
+
+        <div class="controls">
+            <button class="submit" type="submit" title="Сохранить">Сохранить</button>
+        </div>
+    </fieldset>
+</form>
+{{end}}

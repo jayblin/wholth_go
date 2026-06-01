@@ -1,0 +1,41 @@
+{{block "body_part_post_form" .}}
+
+<form 
+    id="body_part-post-form"
+    method="post"
+    action="/body_part"
+    target="htmz"
+>
+    <fieldset>
+        <legend>Новая часть тела</legend>
+            
+        <input
+            name="parent_id"
+            type="search"
+            list="body-parts"
+            placeholder="Название родительской части тела"
+            autocomplete="off"
+        >
+        <datalist id="body-parts">
+        {{range .Values}}
+            <option value="{{.Id}}">{{.Title}}</option>
+        {{end}}
+        </datalist>
+        <label>
+            Название
+            <input name="title" value="{{.PostForm.BodyPart.Title}}">
+        </label>
+        <label>
+            Описание
+            <textarea
+                name="description"
+                maxlength="5120"
+                rows="10"
+            >{{.PostForm.BodyPart.Description}}</textarea>
+        </label>
+        <button class="submit" type="submit">Сохранить</button>
+        <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" >
+    </fieldset>
+</form>
+
+{{end}}

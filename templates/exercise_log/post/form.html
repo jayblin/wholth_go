@@ -1,0 +1,56 @@
+{{define "exercise_log_post_form"}}
+{{template "search_form_v2" .DummyExerciseList}}
+<input type="hidden" name="as_radio" value="1" form="exercise-search-form" >
+<input type="hidden" name="limit" value="5" form="exercise-search-form" >
+<form 
+    id="exercise_log-post-form"
+    method="post"
+    action="/exercise_log"
+    target="htmz"
+    onsubmit="searchOnSubmit(event)"
+>
+    <input type="hidden" name="id" value="{{.PostForm.Id}}" >
+    <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" >
+    <label>
+        {{template "search" .DummyExerciseList}}
+    </label>
+    <hr>
+    <label>
+        Тип упражнения
+        <select name="type_id">
+            {{range .Types}}
+            <option value="{{.Id}}">{{.Alias}}</option>
+            {{end}}
+        </select>
+    </label>
+    <hr>
+    <label>
+        Скока?
+        <input
+            name="value"
+            type="number"
+            inputmode="numeric"
+            min="1"
+            value=""
+            required
+        >
+    </label>
+    <hr>
+    <label>
+        Когда?
+        <input
+            name="created_at"
+            type="datetime-local"
+            value="{{.PostForm.CreatedAt}}" 
+            required
+            autocomplete="off"
+        >
+        <input hidden id="timezone" name="timezone" value="+05:00" />
+    </label>
+    <hr>
+    <div class="controls" >
+        {{template "exercise_log_post_result" .}}
+        <button type="submit">Сохранить</button>
+    </div>
+</form>
+{{end}}

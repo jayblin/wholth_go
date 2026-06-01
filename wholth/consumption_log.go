@@ -6,14 +6,17 @@ package wholth
 import "C"
 import (
 	"errors"
+	"net/http"
 	"strconv"
 	"time"
 	"unsafe"
+	"wholth_go/container"
 	"wholth_go/util"
 )
 
 type ConsumptionLog struct {
 	// util.Toggleable
+	// util.ToggleableTrait
 	Id             string
 	FoodId         string
 	Mass           string
@@ -158,47 +161,52 @@ func SaveConsumptionLog(form *ConsumptionLogPostForm, userId string) (string, er
 	return "success", nil
 }
 
-
-func UpdateConsumptionLog(id string, mass string, userId string) error {
-	result, err := ExecStmtResultNew()
-	defer result.Delete()
+func UpdateConsumptionLog(r *http.Request, id string, mass string, userId string) error {
+	result, err, sev := ExecStmtResultNew()
+	defer result.ContainedDelete(container.Instance(r))
 
 	if nil != err {
+		container.Log(r, sev, "[UpdateConsumptionLog][0]", err)
 		return err
 	}
 
-	err = result.Bind(id, userId, mass)
+	err, sev = result.Bind(id, userId, mass)
 
 	if nil != err {
+		container.Log(r, sev, "[UpdateConsumptionLog][1]", err)
 		return err
 	}
 
-	err = result.Fetch("consumption_log_update.sql")
+	err, sev = result.Fetch("consumption_log_update.sql")
 
 	if nil != err {
+		container.Log(r, sev, "[UpdateConsumptionLog][2]", err)
 		return err
 	}
 
 	return nil
 }
 
-func DeleteConsumptionLog(id string, userId string) error {
-	result, err := ExecStmtResultNew()
-	defer result.Delete()
+func DeleteConsumptionLog(r *http.Request, id string, userId string) error {
+	result, err, sev := ExecStmtResultNew()
+	defer result.ContainedDelete(container.Instance(r))
 
 	if nil != err {
+		container.Log(r, sev, "[DeleteConsumptionLog][0]", err)
 		return err
 	}
 
-	err = result.Bind(id, userId)
+	err, sev = result.Bind(id, userId)
 
 	if nil != err {
+		container.Log(r, sev, "[DeleteConsumptionLog][1]", err)
 		return err
 	}
 
-	err = result.Fetch("consumption_log_delete.sql")
+	err, sev = result.Fetch("consumption_log_delete.sql")
 
 	if nil != err {
+		container.Log(r, sev, "[DeleteConsumptionLog][2]", err)
 		return err
 	}
 

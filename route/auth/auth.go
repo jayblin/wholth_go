@@ -22,15 +22,17 @@ type UnauthorizedPage struct {
 	StatusCode   int
 	Username     string
 	ErrorMessage string
+	Referer      string
 }
 
 func DefaultUnauthorizedPage(r *http.Request) UnauthorizedPage {
 	page := route.DefaultHtmlPage(r)
-	page.Meta.Title = "Authenticate"
+	page.Meta.Title = "Аутентикация"
 	// meta.Description = "Page does not exist"
 	return UnauthorizedPage{
 		page,
 		http.StatusUnauthorized,
+		"",
 		"",
 		"",
 	}
@@ -41,10 +43,10 @@ func RenderUnauthorizedPage(
 	r *http.Request,
 	page UnauthorizedPage,
 ) {
-	w.WriteHeader(page.StatusCode)
-	route.RenderHtmlTemplates(
+	route.RenderHtmlTemplatesWithStatus(
 		w,
 		r,
+		page.StatusCode,
 		page,
 		"templates/index.html",
 		"templates/401/content.html",
@@ -52,7 +54,7 @@ func RenderUnauthorizedPage(
 }
 
 func AuthenticationMiddleware(next http.Handler) http.Handler {
-	return http.HandlerFunc(func (w http.ResponseWriter, r *http.Request) {
+	return http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 		var ctx = r.Context()
 
 		sess, sess_ok := ctx.Value(session.SessionKey).(session.HttpSession)
@@ -65,9 +67,8 @@ func AuthenticationMiddleware(next http.Handler) http.Handler {
 		}
 
 		if session.ANON_USERNAME == sess.Username {
-			// AuthenticateHandler(w, r)
-			w.WriteHeader(http.StatusForbidden)
-			w.Write([]byte("Go away!"))
+			r.Header.Add("Referer", r.URL.RequestURI())
+			HandleAuthentication(w, r)
 			return
 		}
 
@@ -78,6 +79,10 @@ func AuthenticationMiddleware(next http.Handler) http.Handler {
 func HandleAuthentication(w http.ResponseWriter, r *http.Request) {
 	page := DefaultUnauthorizedPage(r)
 	page.StatusCode = http.StatusOK
+
+	if len(r.Header["Referer"]) > 0 {
+		page.Referer = r.Header["Referer"][0]
+	}
 
 	defer RenderUnauthorizedPage(w, r, page)
 }
@@ -135,10 +140,12 @@ func do_auth_RENAME_FUNC(w http.ResponseWriter, r *http.Request, action AuthActi
 		RenderUnauthorizedPage(w, r, page)
 	} else {
 		session.CreateSessionAndSetCookie(w, username, userId)
-		// w.Header().Add("Location", "/")
-		// w.WriteHeader(http.StatusSeeOther)
-		// w.Write([]byte("Перебрасываем..."))
-		http.Redirect(w, r, "/", http.StatusSeeOther)
+		referer := r.PostFormValue("referer")
+		if len(referer) > 0 {
+			http.Redirect(w, r, referer, http.StatusSeeOther)
+		} else {
+			http.Redirect(w, r, "/", http.StatusSeeOther)
+		}
 	}
 }
 

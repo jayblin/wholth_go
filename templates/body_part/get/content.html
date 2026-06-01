@@ -1,0 +1,11 @@
+{{define "body_part_tree_element"}}
+<pre>{{.Lvl}} - {{.Lft}},{{.Rgt}} - {{.Title}}</pre>
+{{end}}
+
+{{define "content"}}
+
+{{template "body_part_post_form" .}}
+
+{{template "body_part_tree" .Values}}
+
+{{end}}

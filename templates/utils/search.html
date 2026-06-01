@@ -2,10 +2,24 @@
 <input name="affect_query" type="hidden" form="{{.EntityAlias}}-search-form" >
 {{end}}
 
+{{define "search_form_attributes"}}{{end}}
+
 {{define "search_form"}}
 <form
     id="{{.EntityAlias}}-search-form"
     action="/{{.EntityAlias}}#{{.EntityAlias}}-search-result"
+    method="get"
+    target="htmz"
+    novalidate
+    onsubmit="searchOnSubmit(event)"
+>
+</form>
+{{end}}
+
+{{define "search_form_v2"}}
+<form
+    id="{{.EntityAlias}}-search-form"
+    action="/{{.EntityAlias}}"
     method="get"
     target="htmz"
     novalidate
@@ -27,7 +41,6 @@
 {{define "search_result"}}
 <output id="{{.EntityAlias}}-search-result" form="{{.EntityAlias}}-search-form">
     {{template "paginator" .}}
-
     {{template "suggestion_list" .}}
 </output>
 {{end}}

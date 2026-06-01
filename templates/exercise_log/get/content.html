@@ -1,0 +1,31 @@
+{{define "content"}}
+{{if .Session.IsAuthenticated}}
+<form
+    id="exercise_log_batch_modal"
+    method="post"
+    target="htmz"
+>
+    <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" />
+</form>
+<div id="actions">
+    {{/*<button command="show-modal" commandfor="exercise_log_post_modal">Залогировать</button>*/}}
+    <button onclick="exercise_log_post_modal.showModal()">Залогировать</button>
+    <button
+        form="exercise_log_batch_modal"
+        formaction="/exercise_log/batch-patch"
+    >Изменить</button>
+    <button
+        form="exercise_log_batch_modal"
+        formaction="/exercise_log/batch-delete"
+    >Удалить</button>
+    <button onclick="window.scrollTo(0,0)">⇧</button>
+</div>
+<dialog id="exercise_log_post_modal">
+    <button class="close" onclick="exercise_log_post_modal.close()">✕</button>
+    {{template "exercise_log_post_form" .}}
+</dialog>
+{{end}}
+
+{{template "exercise_log_get_form" .}}
+
+{{end}}

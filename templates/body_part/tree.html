@@ -1,0 +1,35 @@
+{{define "body_part_tree_element"}}
+{{end}}
+
+{{define "body_part_tree"}}
+<div id="body-part-tree">
+    <ul>
+    {{ $prev := 0 }}
+    {{range $i, $e := slice . 1}}
+        {{ if eq 0 $i}}
+            <li>{{template "body_part_tree_element" .}}
+            {{if ne 0 .ChildCount}} <ul> {{end}}
+        {{else}}
+            {{if lt .Lvl $prev.Lvl}}
+                {{$cur := .}}
+                {{range $j := $prev.Lvl}}
+                    {{if ge $j $cur.Lvl}}
+                        </ul>
+            </li>
+                    {{else}}
+                        {{continue}}
+                    {{end}}
+                {{end}}
+            {{else if eq .Lvl $prev.Lvl}}
+            </li>
+            {{end}}
+
+            <li>{{template "body_part_tree_element" .}}
+
+            {{if ne 0 .ChildCount}} <ul>{{end}}
+        {{end}}
+        {{ $prev = $e }}
+    {{end}}
+    </ul>
+</div>
+{{end}}

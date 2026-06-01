@@ -121,5 +121,5 @@ func RenderHtmlTemplates(
 	data any,
 	filenames ...string,
 ) {
-	RenderHtmlTemplatesWithStatus(w, r, 200, data, filenames...)
+	RenderHtmlTemplatesWithStatus(w, r, http.StatusOK, data, filenames...)
 }

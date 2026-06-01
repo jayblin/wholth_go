@@ -299,13 +299,13 @@ func batchConsumptionLog(action BatchAction, w http.ResponseWriter, r *http.Requ
 			{
 				msg = "изменено"
 				mass := r.PostForm.Get(fmt.Sprintf("mass_%s", id))
-				err = wholth.UpdateConsumptionLog(id, mass, sess.UserId)
+				err = wholth.UpdateConsumptionLog(r, id, mass, sess.UserId)
 				break
 			}
 		case BatchDelete:
 			{
 				msg = "удалено"
-				err = wholth.DeleteConsumptionLog(id, sess.UserId)
+				err = wholth.DeleteConsumptionLog(r, id, sess.UserId)
 				break
 			}
 		}

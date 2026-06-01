@@ -1,0 +1,15 @@
+{{block "exercise_log_post_result" .}}
+<h1 hidden></h1>
+<output
+    class="status {{.Status.Alias}}"
+    id="exercise_log-post-result"
+    form="exercise_log-post-form"
+>
+{{if ne "" .Status.Message}}
+    <span>{{.Status.Message}}</span>
+    {{if eq "success" .Status.Alias}}
+    <a href="/exercise_log">Обновить страницу</a>
+    {{end}}
+{{end}}
+</output>
+{{end}}

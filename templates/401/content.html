@@ -13,5 +13,6 @@
         <output name="err">{{.ErrorMessage}}</output>
     {{end}}
     <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" />
+    <input type="hidden" name="referer" value="{{.Referer}}" />
 </form>
 {{end}}

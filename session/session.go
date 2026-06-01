@@ -17,6 +17,7 @@ import (
 	"time"
 	"wholth_go/logger"
 	"wholth_go/secret"
+	"wholth_go/util"
 	"wholth_go/wholth"
 )
 
@@ -190,6 +191,7 @@ func SessionMiddleware(next http.Handler) http.Handler {
 		// r.Context().Value()
 		// http.NewRequestWithContext()
 
+		// is withcontext needed here?
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -209,6 +211,7 @@ func CsrfTokenGeneratorMiddleware(next http.Handler) http.Handler {
 			ctx = context.WithValue(ctx, CsrfTokenKey, token)
 		}
 
+		// is withcontext needed here?
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }
@@ -222,8 +225,7 @@ func CsrfTokenValidatorMiddleware(next http.Handler) http.Handler {
 		if !sess_ok {
 			logger.Info("ADAMANT")
 			// todo 400 error - bad session
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Нет сессии!"))
+			util.TextResponse(w, http.StatusBadRequest, "Нет сессии!")
 			return
 		}
 
@@ -232,8 +234,7 @@ func CsrfTokenValidatorMiddleware(next http.Handler) http.Handler {
 		if "" == token {
 			logger.Info("ABULIA")
 			// todo 400 error - bad csrf token
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("Нет CSRF-токена!"))
+			util.TextResponse(w, http.StatusBadRequest, "Нет CSRF-токена!")
 			return
 		}
 
@@ -242,11 +243,11 @@ func CsrfTokenValidatorMiddleware(next http.Handler) http.Handler {
 		if expected_token != token {
 			logger.Info("AUSTERIA")
 			// todo 400 error - bad csrf token
-			w.WriteHeader(http.StatusBadRequest)
-			w.Write([]byte("CSRF-токен не соотв. ожиадаемому!"))
+			util.TextResponse(w, http.StatusBadRequest, "CSRF-токен не соотв. ожиадаемому!")
 			return
 		}
 
+		// is withcontext needed here?
 		next.ServeHTTP(w, r.WithContext(ctx))
 	})
 }

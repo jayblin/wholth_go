@@ -14,7 +14,7 @@
     <button onclick="food_post_modal.showModal()">Создать запись</button>
     <dialog id="food_post_modal">
         {{/*<button class="close" commandfor="food_post_modal" command="close"></button>*/}}
-        <button class="close" onclick="food_post_modal.close()"  title="Закрыть"></button>
+        <button class="close" onclick="food_post_modal.close()"  title="Закрыть">✕</button>
         {{template "food_post_form" .}}
     </dialog>
     {{end}}

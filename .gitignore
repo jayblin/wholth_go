@@ -8,10 +8,11 @@ todo.md
 # static/*.css.map
 static/main.min.js
 wholth_lib/
-wholth.db
+wholth.db*
 wholth_go
 *.crt
 *.csr
 *.key
 libwholth.so
 *.swp
+.secrets.prod

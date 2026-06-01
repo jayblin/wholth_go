@@ -13,8 +13,7 @@ import (
 	"strconv"
 	"unsafe"
 
-	// "fmt"
-
+	"wholth_go/container"
 	"wholth_go/logger"
 	"wholth_go/util"
 )
@@ -47,7 +46,7 @@ func Setup() {
 
 	if !C.wholth_error_ok(&setup_err) {
 		message := toStr(setup_err.message)
-		logger.Emergency(message)
+		// logger.Emergency(message)
 		panic(message)
 	}
 }
@@ -131,9 +130,10 @@ type ExecStmtResult struct {
 	Pinner        *runtime.Pinner
 	FirstBindable *C.wholth_exec_stmt_Bindable
 	BindableCount uint
+	// _Error        error
 }
 
-func ExecStmtResultNew() (ExecStmtResult, error) {
+func ExecStmtResultNew() (ExecStmtResult, error, logger.Severity) {
 	result := ExecStmtResult{
 		Handle:        nil,
 		Pinner:        &runtime.Pinner{},
@@ -144,40 +144,90 @@ func ExecStmtResultNew() (ExecStmtResult, error) {
 	err := C.wholth_exec_stmt_Result_new(&result.Handle)
 
 	if !C.wholth_error_ok(&err) {
-		return result, errors.New(toStr(err.message))
+		msg := toStr(err.message)
+		// logger.Alert(msg)
+		return result, errors.New(msg), logger.ALERT
 	}
 
-	return result, nil
+	return result, nil, logger.DEBUG
 }
 
-func _ExecStmtResultDelete(r *ExecStmtResult) error {
+func _ExecStmtResultDelete(r *ExecStmtResult) (error, logger.Severity) {
 	defer r.Pinner.Unpin()
 
 	err := C.wholth_exec_stmt_Result_del(r.Handle)
 
 	if !C.wholth_error_ok(&err) {
-		return errors.New(toStr(err.message))
+		msg := toStr(err.message)
+		// logger.Emergency(msg)
+		return errors.New(msg), logger.ALERT
 	}
 
-	return nil
+	return nil, logger.DEBUG
 }
 
-func (r *ExecStmtResult) Delete() error {
+func (r *ExecStmtResult) Delete() (error, logger.Severity) {
 	if nil == r.Pinner {
-		return errors.New("ExecStmtResult_Delete_NULL_PINNER")
+		msg := "ExecStmtResult_Delete_NULL_PINNER"
+		// logger.Error(msg)
+		return errors.New(msg), logger.ALERT
 	}
 
 	return _ExecStmtResultDelete(r)
 }
 
-func (r *ExecStmtResult) Bind(values ...string) error {
+// @icky
+func (r *ExecStmtResult) ContainedDelete(container *container.Container) {
+	err, sev := r.Delete()
+
+	if nil != err {
+		logger.Log(sev, container.Tag)
+	}
+}
+
+type Bindable struct {
+	Value  string
+	IsNull bool
+}
+
+func (r *ExecStmtResult) Bind2(values []Bindable) (error, logger.Severity) {
 	if nil == r.Pinner {
-		return errors.New("ExecStmtResult_Bind_NULL_PINNER")
+		msg := "ExecStmtResult_Bind2_NULL_PINNER"
+		// logger.Error(msg)
+		return errors.New(msg), logger.ALERT
+	}
+
+	if 0 == len(values) {
+		return nil, logger.DEBUG
+	}
+
+	binds := make([]C.wholth_exec_stmt_Bindable, len(values))
+
+	for i, value := range values {
+		if value.IsNull {
+			binds[i] = C.wholth_exec_stmt_Bindable{C.wholth_StringView{nil, 0}}
+		} else {
+			binds[i] = C.wholth_exec_stmt_Bindable{toStrView(value.Value)}
+		}
+	}
+
+	r.BindableCount = uint(len(values))
+	r.FirstBindable = (*C.wholth_exec_stmt_Bindable)(unsafe.Pointer(&binds[0]))
+	r.Pinner.Pin(r.FirstBindable)
+
+	return nil, logger.DEBUG
+}
+
+func (r *ExecStmtResult) Bind(values ...string) (error, logger.Severity) {
+	if nil == r.Pinner {
+		msg := "ExecStmtResult_Bind_NULL_PINNER"
+		// logger.Error(msg)
+		return errors.New(msg), logger.ALERT
 	}
 
 	// binds := [len(values)]C.wholth_exec_stmt_Bindable{}
 	if 0 == len(values) {
-		return nil
+		return nil, logger.DEBUG
 	}
 	binds := make([]C.wholth_exec_stmt_Bindable, len(values))
 
@@ -189,28 +239,43 @@ func (r *ExecStmtResult) Bind(values ...string) error {
 	r.FirstBindable = (*C.wholth_exec_stmt_Bindable)(unsafe.Pointer(&binds[0]))
 	r.Pinner.Pin(r.FirstBindable)
 
-	return nil
+	return nil, logger.DEBUG
 }
 
-func (r *ExecStmtResult) Fetch(filename string) error {
+// If error was due to validation, then returned `Severity` will
+// be equal to `NOTICE`, otherwise it's `ALERT`.
+func (r *ExecStmtResult) Fetch(filename string) (error, logger.Severity) {
 	if nil == r.Pinner {
-		return errors.New("ExecStmtResult_Fetch_NULL_PINNER")
+		msg := "ExecStmtResult_Fetch_NULL_PINNER"
+		// logger.Error(msg)
+		return errors.New(msg), logger.ALERT
 	}
 
 	args := C.wholth_exec_stmt_Args{
-		toStrView(filename),
-		C.ulonglong(r.BindableCount),
-		r.FirstBindable,
+		sql_file:   toStrView(filename),
+		binds_size: C.ulonglong(r.BindableCount),
+		binds:      r.FirstBindable,
+		// TODO skip based on env
+		skip_cache: true,
 	}
 	r.Pinner.Pin(&args)
 
 	werr := C.wholth_exec_stmt(&args, r.Handle)
 
 	if !C.wholth_error_ok(&werr) {
-		return errors.New(toStr(werr.message))
+		msg := toStr(werr.message)
+
+		// 19 == SQLITE_CONSTRAINT
+		if C.wholth_exec_stmt_Code_BINDABLE_VALIDATION_FAIL == werr.code || 19 == werr.code {
+			// logger.Info(msg)
+			return errors.New(msg), logger.NOTICE
+		} else {
+			// logger.Alert(msg)
+			return errors.New(msg), logger.ALERT
+		}
 	}
 
-	return nil
+	return nil, logger.DEBUG
 }
 
 func (r *ExecStmtResult) At(row uint, column uint) string {
@@ -226,7 +291,8 @@ func (r *ExecStmtResult) RowCount() uint64 {
 }
 
 func saveSteps(form *PostFoodsForm) error {
-	result, err := ExecStmtResultNew()
+	// TODO: handle severity
+	result, err, _ := ExecStmtResultNew()
 
 	defer result.Delete()
 
@@ -260,7 +326,7 @@ func saveSteps(form *PostFoodsForm) error {
 	}
 	secondsStr := strconv.FormatInt(seconds, 10)
 
-	err = result.Bind(
+	err, _ = result.Bind(
 		form.Food.Id,
 		secondsStr,
 		form.Food.Id,
@@ -272,7 +338,8 @@ func saveSteps(form *PostFoodsForm) error {
 		return err
 	}
 
-	err = result.Fetch("recipe_step_upsert.sql")
+	// TODO handle severity
+	err, _ = result.Fetch("recipe_step_upsert.sql")
 
 	if nil != err {
 		return err

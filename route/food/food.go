@@ -284,7 +284,7 @@ func GetFoodById(w http.ResponseWriter, r *http.Request) {
 }
 
 func populateTopNutrients(form *wholth.PostFoodsForm) {
-	result, err := wholth.ExecStmtResultNew()
+	result, err, _ := wholth.ExecStmtResultNew()
 	defer result.Delete()
 
 	if nil != err {
@@ -292,14 +292,14 @@ func populateTopNutrients(form *wholth.PostFoodsForm) {
 		return
 	}
 
-	err = result.Bind(wholth.DEFAULT_LOCALE_ID)
+	err, _ = result.Bind(wholth.DEFAULT_LOCALE_ID)
 
 	if nil != err {
 		logger.Error("populateTopNutrients_STMT_RES_BIND: " + err.Error())
 		return
 	}
 
-	err = result.Fetch("nutrient_top_select.sql")
+	err, _ = result.Fetch("nutrient_top_select.sql")
 
 	if nil != err {
 		logger.Error("populateTopNutrients_STMT_RES_FETCH: " + err.Error())

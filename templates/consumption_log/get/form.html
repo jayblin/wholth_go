@@ -13,94 +13,96 @@ form="consumption_log_batch_modal"
 >
 {{end}}
 
-{{define "consumption_log_get_form"}}
-<form
-    id="consumption_log-get-form"
-    action="/consumption_log#consumption_log-get-form"
-    method="get"
-    target="htmz"
-    onsubmit="searchOnSubmit(event)"
-    onchange="this.elements.do_query.disabled=false"
->
-    <div class="consumption_log-query">
-        <label>
-            Дата от
-            <input
-                type="datetime-local"
-                name="consumed_from"
-                value="{{.ConsumedFrom}}"
-                autocomplete="off"
-                onchange="windowQueryParameterSet(`consumed_from`,value)"
-            >
-        </label>
-        <label>
-            Дата до
-            <input
-                type="datetime-local"
-                name="consumed_to"
-                value="{{.ConsumedTo}}"
-                autocomplete="off"
-                onchange="windowQueryParameterSet(`consumed_to`,value)"
-            >
-        </label>
-        <button
-            class="search"
-            name="do_query"
-            onclick="form.submit()"
-            disabled
-        ></button>
-        <button
-            class="refresh"
-            name="do_refresh"
-            onclick="form._refresh_tag.value=(new Date()).getTime();form.submit()"
-        ></button>
-        <input type="hidden" name="as_subdoc" value="1">
-        <input type="hidden" name="_refresh_tag" value="0">
-    </div>
+{{define "search_form_attributes"}}
+onchange="this.elements.do_query.disabled=false"
+{{end}}
 
-    <div class="consumption_log-table">
-        <table>
-            <thead>
-                <th>Пища</th>
-                <th>Масса</th>
-                <th>Калорий</th>
-                <th>Когда?</th>
-            </thead>
-            {{range $date := .Groups}}
-            <tr>
-                <td colspan="2">{{$date}}</td>
-                <td
-                    colspan="2"
-                    {{if eq 0.0 (index $.Map $date).NutrientAmountSum}}
-                    class="status nooutline error"
-                    {{end}}
-                >{{(index $.Map $date).NutrientAmountSum}}</td>
-            </tr>
-            {{range (index $.Map $date).Values}}
-            <tr>
-                <td>
-                    <pre>{{.Id}}</pre>
-                    <a href="/food/{{.FoodId}}" target="_blank">{{.FoodTitle}}</a>
-                </td>
-                <td>
-                    <div>{{template "toggleable" .}}<div>
-                </td>
-                {{if eq 0.0 .NutrientAmount}}
-                <td class="status nooutline error">
-                    <a href="/food/{{.FoodId}}#nutrient-search" target="_blank">
-                        У пищи не указаны калории! Нажми, чтобы указать!
-                    </a>
-                </td>
-                {{else}}
-                <td>{{.NutrientAmount}}</td>
-                {{end}}
-                <td>{{.ConsumedAt}}</td>
-            </tr>
-            {{end}}
-            {{end}}
-        </table>
-    <div>
+{{define "consumption_log_get_form"}}
+
+{{template "search_form_v2" .}}
+
+<div class="query-controls">
+    <label>
+        Дата от
+        <input
+            form="consumption_log-search-form"
+            type="datetime-local"
+            name="consumed_from"
+            value="{{.ConsumedFrom}}"
+            autocomplete="off"
+            onchange="windowQueryParameterSet(`consumed_from`,value)"
+        >
+    </label>
+    <label>
+        Дата до
+        <input
+            form="consumption_log-search-form"
+            type="datetime-local"
+            name="consumed_to"
+            value="{{.ConsumedTo}}"
+            autocomplete="off"
+            onchange="windowQueryParameterSet(`consumed_to`,value)"
+        >
+    </label>
+    <button
+        form="consumption_log-search-form"
+        class="search"
+        name="do_query"
+        onclick="form.submit()"
+        disabled
+    >⌕</button>
+    <button
+        form="consumption_log-search-form" 
+        class="refresh"
+        name="do_refresh"
+        onclick="form._refresh_tag.value=(new Date()).getTime();form.submit()"
+    >↺</button>
+    <input form="consumption_log-search-form" type="hidden" name="as_subdoc" value="1">
+    <input form="consumption_log-search-form" type="hidden" name="_refresh_tag" value="0">
 
     {{template "paginator" .}}
-</form>
+</div>
+
+<div class="consumption_log-table">
+    <table>
+        <thead>
+            <th>Пища</th>
+            <th>Масса</th>
+            <th>Калорий</th>
+            <th>Когда?</th>
+        </thead>
+        {{range $date := .Groups}}
+        <tr>
+            <td colspan="2">{{$date}}</td>
+            <td
+                colspan="2"
+                {{if eq 0.0 (index $.Map $date).NutrientAmountSum}}
+                class="status nooutline error"
+                {{end}}
+            >{{(index $.Map $date).NutrientAmountSum}}</td>
+        </tr>
+        {{range (index $.Map $date).Values}}
+        <tr>
+            <td>
+                <pre>{{.Id}}</pre>
+                <a href="/food/{{.FoodId}}" target="_blank">{{.FoodTitle}}</a>
+            </td>
+            <td>
+                <div>{{template "toggleable" .}}<div>
+            </td>
+            {{if eq 0.0 .NutrientAmount}}
+            <td class="status nooutline error">
+                <a href="/food/{{.FoodId}}#nutrient-search" target="_blank">
+                    У пищи не указаны калории! Нажми, чтобы указать!
+                </a>
+            </td>
+            {{else}}
+            <td>{{.NutrientAmount}}</td>
+            {{end}}
+            <td>{{.ConsumedAt}}</td>
+        </tr>
+        {{end}}
+        {{end}}
+    </table>
+<div>
 {{end}}
