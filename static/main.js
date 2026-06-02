@@ -144,7 +144,7 @@ function htmzHandleResponse(event) {
 
     if(notificationsReceived) {
         // add other elements from response to the document. 
-        const replacement = iframe.contentDocument.body.querySelectorAll("body > *:not(#notifications)")
+        const replacement = iframe.contentDocument.body.querySelectorAll("body > *:not(#notifications)");
         let container = document.querySelector(id);
 
         if (replacement && container) {
