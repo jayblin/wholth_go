@@ -27,7 +27,7 @@ run:
 	@echo "> SECRETS.DECRYPT.START"
 	@gpg --decrypt --output .secrets.tmp .secrets.gpg
 	@echo "> SECRETS.DECRYPT.END"
-	@env $(shell grep -v '^#' .env | xargs) go run . < .secrets.tmp & rm -f .secrets.tmp ; wait
+	@env $(shell grep -v '^#' .env | xargs) go run . < .secrets.tmp & sleep 0.1; rm -f .secrets.tmp ; wait
 
 css-palette:
 	sass -s compressed static/palette.scss static/palette.css
