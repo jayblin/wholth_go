@@ -2,6 +2,7 @@ package exercise
 
 import (
 	"fmt"
+	"math"
 	"net/http"
 	"time"
 
@@ -137,6 +138,7 @@ func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 
 			"templates/utils/search.html",
 			"templates/utils/paginator.html",
+			"templates/utils/toggleable.html",
 
 			"templates/exercise_log/get/form.html",
 		)
@@ -213,7 +215,15 @@ func saveExerciseLog(r *http.Request, form *PostExerciseLogForm) (error, logger.
 		binds[1].Value = sess.UserId
 		binds[2].Value = form.TypeId
 		binds[3].Value = form.Value
-		binds[4].Value = form.CreatedAt
+
+		format := wholth.DateFormat()
+		createdAtTime, createdAtErr := time.Parse(format, form.CreatedAt)
+		if nil == createdAtErr {
+			form.CreatedAt = createdAtTime.Format(format)
+			binds[4].Value = form.CreatedAt
+		} else {
+			binds[4].IsNull = true
+		}
 
 		err, sev = res.Bind2(binds)
 
@@ -230,13 +240,17 @@ func saveExerciseLog(r *http.Request, form *PostExerciseLogForm) (error, logger.
 		binds := make([]wholth.Bindable, 5)
 		binds[0].Value = form.Id
 		binds[1].Value = sess.UserId
-		binds[2].Value = form.TypeId
+		// binds[2].Value = form.TypeId
+		binds[2].IsNull = true
 		binds[3].Value = form.Value
 
-		if "" == form.CreatedAt {
-			binds[4].IsNull = true
-		} else {
+		format := wholth.DateFormat()
+		createdAtTime, createdAtErr := time.Parse(format, form.CreatedAt)
+		if nil == createdAtErr {
+			form.CreatedAt = createdAtTime.Format(format)
 			binds[4].Value = form.CreatedAt
+		} else {
+			binds[4].IsNull = true
 		}
 
 		err, sev = res.Bind2(binds)
@@ -255,6 +269,29 @@ func saveExerciseLog(r *http.Request, form *PostExerciseLogForm) (error, logger.
 	}
 
 	return nil, sev
+}
+
+func deleteExerciseLog(r *http.Request, exerciseId string, userId string) (error, logger.Severity) {
+	res, err, sev := wholth.ExecStmtResultNew()
+	defer res.ContainedDelete(container.Instance(r))
+
+	if nil != err {
+		return err, sev
+	}
+
+	binds := make([]wholth.Bindable, 2)
+	binds[0].Value = exerciseId
+	binds[1].Value = userId
+
+	err, sev = res.Bind2(binds)
+
+	if nil != err {
+		return err, sev
+	}
+
+	err, sev = res.Fetch("exercise_log_delete.sql")
+
+	return err, sev
 }
 
 func PostExerciseLog(w http.ResponseWriter, r *http.Request) {
@@ -290,4 +327,113 @@ func PostExerciseLog(w http.ResponseWriter, r *http.Request) {
 		page,
 		"templates/exercise_log/post/result.html",
 	)
+}
+
+type BatchAction int
+
+const (
+	BatchDelete BatchAction = iota
+	BatchPatch
+)
+
+func batchExerciseLog(action BatchAction, w http.ResponseWriter, r *http.Request) {
+	r.ParseForm()
+
+	var msg = ""
+	switch action {
+	case BatchPatch:
+		{
+			msg = "изменять"
+			break
+		}
+	case BatchDelete:
+		{
+			msg = "удалять"
+			break
+		}
+	}
+
+	if !r.PostForm.Has("exercise_log") {
+		route.RenderHtmlTemplatesWithStatus(
+			w,
+			r,
+			400,
+			fmt.Sprintf("Нечего %s!", msg),
+			"templates/400/index.html",
+		)
+		return
+	}
+
+	ids := r.PostForm["exercise_log"]
+
+	if len(ids) <= 0 {
+		route.RenderHtmlTemplatesWithStatus(
+			w,
+			r,
+			400,
+			fmt.Sprintf("Нечего %s!", msg),
+			"templates/400/index.html",
+		)
+		return
+	}
+
+	sess_v := r.Context().Value(session.SessionKey)
+	sess := sess_v.(session.HttpSession)
+
+	var successes = 0
+	var errors = make([]string, 0)
+	for _, id := range ids {
+		var err error = nil
+
+		switch action {
+		case BatchPatch:
+			{
+				msg = "изменено"
+				form := PostExerciseLogForm{
+					Id:        id,
+					CreatedAt: r.PostForm.Get(fmt.Sprintf("created_at_%s", id)),
+					Value:     r.PostForm.Get(fmt.Sprintf("value_%s", id)),
+				}
+				err, _ = saveExerciseLog(r, &form)
+				break
+			}
+		case BatchDelete:
+			{
+				msg = "удалено"
+				err, _ = deleteExerciseLog(r, id, sess.UserId)
+				break
+			}
+		}
+
+		if nil != err {
+			errors = append(errors, fmt.Sprintf("id=%s; %s", id, err.Error()))
+		} else {
+			successes++
+		}
+	}
+
+	result := make([][2]string, int(math.Min(1, float64(successes)))+len(errors))
+
+	if successes > 0 {
+		result[0] = [2]string{"success", fmt.Sprintf("Успешно %s %dшт.", msg, successes)}
+	}
+
+	for i, error := range errors {
+		result[successes+i] = [2]string{"error", error}
+	}
+
+	route.RenderHtmlTemplates(
+		w,
+		r,
+		result,
+		"templates/exercise_log/batch/result.html",
+	)
+}
+
+func BatchPatchExerciseLog(w http.ResponseWriter, r *http.Request) {
+	batchExerciseLog(BatchPatch, w, r)
+}
+
+func BatchDeleteExerciseLog(w http.ResponseWriter, r *http.Request) {
+	batchExerciseLog(BatchDelete, w, r)
 }

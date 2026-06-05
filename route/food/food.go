@@ -1,8 +1,10 @@
 package food
 
 import (
-	// "fmt"
+	"fmt"
 	"net/http"
+	"time"
+
 	// "net/url"
 	"strconv"
 
@@ -113,7 +115,7 @@ func ListFoods(w http.ResponseWriter, r *http.Request) {
 
 			"templates/food/get/content.html",
 			"templates/food/get/suggestion.html",
-			"templates/food/post/form.html",
+			// "templates/food/post/form.html",
 
 			"templates/ingredient/list_item.html",
 			"templates/nutrient/list_item.html",
@@ -328,17 +330,7 @@ func populateTopNutrients(form *wholth.PostFoodsForm) {
 	}
 }
 
-func GetRecipeForm(w http.ResponseWriter, r *http.Request) {
-	form := wholth.PostFoodsForm{}
-
-	populateTopNutrients(&form)
-
-	page := ListFoodsPage{
-		HtmlPage: route.DefaultHtmlPage(r),
-		PostForm: form,
-	}
-	page.Meta.Title = form.Food.Title
-
+func renderRecipeForm(w http.ResponseWriter, r *http.Request, page *ListFoodsPage) {
 	route.RenderHtmlTemplates(
 		w,
 		r,
@@ -356,12 +348,61 @@ func GetRecipeForm(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+func GetRecipeForm(w http.ResponseWriter, r *http.Request) {
+	form := wholth.PostFoodsForm{}
+
+	populateTopNutrients(&form)
+
+	page := ListFoodsPage{
+		HtmlPage: route.DefaultHtmlPage(r),
+		PostForm: form,
+	}
+	page.Meta.Title = form.Food.Title
+
+	renderRecipeForm(w, r, &page)
+}
+
+func GetRecipeCopyForm(w http.ResponseWriter, r *http.Request) {
+	foodId := r.PathValue("id")
+	form, status := fetchPostFoodsFormFromDb(foodId)
+
+	if http.StatusOK != status {
+		w.WriteHeader(status)
+		return
+	}
+
+	for i, _ := range form.Ingredients.Values {
+		form.Ingredients.Values[i].Checked = true
+		form.Ingredients.Values[i].Id = ""
+	}
+
+	for i, _ := range form.Nutrients.Values {
+		form.Nutrients.Values[i].Checked = true
+	}
+
+	form.Target = "_self"
+	form.Action = fmt.Sprintf("/recipe/%s/copy", form.Food.Id)
+	form.Food.Title = fmt.Sprintf(
+		"%s - %d",
+		form.Food.Title,
+		time.Now().Unix(),
+	)
+	form.Food.Id = ""
+	page := ListFoodsPage{
+		HtmlPage: route.DefaultHtmlPage(r),
+		PostForm: form,
+	}
+	page.Meta.Title = "Копируем рецепт"
+
+	renderRecipeForm(w, r, &page)
+}
+
 type PostFoodsPage struct {
 	route.HtmlPage
 	PostForm wholth.PostFoodsForm
 }
 
-func PostFoodsFormFromRequest(r *http.Request) wholth.PostFoodsForm {
+func postFoodsFormFromRequest(r *http.Request) wholth.PostFoodsForm {
 	r.ParseForm()
 	result := wholth.PostFoodsForm{
 		Food: wholth.Food{
@@ -384,36 +425,30 @@ func PostFoodsFormFromRequest(r *http.Request) wholth.PostFoodsForm {
 	return result
 }
 
-func PostFood(w http.ResponseWriter, r *http.Request) {
-
+func postDaFood(r *http.Request) *PostFoodsPage {
 	page := PostFoodsPage{
 		route.DefaultHtmlPage(r),
-		PostFoodsFormFromRequest(r)}
+		postFoodsFormFromRequest(r)}
 
 	status, err := wholth.SaveFood(&page.PostForm)
 
 	if nil != err {
 		page.PostForm.Status.Alias = status
 		page.PostForm.Status.Message = err.Error()
-		// page.PostForm.ResultStatus = status
-		// page.PostForm.ResultMessage = err.Error()
 	} else {
 		formEnriched, _ := fetchPostFoodsFormFromDb(page.PostForm.Food.Id)
 
-		// formEnriched.ResultStatus = status
-		// formEnriched.ResultMessage = "Успешно сохранено!"
 		page.PostForm.Status.Alias = status
 		page.PostForm.Status.Message = "Успешно сохранено!"
 
 		page.PostForm = formEnriched
-
-		// http.Redirect(
-		// 	w,
-		// 	r,
-		// 	fmt.Sprintf("/food/%s", formEnriched.Food.Id),
-		// 	http.StatusSeeOther,
-		// )
 	}
+
+	return &page
+}
+
+func PostFood(w http.ResponseWriter, r *http.Request) {
+	page := postDaFood(r)
 
 	route.RenderHtmlTemplates(
 		w,
@@ -427,4 +462,11 @@ func PostFood(w http.ResponseWriter, r *http.Request) {
 		"templates/ingredient/list_item.html",
 		"templates/nutrient/list_item.html",
 	)
+}
+
+func CopyRecipe(w http.ResponseWriter, r *http.Request) {
+	postPage := postDaFood(r)
+
+	w.Header().Add("Location", fmt.Sprintf("/food/%s", postPage.PostForm.Food.Id))
+	w.WriteHeader(http.StatusSeeOther)
 }

@@ -7,8 +7,8 @@
 <form 
     id="food-post-form"
     method="post"
-    action="/food#food-post-form"
-    target="htmz"
+    action="{{if eq "" .PostForm.Action}}/food#food-post-form{{else}}{{.PostForm.Action}}{{end}}"
+    target="{{if eq "" .PostForm.Target}}htmz{{else}}{{.PostForm.Target}}{{end}}"
 >
     <header>
         <h2 style="--idx: 0;"><a href="#basics">Инфа</a></h2>

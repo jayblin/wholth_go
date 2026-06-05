@@ -1,7 +1,5 @@
 {{block "consumption_log_batch_result" .}}
-<ul id="notifications">
-    {{range .}}
+<ul id="notifications">{{range .}}
     <li class="status {{index . 0}}">{{index . 1}}</li>
-    {{end}}
-</ul>
+{{end}}</ul>
 {{end}}

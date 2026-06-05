@@ -2,26 +2,14 @@
 form="consumption_log_batch_modal"
 {{end}}
 
-{{define "toggleable_content"}}
-<input
-    type="number" 
-    inputmode="numeric"
-    value="{{.Mass}}"
-    disabled
-    form="consumption_log_batch_modal"
-    name="mass_{{.Id}}"
->
-{{end}}
-
 {{define "search_form_attributes"}}
 onchange="this.elements.do_query.disabled=false"
 {{end}}
 
 {{define "consumption_log_get_form"}}
-
 {{template "search_form_v2" .}}
-
-<div class="query-controls">
+<h1 hidden></h1> {{/* TODO remove kostyl */}}
+<div id="consumption_log-query-controls" class="query-controls">
     <label>
         Дата от
         <input
@@ -49,60 +37,74 @@ onchange="this.elements.do_query.disabled=false"
         class="search"
         name="do_query"
         onclick="form.submit()"
-        disabled
+        onclick="form._refresh_tag.value=(new Date()).getTime();form.submit()"
     >⌕</button>
-    <button
+    {{/*<button
         form="consumption_log-search-form" 
         class="refresh"
         name="do_refresh"
         onclick="form._refresh_tag.value=(new Date()).getTime();form.submit()"
-    >↺</button>
+        >↺</button>*/}}
     <input form="consumption_log-search-form" type="hidden" name="as_subdoc" value="1">
     <input form="consumption_log-search-form" type="hidden" name="_refresh_tag" value="0">
 
     {{template "paginator" .}}
 </div>
 
-<div class="consumption_log-table">
-    <table>
-        <thead>
-            <th>Пища</th>
-            <th>Масса</th>
-            <th>Калорий</th>
-            <th>Когда?</th>
-        </thead>
-        {{range $date := .Groups}}
-        <tr>
-            <td colspan="2">{{$date}}</td>
-            <td
-                colspan="2"
-                {{if eq 0.0 (index $.Map $date).NutrientAmountSum}}
-                class="status nooutline error"
-                {{end}}
-            >{{(index $.Map $date).NutrientAmountSum}}</td>
-        </tr>
-        {{range (index $.Map $date).Values}}
-        <tr>
-            <td>
-                <pre>{{.Id}}</pre>
+<table id="consumption_log-table">
+    <thead>
+        <th>//1//</th>
+        <th></th>
+    </thead>
+    {{range $date := .Groups}}
+    <tr>
+        <td
+            colspan="2"
+            {{if eq 0.0 (index $.Map $date).NutrientAmountSum}}
+            class="status nooutline error"
+            {{end}}
+        >
+            {{$date}} - {{(index $.Map $date).NutrientAmountSum}} К
+        </td>
+    </tr>
+    {{range (index $.Map $date).Values}}
+    <tr {{if eq 0.0 .NutrientAmount}}class="status nooutline error"{{end}}>
+        <td>
+            <div>
+                <pre>[id:{{.Id}}]</pre>
                 <a href="/food/{{.FoodId}}" target="_blank">{{.FoodTitle}}</a>
-            </td>
-            <td>
-                <div>{{template "toggleable" .}}<div>
-            </td>
-            {{if eq 0.0 .NutrientAmount}}
-            <td class="status nooutline error">
+                {{if eq 0.0 .NutrientAmount}}
                 <a href="/food/{{.FoodId}}#nutrient-search" target="_blank">
                     У пищи не указаны калории! Нажми, чтобы указать!
                 </a>
-            </td>
-            {{else}}
-            <td>{{.NutrientAmount}}</td>
-            {{end}}
-            <td>{{.ConsumedAt}}</td>
-        </tr>
-        {{end}}
-        {{end}}
-    </table>
-<div>
+                {{end}}
+                <div>
+                    <input
+                        disabled
+                        type="number" 
+                        inputmode="numeric"
+                        value="{{.Mass}}"
+                        form="consumption_log_batch_modal"
+                        name="mass_{{.Id}}"
+                        autocomplete="off"
+                    >
+                    <pre>г.{{if ne 0.0 .NutrientAmount}} = {{.NutrientAmount}} К{{end}} </pre>
+                </div>
+                <input
+                    disabled
+                    type="datetime-local" 
+                    value="{{.ConsumedAt}}"
+                    form="consumption_log_batch_modal"
+                    name="consumed_at_{{.Id}}"
+                    autocomplete="off"
+                >
+            </div>
+        </td>
+        <td data-toggleable_bubble>
+            {{template "toggleable_checkbox" .}}
+        </td>
+    </tr>
+    {{end}}
+    {{end}}
+</table>
 {{end}}

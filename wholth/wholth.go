@@ -60,6 +60,8 @@ type PostFoodsForm struct {
 	RecipeStep  RecipeStep
 	Ingredients util.PaginatableList[Ingredient]
 	Nutrients   util.PaginatableList[FoodNutrient]
+	Target      string
+	Action      string
 	// ResultStatus  string
 	// ResultMessage string
 	util.Status

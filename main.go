@@ -113,6 +113,11 @@ func Index(w http.ResponseWriter, r *http.Request) {
 	)
 }
 
+// func Test(w http.ResponseWriter, r *http.Request) {
+// 	w.Header().Add("Location", "/exercise/1")
+// 	w.WriteHeader(http.StatusSeeOther)
+// }
+
 func main() {
 	logger.Info("Starting up...")
 
@@ -160,6 +165,11 @@ func main() {
 			Index,
 			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
 		},
+		// {
+		// 	"POST /test",
+		// 	Test,
+		// 	[]string{},
+		// },
 		{
 			"GET /authenticate",
 			auth.HandleAuthentication,
@@ -211,9 +221,24 @@ func main() {
 			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
 		},
 		{
+			"GET /food/{id}",
+			food.GetFoodById,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
 			"GET /recipe/add",
 			food.GetRecipeForm,
 			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"GET /recipe/{id}/copy",
+			food.GetRecipeCopyForm,
+			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},
+		},
+		{
+			"POST /recipe/{id}/copy",
+			food.CopyRecipe,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
 		},
 		{
 			"POST /food",
@@ -243,6 +268,16 @@ func main() {
 		{
 			"POST /exercise_log",
 			exercise.PostExerciseLog,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
+		},
+		{
+			"POST /exercise_log/batch-patch",
+			exercise.BatchPatchExerciseLog,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
+		},
+		{
+			"POST /exercise_log/batch-delete",
+			exercise.BatchDeleteExerciseLog,
 			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
 		},
 		{

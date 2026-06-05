@@ -1,6 +1,9 @@
 {{define "suggestion"}}
 <li>
-    <a href="/food/{{.Id}}"><h2>{{.Title}}</h2></a>
+    <div>
+        <a href="/food/{{.Id}}"><h2>{{.Title}}</h2></a>
+        <a href="/recipe/{{.Id}}/copy" title="Скопировать"><button>◨</button></a>
+    </div>
     <span>Калории: {{.TopNutrient}}</span>
     {{ if ne "" .PrepTime}}
     <span>Готовится: {{.PrepTime}}</span>

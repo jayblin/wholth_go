@@ -16,3 +16,4 @@ wholth_go
 libwholth.so
 *.swp
 .secrets.prod
+msg

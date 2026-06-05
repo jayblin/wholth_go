@@ -140,7 +140,14 @@ func SaveConsumptionLog(form *ConsumptionLogPostForm, userId string) (string, er
 
 	wlog := C.wholth_entity_consumption_log_init()
 	wlog.food_id = toStrView(form.FoodId)
-	wlog.consumed_at = toStrView(form.ConsumedAt)
+
+	format := DateFormat()
+	consumedAtTime, consumedAtErr := time.Parse(format, form.ConsumedAt)
+	if nil == consumedAtErr {
+		form.ConsumedAt = consumedAtTime.Format(format)
+		wlog.consumed_at = toStrView(form.ConsumedAt)
+	}
+
 	wlog.mass = toStrView(form.Mass)
 
 	var err = C.wholth_Error_OK
@@ -161,7 +168,13 @@ func SaveConsumptionLog(form *ConsumptionLogPostForm, userId string) (string, er
 	return "success", nil
 }
 
-func UpdateConsumptionLog(r *http.Request, id string, mass string, userId string) error {
+func UpdateConsumptionLog(
+	r *http.Request,
+	id string,
+	mass string,
+	consumedAt string,
+	userId string,
+) error {
 	result, err, sev := ExecStmtResultNew()
 	defer result.ContainedDelete(container.Instance(r))
 
@@ -170,7 +183,21 @@ func UpdateConsumptionLog(r *http.Request, id string, mass string, userId string
 		return err
 	}
 
-	err, sev = result.Bind(id, userId, mass)
+	binds := make([]Bindable, 4)
+
+	binds[0].Value = id
+	binds[1].Value = userId
+	binds[2].Value = mass
+
+	format := DateFormat()
+	consumedAtTime, consumedAtErr := time.Parse(format, consumedAt)
+	if nil == consumedAtErr {
+		binds[3].Value = consumedAtTime.Format(format)
+	} else {
+		binds[3].IsNull = true
+	}
+
+	err, sev = result.Bind2(binds)
 
 	if nil != err {
 		container.Log(r, sev, "[UpdateConsumptionLog][1]", err)

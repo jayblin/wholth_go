@@ -59,7 +59,8 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 		q.Get("consumed_from"))
 
 	if nil != fromErr {
-		from = time.Now().Add(-48 * time.Hour)
+		// TODO adapt to user's timezone
+		from = time.Now().Add(time.Hour * 5).Add(-48 * time.Hour)
 	}
 
 	var to, toErr = time.Parse(
@@ -67,7 +68,8 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 		q.Get("consumed_to"))
 
 	if nil != toErr {
-		to = time.Now()
+		// TODO adapt to user's timezone
+		to = time.Now().Add(time.Hour * 5)
 	}
 
 	page.SetPeriod(from, to)
@@ -88,7 +90,7 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 			// 2025-12-14T23:48:53
 			grp := value.ConsumedAt[0:10]
 
-			value.ConsumedAt = value.ConsumedAt[11:]
+			// value.ConsumedAt = value.ConsumedAt[11:]
 
 			entry, ok := mapped[grp]
 
@@ -103,6 +105,7 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 
 			if 0.0 != value.NutrientAmount {
 				entry.NutrientAmountSum += value.NutrientAmount
+				entry.NutrientAmountSum = math.RoundToEven(entry.NutrientAmountSum)
 			}
 
 			entry.Values = append(entry.Values, value)
@@ -123,7 +126,8 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 		Groups:   groups,
 		PostForm: wholth.ConsumptionLogPostForm{
 			Mass:       "",
-			ConsumedAt: time.Now().Format(format),
+			// TODO adapt to user's timezone
+			ConsumedAt: time.Now().Add(time.Hour * 5).Format(format),
 		},
 		ConsumedFrom: from.Format(format),
 		ConsumedTo:   to.Format(format),
@@ -142,6 +146,7 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 			htmlPage,
 			"templates/consumption_log/get/as_subdoc.html",
 
+			"templates/utils/search.html",
 			"templates/utils/paginator.html",
 			"templates/utils/toggleable.html",
 
@@ -299,7 +304,8 @@ func batchConsumptionLog(action BatchAction, w http.ResponseWriter, r *http.Requ
 			{
 				msg = "изменено"
 				mass := r.PostForm.Get(fmt.Sprintf("mass_%s", id))
-				err = wholth.UpdateConsumptionLog(r, id, mass, sess.UserId)
+				consumedAt := r.PostForm.Get(fmt.Sprintf("consumed_at_%s", id))
+				err = wholth.UpdateConsumptionLog(r, id, mass, consumedAt, sess.UserId)
 				break
 			}
 		case BatchDelete:

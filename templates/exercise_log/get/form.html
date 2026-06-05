@@ -4,7 +4,6 @@ form="exercise_log_batch_modal"
 
 {{define "toggleable"}}
 <tr>
-    <td data-toggleable_bubble>{{template "toggleable_checkbox" .}}</td>
     <td>
         <div>
             <a href="/exercise/{{.Exercise.Id}}" target="_blank">{{.Exercise.Title}}</a>
@@ -16,6 +15,7 @@ form="exercise_log_batch_modal"
                 disabled
                 form="exercise_log_batch_modal"
                 name="value_{{.Id}}"
+                autocomplete="off"
             >
             <input
                 type="datetime-local"
@@ -23,13 +23,17 @@ form="exercise_log_batch_modal"
                 disabled
                 form="exercise_log_batch_modal"
                 name="created_at_{{.Id}}"
+                autocomplete="off"
+                novalidate
             >
         </div>
     </td>
+    <td data-toggleable_bubble>{{template "toggleable_checkbox" .}}</td>
 </tr>
 {{end}}
 
 {{define "exercise_log_get_form"}}
+<h1 hidden></h1>{{/* TODO remove kostyl */}}
 <form
     id="exercise_log-get-form"
     action="/exercise_log"
@@ -62,32 +66,30 @@ form="exercise_log_batch_modal"
         <button
             name="do_query"
             onclick="form.submit()"
-            disabled
-        >⌕</button>
-        <button
-            name="do_refresh"
             onclick="form._refresh_tag.value=(new Date()).getTime();form.submit()"
-        >↺</button>
+        >⌕</button>
+        <!-- <button -->
+        <!--     name="do_refresh" -->
+        <!--     onclick="form._refresh_tag.value=(new Date()).getTime();form.submit()" -->
+        <!-- >↺</button> -->
         <input type="hidden" name="as_subdoc" value="1">
         <input type="hidden" name="_refresh_tag" value="0">
 
         {{template "paginator" .}}
     </div>
 
-    <div>
-        <table id="consumption_log-table">
-            <thead>
-                <th></th>
-                <th>- // -</th>
-            </thead>
-            {{range $date := .Groups}}
-            <tr>
-                <td colspan="2">{{$date}}</td>
-            </tr>
-            {{range (index $.Map $date).Values}}{{template "toggleable" .}}{{end}}
-            {{end}}
-        </table>
-    <div>
+    <table id="exercise_log-table">
+        <thead>
+            <th>- // -</th>
+            <th></th>
+        </thead>
+        {{range $date := .Groups}}
+        <tr>
+            <td colspan="2">{{$date}}</td>
+        </tr>
+        {{range (index $.Map $date).Values}}{{template "toggleable" .}}{{end}}
+        {{end}}
+    </table>
 </form>
 {{end}}
 

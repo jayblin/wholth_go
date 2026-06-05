@@ -76,7 +76,7 @@ dialog {
   &[open] {
 
     &::backdrop {
-        backdrop-filter: blur(5px);
+        // backdrop-filter: blur(5px);
         overflow: hidden;
         overscroll-behavior: contain;
     }
@@ -265,7 +265,7 @@ form {
     bottom: spacing.$xs;
     display: grid;
     gap: spacing.$sm;
-    backdrop-filter: blur(5px);
+    // backdrop-filter: blur(5px);
     border-radius: var(--s-b-r);
     justify-items: center;
 
@@ -338,7 +338,7 @@ td {
 
 th,
 td {
-  padding: spacing.$xs;
+  padding: spacing.$sm;
 }
 
 .status {
@@ -444,32 +444,6 @@ td {
   margin-bottom: spacing.$sm;
 }
 
-.consumption_log-table {
-  overflow-x: scroll;
-
-  // td:nth-child(1) {
-  //   pre {
-  //     font-size: 0.7rem;
-  //     border-radius: 5px;
-  //     background: var(--c-s-a);
-  //     width: fit-content;
-  //     padding: 0 spacing.$xs;
-  //   }
-  // }
-
-  td:nth-child(2) {
-    div {
-      display: flex;
-      gap: spacing.$xs;
-    }
-
-    input[type="number"] {
-      width: 7ch;
-    }
-  }
-
-}
-
 details {
   display: grid;
   gap: spacing.$sm;
@@ -565,6 +539,15 @@ details {
 #food-search-result {
   ul {
     margin-top: spacing.$md;
+
+    li {
+      & > div {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: spacing.$xs;
+      }
+    }
   }
 }
 
@@ -658,7 +641,7 @@ details {
   z-index: 999;
   display: grid;
   gap: spacing.$xs;
-  backdrop-filter: blur(5px);
+  // backdrop-filter: blur(5px);
   justify-items: flex-end;
   width: fit-content;
   justify-self: end;
@@ -725,7 +708,32 @@ select#body-parts {
 }
 
 #consumption_log-table {
-  td:nth-child(2) {
+  margin: 0 auto;
+
+  tbody {
+    td > div {
+      display: grid;
+      gap: spacing.$sm;
+
+      a {
+        width: 26ch;
+        text-overflow: ellipsis;
+        overflow: hidden;
+      }
+    }
+    td > div > div {
+      display: flex;
+      gap: spacing.$xs;
+
+      input[type="number"] {
+        width: 8ch;
+      }
+    }
+  }
+}
+
+#exercise_log-table {
+  td {
     > div {
       display: grid;
       gap: spacing.$xs;
