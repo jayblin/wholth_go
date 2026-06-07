@@ -88,7 +88,7 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 
 			// 1234567890123456789
 			// 2025-12-14T23:48:53
-			grp := value.ConsumedAt[0:10]
+			grp := value.ConsumedAt.Date
 
 			// value.ConsumedAt = value.ConsumedAt[11:]
 
@@ -125,9 +125,7 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 		HtmlPage: route.DefaultHtmlPage(r),
 		Groups:   groups,
 		PostForm: wholth.ConsumptionLogPostForm{
-			Mass:       "",
-			// TODO adapt to user's timezone
-			ConsumedAt: time.Now().Add(time.Hour * 5).Format(format),
+			Mass: "",
 		},
 		ConsumedFrom: from.Format(format),
 		ConsumedTo:   to.Format(format),
@@ -182,21 +180,22 @@ type PostConsumptionLogPage struct {
 func PostConsumptionLog(w http.ResponseWriter, r *http.Request) {
 	r.ParseForm()
 
-	format := wholth.DateFormat()
-
 	form := wholth.ConsumptionLogPostForm{
 		Id:            r.PostForm.Get("id"),
 		FoodId:        r.PostForm.Get("food_id"),
 		FoodTitle:     r.PostForm.Get("q"),
 		Mass:          r.PostForm.Get("mass"),
-		ConsumedAt:    "",
 		ResultStatus:  "",
 		ResultMessage: "",
 	}
 
-	consumedAt, consumedAtErr := time.Parse(
+	form.ConsumedAt.Date = r.PostForm.Get("consumed_at_date")
+	form.ConsumedAt.Time = r.PostForm.Get("consumed_at_time")
+
+	format := wholth.DateFormat()
+	_, consumedAtErr := time.Parse(
 		format,
-		r.PostForm.Get("consumed_at"))
+		fmt.Sprintf("%sT%s", form.ConsumedAt.Date, form.ConsumedAt.Time))
 
 	if nil != consumedAtErr {
 		page := PostConsumptionLogPage{}
@@ -212,8 +211,6 @@ func PostConsumptionLog(w http.ResponseWriter, r *http.Request) {
 
 		return
 	}
-
-	form.ConsumedAt = consumedAt.Format(format)
 
 	sess_v := r.Context().Value(session.SessionKey)
 	sess := sess_v.(session.HttpSession)
@@ -304,7 +301,9 @@ func batchConsumptionLog(action BatchAction, w http.ResponseWriter, r *http.Requ
 			{
 				msg = "изменено"
 				mass := r.PostForm.Get(fmt.Sprintf("mass_%s", id))
-				consumedAt := r.PostForm.Get(fmt.Sprintf("consumed_at_%s", id))
+				date := r.PostForm.Get(fmt.Sprintf("consumed_at_date_%s", id))
+				time := r.PostForm.Get(fmt.Sprintf("consumed_at_time_%s", id))
+				consumedAt := fmt.Sprintf("%sT%s", date, time)
 				err = wholth.UpdateConsumptionLog(r, id, mass, consumedAt, sess.UserId)
 				break
 			}

@@ -710,6 +710,10 @@ select#body-parts {
 #consumption_log-table {
   margin: 0 auto;
 
+  input[type="date"], input[type="time"]{
+    width: fit-content;
+  }
+
   tbody {
     td > div {
       display: grid;
@@ -741,6 +745,17 @@ select#body-parts {
       input[type="number"] {
         width: 8ch;
       }
+
+      input[type="date"], input[type="time"]{
+        width: fit-content;
+      }
     }
+  }
+}
+
+#exercise_log-post-form {
+  .created_at {
+    display: flex;
+    gap: spacing.$xs;
   }
 }

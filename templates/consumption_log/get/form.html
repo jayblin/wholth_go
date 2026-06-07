@@ -92,10 +92,18 @@ onchange="this.elements.do_query.disabled=false"
                 </div>
                 <input
                     disabled
-                    type="datetime-local" 
-                    value="{{.ConsumedAt}}"
+                    type="date" 
+                    value="{{.ConsumedAt.Date}}"
                     form="consumption_log_batch_modal"
-                    name="consumed_at_{{.Id}}"
+                    name="consumed_at_date_{{.Id}}"
+                    autocomplete="off"
+                >
+                <input
+                    disabled
+                    type="time" 
+                    value="{{.ConsumedAt.Time}}"
+                    form="consumption_log_batch_modal"
+                    name="consumed_at_time_{{.Id}}"
                     autocomplete="off"
                 >
             </div>

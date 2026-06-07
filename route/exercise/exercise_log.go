@@ -76,8 +76,8 @@ func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 			// 2025-12-14T23:48:53
 			var grp = ""
 
-			if len(value.CreatedAt) >= 10 {
-				grp = value.CreatedAt[0:10]
+			if len(value.CreatedAt.Date) > 0 {
+				grp = value.CreatedAt.Date
 			}
 
 			// value.CreatedAt = value.CreatedAt[11:]
@@ -123,8 +123,6 @@ func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 	page.Meta.Description = ""
 	page.PostForm = PostExerciseLogForm{
 		Id: "",
-		// TODO adapt to user's timezone
-		CreatedAt: time.Now().Add(time.Hour * 5).Format(wholth.DateFormat()),
 	}
 
 	as_subdoc := q.Get("as_subdoc")
@@ -164,10 +162,13 @@ func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 
 type PostExerciseLogForm struct {
 	Id        string
-	CreatedAt string
-	TypeId    string
-	Value     string
-	Exercise  wholth.Exercise
+	CreatedAt struct {
+		Date string
+		Time string
+	}
+	TypeId   string
+	Value    string
+	Exercise wholth.Exercise
 	// BodyParts util.PaginatableList[wholth.BodyPart]
 }
 
@@ -180,21 +181,17 @@ type PostExerciseLogPage struct {
 func parseExerciseLogForm(r *http.Request) PostExerciseLogForm {
 	r.ParseForm()
 
-	createdAt, createdAtErr := time.Parse(wholth.DateFormat(), r.PostForm.Get("created_at"))
-
 	form := PostExerciseLogForm{
-		Id:        r.PostForm.Get("id"),
-		CreatedAt: "",
-		TypeId:    r.PostForm.Get("type_id"),
-		Value:     r.PostForm.Get("value"),
+		Id:     r.PostForm.Get("id"),
+		TypeId: r.PostForm.Get("type_id"),
+		Value:  r.PostForm.Get("value"),
 		Exercise: wholth.Exercise{
 			Id: r.PostForm.Get("exercise_id"),
 		},
 	}
 
-	if nil == createdAtErr {
-		form.CreatedAt = createdAt.Format(wholth.DateFormat())
-	}
+	form.CreatedAt.Date = r.PostForm.Get("created_at_date")
+	form.CreatedAt.Time = r.PostForm.Get("created_at_time")
 
 	return form
 }
@@ -209,6 +206,9 @@ func saveExerciseLog(r *http.Request, form *PostExerciseLogForm) (error, logger.
 		return err, sev
 	}
 
+	createdAt := fmt.Sprintf("%sT%s", form.CreatedAt.Date, form.CreatedAt.Time)
+	_, createdAtErr := time.Parse(wholth.DateFormat(), createdAt)
+
 	if "" == form.Id {
 		binds := make([]wholth.Bindable, 5)
 		binds[0].Value = form.Exercise.Id
@@ -216,11 +216,8 @@ func saveExerciseLog(r *http.Request, form *PostExerciseLogForm) (error, logger.
 		binds[2].Value = form.TypeId
 		binds[3].Value = form.Value
 
-		format := wholth.DateFormat()
-		createdAtTime, createdAtErr := time.Parse(format, form.CreatedAt)
 		if nil == createdAtErr {
-			form.CreatedAt = createdAtTime.Format(format)
-			binds[4].Value = form.CreatedAt
+			binds[4].Value = createdAt
 		} else {
 			binds[4].IsNull = true
 		}
@@ -244,11 +241,8 @@ func saveExerciseLog(r *http.Request, form *PostExerciseLogForm) (error, logger.
 		binds[2].IsNull = true
 		binds[3].Value = form.Value
 
-		format := wholth.DateFormat()
-		createdAtTime, createdAtErr := time.Parse(format, form.CreatedAt)
 		if nil == createdAtErr {
-			form.CreatedAt = createdAtTime.Format(format)
-			binds[4].Value = form.CreatedAt
+			binds[4].Value = createdAt
 		} else {
 			binds[4].IsNull = true
 		}
@@ -390,10 +384,11 @@ func batchExerciseLog(action BatchAction, w http.ResponseWriter, r *http.Request
 			{
 				msg = "изменено"
 				form := PostExerciseLogForm{
-					Id:        id,
-					CreatedAt: r.PostForm.Get(fmt.Sprintf("created_at_%s", id)),
-					Value:     r.PostForm.Get(fmt.Sprintf("value_%s", id)),
+					Id:    id,
+					Value: r.PostForm.Get(fmt.Sprintf("value_%s", id)),
 				}
+				form.CreatedAt.Date = r.PostForm.Get(fmt.Sprintf("created_at_date_%s", id))
+				form.CreatedAt.Time = r.PostForm.Get(fmt.Sprintf("created_at_time_%s", id))
 				err, _ = saveExerciseLog(r, &form)
 				break
 			}

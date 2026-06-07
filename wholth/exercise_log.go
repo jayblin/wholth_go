@@ -19,9 +19,13 @@ type ExerciseLog struct {
 
 	Id        string
 	Value     int64
-	CreatedAt string
-	Exercise  Exercise
-	Type      ExerciseType
+	CreatedAt struct {
+		Value string
+		Date string
+		Time string
+	}
+	Exercise Exercise
+	Type     ExerciseType
 }
 
 func (p ExerciseLog) EntityAlias() string {
@@ -102,10 +106,10 @@ func FetchExerciseLogList(
 	for i := range sz - 1 {
 		j := uint(i + 1)
 		value, _ := strconv.ParseInt(res.At(j, 1), 10, 64)
+		createdAt := res.At(j, 2)
 		list.Values[i] = ExerciseLog{
 			Id:        res.At(j, 0),
 			Value:     value,
-			CreatedAt: res.At(j, 2),
 			Exercise: Exercise{
 				Id:    res.At(j, 3),
 				Title: res.At(j, 4),
@@ -115,6 +119,12 @@ func FetchExerciseLogList(
 				Alias: res.At(j, 6),
 				Unit:  res.At(j, 7),
 			},
+		}
+
+		list.Values[i].CreatedAt.Value = createdAt
+		if len(createdAt) >= len(DateFormat()) {
+			list.Values[i].CreatedAt.Date = createdAt[0:10]
+			list.Values[i].CreatedAt.Time = createdAt[11:19]
 		}
 	}
 

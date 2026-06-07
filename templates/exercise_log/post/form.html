@@ -36,17 +36,30 @@
         >
     </label>
     <hr>
-    <label>
-        Когда?
+    <span>Когда?</span>
+    <div class="created_at">
         <input
-            name="created_at"
-            type="datetime-local"
-            value="{{.PostForm.CreatedAt}}" 
+            name="created_at_date"
+            type="date"
             required
             autocomplete="off"
         >
+        <input
+            name="created_at_time"
+            type="time"
+            required
+            autocomplete="off"
+        >
+        <button
+            onclick="
+            const now=(new Date()).toISOString();
+            this.form.created_at_date.value = now.substring(0, 10);
+            this.form.created_at_time.value = `${now.substring(11, 16)}:00`;
+            "
+            type="button"
+        >NOW</button>
         <input hidden id="timezone" name="timezone" value="+05:00" />
-    </label>
+    </div>
     <hr>
     <div class="controls" >
         {{template "exercise_log_post_result" .}}

@@ -9,22 +9,29 @@ form="exercise_log_batch_modal"
             <a href="/exercise/{{.Exercise.Id}}" target="_blank">{{.Exercise.Title}}</a>
             <div>{{.Type.Alias}} </div>
             <input
+                disabled
                 type="number" 
                 inputmode="numeric"
                 value="{{.Value}}"
-                disabled
                 form="exercise_log_batch_modal"
                 name="value_{{.Id}}"
                 autocomplete="off"
             >
             <input
-                type="datetime-local"
-                value="{{.CreatedAt}}"
                 disabled
+                type="date"
+                value="{{.CreatedAt.Date}}"
                 form="exercise_log_batch_modal"
-                name="created_at_{{.Id}}"
+                name="created_at_date_{{.Id}}"
                 autocomplete="off"
-                novalidate
+            >
+            <input
+                disabled
+                type="time"
+                value="{{.CreatedAt.Time}}"
+                form="exercise_log_batch_modal"
+                name="created_at_time_{{.Id}}"
+                autocomplete="off"
             >
         </div>
     </td>

@@ -6,6 +6,7 @@ package wholth
 import "C"
 import (
 	"errors"
+	"fmt"
 	"net/http"
 	"strconv"
 	"time"
@@ -21,8 +22,12 @@ type ConsumptionLog struct {
 	FoodId         string
 	Mass           string
 	NutrientAmount float64
-	ConsumedAt     string
-	FoodTitle      string
+	ConsumedAt     struct {
+		Value string
+		Date  string
+		Time  string
+	}
+	FoodTitle string
 }
 
 func (p ConsumptionLog) EntityAlias() string {
@@ -97,8 +102,13 @@ func (t *ConsumptionLogPage) At(i uint64) ConsumptionLog {
 		FoodId:         toStr(val.food_id),
 		Mass:           toStr(val.mass),
 		NutrientAmount: topNut,
-		ConsumedAt:     toStr(val.consumed_at),
 		FoodTitle:      toStr(val.food_title),
+	}
+
+	result.ConsumedAt.Value = toStr(val.consumed_at)
+	if len(result.ConsumedAt.Value) >= len(DateFormat()) {
+		result.ConsumedAt.Date = result.ConsumedAt.Value[0:10]
+		result.ConsumedAt.Time = result.ConsumedAt.Value[11:19]
 	}
 
 	return result
@@ -122,7 +132,10 @@ type ConsumptionLogPostForm struct {
 	FoodId     string
 	FoodTitle  string
 	Mass       string
-	ConsumedAt string
+	ConsumedAt struct {
+		Date string
+		Time string
+	}
 	// todo use util struct
 	ResultStatus  string
 	ResultMessage string
@@ -141,12 +154,7 @@ func SaveConsumptionLog(form *ConsumptionLogPostForm, userId string) (string, er
 	wlog := C.wholth_entity_consumption_log_init()
 	wlog.food_id = toStrView(form.FoodId)
 
-	format := DateFormat()
-	consumedAtTime, consumedAtErr := time.Parse(format, form.ConsumedAt)
-	if nil == consumedAtErr {
-		form.ConsumedAt = consumedAtTime.Format(format)
-		wlog.consumed_at = toStrView(form.ConsumedAt)
-	}
+	wlog.consumed_at = toStrView(fmt.Sprintf("%sT%s", form.ConsumedAt.Date, form.ConsumedAt.Time))
 
 	wlog.mass = toStrView(form.Mass)
 

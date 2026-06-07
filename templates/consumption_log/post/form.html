@@ -22,10 +22,31 @@
                 required
             >
         </label>
-        <label>
-            Когда поглащена
-            <input name="consumed_at" type="datetime-local" value="{{.PostForm.ConsumedAt}}" required autocomplete="off">
-        </label>
+        <div>
+            <span>Когда?</span>
+            <input
+                name="consumed_at_date"
+                type="date"
+                value="{{.PostForm.ConsumedAt.Date}}"
+                required
+                autocomplete="off"
+            >
+            <input
+                name="consumed_at_time"
+                type="time"
+                value="{{.PostForm.ConsumedAt.Time}}"
+                required
+                autocomplete="off"
+            >
+            <button
+                onclick="
+                const now=(new Date()).toISOString();
+                this.form.consumed_at_date.value = now.substring(0, 10);
+                this.form.consumed_at_time.value = `${now.substring(11, 16)}:00`;
+                "
+                type="button"
+            >NOW</button>
+        </div>
     </fieldset>
 
     <fieldset id="food-suggestor">
