@@ -193,6 +193,11 @@ func parseExerciseLogForm(r *http.Request) PostExerciseLogForm {
 	form.CreatedAt.Date = r.PostForm.Get("created_at_date")
 	form.CreatedAt.Time = r.PostForm.Get("created_at_time")
 
+	// TODO fix this
+	if len(form.CreatedAt.Time) < len("00:00:00") {
+		form.CreatedAt.Time = form.CreatedAt.Time + ":00"
+	}
+
 	return form
 }
 
@@ -389,6 +394,11 @@ func batchExerciseLog(action BatchAction, w http.ResponseWriter, r *http.Request
 				}
 				form.CreatedAt.Date = r.PostForm.Get(fmt.Sprintf("created_at_date_%s", id))
 				form.CreatedAt.Time = r.PostForm.Get(fmt.Sprintf("created_at_time_%s", id))
+
+				// TODO fix this
+				if len(form.CreatedAt.Time) < len("00:00:00") {
+					form.CreatedAt.Time = form.CreatedAt.Time + ":00"
+				}
 				err, _ = saveExerciseLog(r, &form)
 				break
 			}

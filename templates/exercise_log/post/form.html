@@ -52,9 +52,9 @@
         >
         <button
             onclick="
-            const now=(new Date()).toISOString();
-            this.form.created_at_date.value = now.substring(0, 10);
-            this.form.created_at_time.value = `${now.substring(11, 16)}:00`;
+            const now=new Date();
+            this.form.created_at_date.value = `${now.getFullYear()}-${String(now.getMonth()).padStart(2, '0')}-${String(now.getDate()).padStart(2, '0')}`;
+            this.form.created_at_time.value = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}:00`;
             "
             type="button"
         >NOW</button>

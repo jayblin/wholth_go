@@ -192,6 +192,11 @@ func PostConsumptionLog(w http.ResponseWriter, r *http.Request) {
 	form.ConsumedAt.Date = r.PostForm.Get("consumed_at_date")
 	form.ConsumedAt.Time = r.PostForm.Get("consumed_at_time")
 
+	// TODO fix this
+	if len(form.ConsumedAt.Time) < len("00:00:00") {
+		form.ConsumedAt.Time = form.ConsumedAt.Time + ":00"
+	}
+
 	format := wholth.DateFormat()
 	_, consumedAtErr := time.Parse(
 		format,
@@ -303,6 +308,10 @@ func batchConsumptionLog(action BatchAction, w http.ResponseWriter, r *http.Requ
 				mass := r.PostForm.Get(fmt.Sprintf("mass_%s", id))
 				date := r.PostForm.Get(fmt.Sprintf("consumed_at_date_%s", id))
 				time := r.PostForm.Get(fmt.Sprintf("consumed_at_time_%s", id))
+				// TODO fix this
+				if len(time) < len("00:00:00") {
+					time = time + ":00"
+				}
 				consumedAt := fmt.Sprintf("%sT%s", date, time)
 				err = wholth.UpdateConsumptionLog(r, id, mass, consumedAt, sess.UserId)
 				break
