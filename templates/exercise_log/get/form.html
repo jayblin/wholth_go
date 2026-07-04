@@ -18,47 +18,50 @@ form="exercise_log_batch_modal"
                     autocomplete="off"
                 ></select>
             </div>
-            <input
-                disabled
-                type="number" 
-                inputmode="numeric"
-                value="{{.Value}}"
-                form="exercise_log_batch_modal"
-                name="value_{{.Id}}"
-                autocomplete="off"
-            >
-            <input
-                disabled
-                type="date"
-                value="{{.CreatedAt.Date}}"
-                form="exercise_log_batch_modal"
-                name="created_at_date_{{.Id}}"
-                autocomplete="off"
-            >
-            <input
-                disabled
-                type="time"
-                value="{{.CreatedAt.Time}}"
-                form="exercise_log_batch_modal"
-                name="created_at_time_{{.Id}}"
-                autocomplete="off"
-            >
+            <div>
+                <input
+                    disabled
+                    type="number" 
+                    inputmode="numeric"
+                    value="{{.Value}}"
+                    form="exercise_log_batch_modal"
+                    name="value_{{.Id}}"
+                    autocomplete="off"
+                >
+                <span>{{.Type.Unit}}</span>
+            </div>
+            <div>
+                <input
+                    disabled
+                    type="date"
+                    value="{{.CreatedAt.Date}}"
+                    form="exercise_log_batch_modal"
+                    name="created_at_date_{{.Id}}"
+                    autocomplete="off"
+                >
+                <input
+                    disabled
+                    type="time"
+                    value="{{.CreatedAt.Time}}"
+                    form="exercise_log_batch_modal"
+                    name="created_at_time_{{.Id}}"
+                    autocomplete="off"
+                >
+            </div>
         </div>
     </td>
     <td data-toggleable_bubble>{{template "toggleable_checkbox" .}}</td>
 </tr>
 {{end}}
 
+{{define "search_form_attributes"}}
+onchange="this.elements.do_query.disabled=false"
+{{end}}
+
 {{define "exercise_log_get_form"}}
 <h1 hidden></h1>{{/* TODO remove kostyl */}}
-<form
-    id="exercise_log-get-form"
-    action="/exercise_log"
-    method="get"
-    target="htmz"
-    onsubmit="searchOnSubmit(event)"
-    onchange="this.elements.do_query.disabled=false"
->
+{{template "search_form_v2" .}}
+<div id="exercise_log-query-controls">
     <div class="query-controls">
         <label>
             Дата от
@@ -67,6 +70,7 @@ form="exercise_log_batch_modal"
                 name="from"
                 value="{{.From}}"
                 autocomplete="off"
+                form="exercise_log-search-form"
                 onchange="windowQueryParameterSet(`from`,value)"
             >
         </label>
@@ -77,11 +81,13 @@ form="exercise_log_batch_modal"
                 name="to"
                 value="{{.To}}"
                 autocomplete="off"
+                form="exercise_log-search-form"
                 onchange="windowQueryParameterSet(`to`,value)"
             >
         </label>
         <button
             name="do_query"
+            form="exercise_log-search-form"
             onclick="form.submit()"
             onclick="form._refresh_tag.value=(new Date()).getTime();form.submit()"
         >⌕</button>
@@ -89,37 +95,38 @@ form="exercise_log_batch_modal"
         <!--     name="do_refresh" -->
         <!--     onclick="form._refresh_tag.value=(new Date()).getTime();form.submit()" -->
         <!-- >↺</button> -->
-        <input type="hidden" name="as_subdoc" value="1">
-        <input type="hidden" name="_refresh_tag" value="0">
+        <input type="hidden" name="as_subdoc" form="exercise_log-search-form" value="1" >
+        <input type="hidden" name="_refresh_tag" form="exercise_log-search-form" value="0">
 
         {{template "paginator" .}}
+        {{template "affect_query" .}}
     </div>
+</div>
 
-    <table
-        id="exercise_log-table"
-        onclick="
-        if (event.target.name && event.target.name.includes('type_id') && event.target.options.length <= 1) {
-            const options = [{{range .Types}}['{{.Id}}','{{.Alias}}'],{{end}}];
-            for (let i = 0; i < options.length; i++) {
-                const opt = document.createElement('option');
-                opt.value = options[i][0];
-                opt.innerText = options[i][1];
-                event.target.prepend(opt);
-            }
+<table
+    id="exercise_log-table"
+    onclick="
+    if (event.target.name && event.target.name.includes('type_id') && event.target.options.length <= 1) {
+        const options = [{{range .Types}}['{{.Id}}','{{.Alias}}'],{{end}}];
+        for (let i = 0; i < options.length; i++) {
+            const opt = document.createElement('option');
+            opt.value = options[i][0];
+            opt.innerText = options[i][1];
+            event.target.prepend(opt);
         }
-        "
-    >
-        <thead>
-            <th>- // -</th>
-            <th></th>
-        </thead>
-        {{range $date := .Groups}}
-        <tr class="exercise-date">
-            <td colspan="2">{{$date}}</td>
-        </tr>
-        {{range (index $.Map $date).Values}}{{template "toggleable" .}}{{end}}
-        {{end}}
-    </table>
-</form>
+    }
+    "
+>
+    <thead>
+        <th>- // -</th>
+        <th></th>
+    </thead>
+    {{range $date := .Groups}}
+    <tr class="exercise-date">
+        <td colspan="2">{{$date}}</td>
+    </tr>
+    {{range (index $.Map $date).Values}}{{template "toggleable" .}}{{end}}
+    {{end}}
+</table>
 {{end}}
 

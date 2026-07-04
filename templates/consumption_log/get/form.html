@@ -49,6 +49,7 @@ onchange="this.elements.do_query.disabled=false"
     <input form="consumption_log-search-form" type="hidden" name="_refresh_tag" value="0">
 
     {{template "paginator" .}}
+    {{template "affect_query" .}}
 </div>
 
 <table id="consumption_log-table">
