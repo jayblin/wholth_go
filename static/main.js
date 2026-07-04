@@ -223,7 +223,7 @@ function disableSiblings(event) {
         parent = parent.parentElement;
     }
 
-    parent.querySelectorAll("input,button").forEach(
+    parent.querySelectorAll("input,button,select").forEach(
         (e) => e !== event.target
             && (e.disabled = ("hidden" === e.type ? false : !event.target.checked))
     );

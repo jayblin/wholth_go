@@ -242,8 +242,13 @@ func saveExerciseLog(r *http.Request, form *PostExerciseLogForm) (error, logger.
 		binds := make([]wholth.Bindable, 5)
 		binds[0].Value = form.Id
 		binds[1].Value = sess.UserId
-		// binds[2].Value = form.TypeId
-		binds[2].IsNull = true
+
+		if "" == form.TypeId {
+			binds[2].IsNull = true
+		} else {
+			binds[2].Value = form.TypeId
+		}
+
 		binds[3].Value = form.Value
 
 		if nil == createdAtErr {
@@ -391,6 +396,7 @@ func batchExerciseLog(action BatchAction, w http.ResponseWriter, r *http.Request
 				form := PostExerciseLogForm{
 					Id:    id,
 					Value: r.PostForm.Get(fmt.Sprintf("value_%s", id)),
+					TypeId: r.PostForm.Get(fmt.Sprintf("type_id_%s", id)),
 				}
 				form.CreatedAt.Date = r.PostForm.Get(fmt.Sprintf("created_at_date_%s", id))
 				form.CreatedAt.Time = r.PostForm.Get(fmt.Sprintf("created_at_time_%s", id))

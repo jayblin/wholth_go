@@ -7,7 +7,17 @@ form="exercise_log_batch_modal"
     <td>
         <div>
             <a href="/exercise/{{.Exercise.Id}}" target="_blank">{{.Exercise.Title}}</a>
-            <div>{{.Type.Alias}} </div>
+            <div class="type-id">
+                <pre>{{.Type.Alias}}</pre>
+                <span>→</span>
+                <select
+                    name="type_id_{{.Id}}"
+                    form="exercise_log_batch_modal"
+                    selected="{{.Type.Id}}"
+                    disabled
+                    autocomplete="off"
+                ></select>
+            </div>
             <input
                 disabled
                 type="number" 
@@ -85,13 +95,26 @@ form="exercise_log_batch_modal"
         {{template "paginator" .}}
     </div>
 
-    <table id="exercise_log-table">
+    <table
+        id="exercise_log-table"
+        onclick="
+        if (event.target.name && event.target.name.includes('type_id') && event.target.options.length <= 1) {
+            const options = [{{range .Types}}['{{.Id}}','{{.Alias}}'],{{end}}];
+            for (let i = 0; i < options.length; i++) {
+                const opt = document.createElement('option');
+                opt.value = options[i][0];
+                opt.innerText = options[i][1];
+                event.target.prepend(opt);
+            }
+        }
+        "
+    >
         <thead>
             <th>- // -</th>
             <th></th>
         </thead>
         {{range $date := .Groups}}
-        <tr>
+        <tr class="exercise-date">
             <td colspan="2">{{$date}}</td>
         </tr>
         {{range (index $.Map $date).Values}}{{template "toggleable" .}}{{end}}

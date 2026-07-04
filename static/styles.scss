@@ -737,6 +737,10 @@ select#body-parts {
 }
 
 #exercise_log-table {
+  tr.exercise-date {
+    background: var(--c-p-a);
+  }
+
   td {
     > div {
       display: grid;
@@ -748,6 +752,15 @@ select#body-parts {
 
       input[type="date"], input[type="time"]{
         width: fit-content;
+      }
+
+      .type-id {
+        display: flex;
+        gap: spacing.$xs;
+
+        select {
+          max-width: 14ch;
+        }
       }
     }
   }
