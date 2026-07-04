@@ -54,18 +54,14 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 	format := wholth.DateFormat()
 
 	q := r.URL.Query()
-	var from, fromErr = time.Parse(
-		format,
-		q.Get("consumed_from"))
+	var from, fromErr = wholth.FixDateTimeToWholthFormat(q.Get("consumed_from"))
 
 	if nil != fromErr {
 		// TODO adapt to user's timezone
 		from = time.Now().Add(time.Hour * 5).Add(-48 * time.Hour)
 	}
 
-	var to, toErr = time.Parse(
-		format,
-		q.Get("consumed_to"))
+	var to, toErr = wholth.FixDateTimeToWholthFormat(q.Get("consumed_to"))
 
 	if nil != toErr {
 		// TODO adapt to user's timezone
@@ -307,11 +303,9 @@ func batchConsumptionLog(action BatchAction, w http.ResponseWriter, r *http.Requ
 				msg = "изменено"
 				mass := r.PostForm.Get(fmt.Sprintf("mass_%s", id))
 				date := r.PostForm.Get(fmt.Sprintf("consumed_at_date_%s", id))
-				time := r.PostForm.Get(fmt.Sprintf("consumed_at_time_%s", id))
 				// TODO fix this
-				if len(time) < len("00:00:00") {
-					time = time + ":00"
-				}
+				time := wholth.FixTimeToWholthFormat(
+					r.PostForm.Get(fmt.Sprintf("consumed_at_time_%s", id)))
 				consumedAt := fmt.Sprintf("%sT%s", date, time)
 				err = wholth.UpdateConsumptionLog(r, id, mass, consumedAt, sess.UserId)
 				break

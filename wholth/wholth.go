@@ -11,6 +11,7 @@ import (
 	"regexp"
 	"runtime"
 	"strconv"
+	"time"
 	"unsafe"
 
 	"wholth_go/container"
@@ -37,6 +38,25 @@ func toStrView(s string) C.wholth_StringView {
 
 func DateFormat() string {
 	return "2006-01-02T15:04:05"
+}
+
+// TODO КОСТЫЛЬ
+func FixTimeToWholthFormat(time string) string {
+	if len(time) < len("00:00:00") {
+		return time + ":00"
+	}
+
+	return time
+}
+
+// TODO КОСТЫЛЬ
+// "2006-01-02T15:04:05"
+func FixDateTimeToWholthFormat(datetime string) (time.Time, error) {
+	if (len(datetime) == len("2006-01-02T15:04:05")) {
+		return time.Parse(DateFormat(), datetime)
+	}
+
+	return time.Parse(DateFormat(), datetime + ":00")
 }
 
 func Setup() {

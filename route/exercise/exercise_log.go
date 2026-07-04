@@ -44,12 +44,12 @@ func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
 	// TODO adapt to user's timezone
-	var from, fromErr = time.Parse(wholth.DateFormat(), q.Get("from"))
+	var from, fromErr = wholth.FixDateTimeToWholthFormat(q.Get("from"))
 	if nil != fromErr {
 		from = time.Now().Add((time.Hour * 5) - (time.Hour * 48))
 	}
 
-	var to, toErr = time.Parse(wholth.DateFormat(), q.Get("to"))
+	var to, toErr = wholth.FixDateTimeToWholthFormat(q.Get("to"))
 	if nil != toErr {
 		to = time.Now().Add(time.Hour * 5)
 	}
@@ -402,9 +402,7 @@ func batchExerciseLog(action BatchAction, w http.ResponseWriter, r *http.Request
 				form.CreatedAt.Time = r.PostForm.Get(fmt.Sprintf("created_at_time_%s", id))
 
 				// TODO fix this
-				if len(form.CreatedAt.Time) < len("00:00:00") {
-					form.CreatedAt.Time = form.CreatedAt.Time + ":00"
-				}
+				form.CreatedAt.Time = wholth.FixTimeToWholthFormat(form.CreatedAt.Time)
 				err, _ = saveExerciseLog(r, &form)
 				break
 			}
