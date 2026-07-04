@@ -32,14 +32,19 @@ func (f BodyPart) EntityAlias() string {
 }
 
 func FetchBodyPartList(r *http.Request) (util.PaginatableList[BodyPart], error, logger.Severity) {
+	result := util.PaginatableList[BodyPart]{}
 	cached, err := cache.GetV2[util.PaginatableList[BodyPart]]("FetchBodyPartList")
 
 	if nil != err {
-		return util.PaginatableList[BodyPart]{}, err, logger.ALERT
+		return result, err, logger.ALERT
 	}
 
 	if nil != cached {
-		return *cached, nil, logger.DEBUG
+		values := make([]BodyPart, len(cached.Values))
+		copy(values, cached.Values)
+		result.Values = values
+		result.Pagination = cached.Pagination
+		return result, nil, logger.DEBUG
 	}
 
 	list := util.PaginatableList[BodyPart]{}
@@ -113,8 +118,12 @@ func FetchBodyPartList(r *http.Request) (util.PaginatableList[BodyPart], error, 
 	}
 
 	cache.SetV2("FetchBodyPartList", list, "body_part")
+	values := make([]BodyPart, len(list.Values))
+	copy(values, list.Values)
+	result.Values = values
+	result.Pagination = list.Pagination
 
-	return list, nil, logger.DEBUG
+	return result, nil, logger.DEBUG
 }
 
 type PostBodyPartForm struct {

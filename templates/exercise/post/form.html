@@ -1,6 +1,6 @@
 {{define "body_part_tree_element"}}
 <label>
-    <input name="body_parts" type="checkbox" value="{{.Id}}" {{if .Toggleable_Checked}}checked{{end}}>
+    <input name="body_parts" type="checkbox" value="{{.Id}}" {{if .Toggleable_Checked}}checked{{end}} autocomplete="off">
     {{.Title}}
 </label>
 {{end}}

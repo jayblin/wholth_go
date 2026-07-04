@@ -87,6 +87,7 @@ type PostExercisePage struct {
 	ExerciseTypes []wholth.ExerciseType
 }
 
+// used in templates
 func (r PostExercisePage) IsExerciseTypeSelected(exerciseTypeId string) bool {
 	return r.PostForm.Exercise.PreferredType.Id == exerciseTypeId
 }

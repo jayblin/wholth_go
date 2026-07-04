@@ -248,6 +248,26 @@ func syncExerciseBodyPart(r *http.Request, exerciseId string, bodyPartId string)
 	return res.Fetch("exercise_body_part_insert.sql")
 }
 
+func deleteBodyPartsForExercise(r *http.Request, exerciseId string) (error, logger.Severity) {
+	res, err, sev := ExecStmtResultNew()
+	defer res.ContainedDelete(container.Instance(r))
+
+	if nil != err {
+		return err, sev
+	}
+
+	binds := make([]Bindable, 1)
+	binds[0].Value = exerciseId
+
+	err, sev = res.Bind2(binds)
+
+	if nil != err {
+		return err, sev
+	}
+
+	return res.Fetch("exercise_body_part_delete_for.sql")
+}
+
 func syncExerciseBodyParts(r *http.Request, form *PostExerciseForm) []error {
 	if len(form.BodyPartsIds) <= 0 {
 		return nil
@@ -308,6 +328,12 @@ func SaveExercise(r *http.Request, form *PostExerciseForm) (error, logger.Severi
 		}
 
 		form.Exercise.Id = res.At(0, 0)
+	}
+
+	err, sev = deleteBodyPartsForExercise(r, form.Exercise.Id);
+
+	if nil != err {
+		return err, sev
 	}
 
 	return errors.Join(syncExerciseBodyParts(r, form)...), logger.DEBUG
