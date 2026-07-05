@@ -41,14 +41,14 @@
 }
 
 html {
-  scrollbar-color: color.$primary-c color.$primary-a;
+  scrollbar-color: color.$dark color.$light;
   min-height: 200vh;
 }
 
 body {
   margin: 0;
-  color: color.$secondary-e;
-  background-color: color.$tertiary-a;
+  color: color.$dark;
+  background-color: color.$light;
   display: grid;
   justify-items: center;
   gap: spacing.$sm;
@@ -82,9 +82,9 @@ dialog {
     }
 
     display: grid;
-    border: 2px dashed color.$complementary-e;
-    background-color: color.$tertiary-a;
-    color: color.$secondary-e;
+    border: 2px dashed color.$dark;
+    background-color: color.$light;
+    color: color.$dark;
     padding: spacing.$sm spacing.$sm;
     gap: spacing.$sm;
 
@@ -105,7 +105,7 @@ main {
 
 hr {
   border-bottom: 0;
-  border-color: color.$primary-d;
+  border-color: color.$dark;
   border-style: dashed;
   margin: spacing.$sm 0;
 }
@@ -118,7 +118,7 @@ header {
 }
 
 nav {
-  background-color: var(--c-p-a);
+  border: 1px solid color.$dark;
   border-radius: var(--s-b-r);
   margin-bottom: spacing.$sm;
   padding: spacing.$sm 0;
@@ -158,11 +158,11 @@ p {
 }
 
 a {
-  color: color.$primary-d;
+  color: color.$dark;
   text-decoration-line: grammar-error;
 
   &:hover {
-    color: color.$primary-e;
+    // color: color.$dark;
     cursor: pointer;
     text-decoration-line: underline;
   }
@@ -171,10 +171,10 @@ a {
 button {
   text-decoration: none;
   // padding: spacing.$xs;
-  border: 1px solid color.$primary-c;
+  border: 1px solid color.$dark;
   border-radius: var(--s-b-r);
-  background-color: color.$primary-a;
-  color: color.$primary-e;
+  background-color: color.$action;
+  color: color.$dark;
   outline: none;
   min-width: 2rem;
   min-height: 2rem;
@@ -185,7 +185,7 @@ button {
   &:hover {
     text-decoration: none;
     cursor: pointer;
-    background-color: color.$primary-b;
+    // background-color: color.$primary-b;
   }
 
   &:disabled {
@@ -209,8 +209,8 @@ textarea {
 }
 
 textarea, input {
-  background-color: color.$primary-a;
-  border: 1px solid color.$primary-c;
+  // background-color: color.$light;
+  border: 1px solid color.$dark;
   border-radius: var(--s-b-r);
 }
 
@@ -243,7 +243,7 @@ input {
   }
 
   &:focus-visible {
-    outline: 1px solid color.$complementary-d;
+    outline: 1px solid color.$dark;
   }
 
   &[type="checkbox"] {
@@ -286,7 +286,7 @@ form {
 }
 
 fieldset {
-  border: 1px solid color.$primary-d;
+  border: 1px solid color.$dark;
   display: grid;
   gap: spacing.$xs;
   border-radius: var(--s-b-r);
@@ -297,7 +297,7 @@ legend {
   padding-right: spacing.$xs;
   padding-bottom: 0;
   padding-top: 0;
-  color: color.$primary-c;
+  // color: color.$dark;
 }
 
 pre {
@@ -305,7 +305,7 @@ pre {
   font-size: 0.8rem;
   font-family: monospace;
   border-radius: 5px;
-  background: var(--c-s-a);
+  // background: var(--c-s-a);
   width: fit-content;
   padding: 0 spacing.$xs;
   align-content: center;
@@ -335,7 +335,7 @@ table {
 table,
 th,
 td {
-  border: 1px solid color.$primary-d;
+  border: 1px solid color.$dark;
 }
 
 th,
@@ -354,18 +354,18 @@ td {
     outline: unset !important;
   }
   &.success {
-    --status-color-fg: #{color.$primary-e};
-    --status-color-bg: #{color.$primary-b};
+    --status-color-fg: #{color.$dark};
+    --status-color-bg: #{color.$action};
   }
 
   &.error {
-    --status-color-fg: #{color.$complementary-e};
-    --status-color-bg: #{color.$complementary-b};
+    --status-color-fg: #{color.$dark};
+    --status-color-bg: #{color.$error};
   }
 
   &.warning {
-    --status-color-fg: #{color.$secondary-e};
-    --status-color-bg: #{color.$secondary-a};
+    --status-color-fg: #{color.$dark};
+    --status-color-bg: #{color.$attention};
   }
 }
 
@@ -400,7 +400,7 @@ td {
       right: 0;
       height: 100%;
       width: 2px;
-      border-right: 2px dotted var(--c-p-b);
+      border-right: 2px dotted color.$dark;
     }
 
     &::after {
@@ -411,7 +411,7 @@ td {
       bottom: 0;
       height: 2px;
       width: 50%;
-      border-top: 2px dotted var(--c-p-b);
+      border-top: 2px dotted color.$dark;
     }
 
     > div {
@@ -452,10 +452,6 @@ details {
 
   summary {
     cursor: pointer;
-
-    &::marker {
-        color: var(--c-p-e);
-    }
   }
 }
 
@@ -511,7 +507,7 @@ details {
   justify-content: center;
   row-gap: spacing.$sm;
   column-gap: spacing.$xs;
-  border: 1px solid color.$secondary-c;
+  border: 1px solid color.$dark;
   border-radius: var(--s-b-r);
   padding: spacing.$sm;
   margin: 0 auto;
@@ -524,7 +520,7 @@ details {
   }
 
   output {
-    color: color.$complementary-d;
+    // color: color.$dark;
   }
 }
 
@@ -590,12 +586,12 @@ details {
     content: "";
   }
   display: flex;
-  background: var(--c-p-b);
+  background: color.$attention;
   align-items: center;
   justify-content: center;
   font-size: 24px;
   height: spacing.$lg;
-  color: var(--c-p-a);
+  color: color.$dark;
 
   // alternative loader animation below
   // background: linear-gradient(
@@ -625,8 +621,8 @@ details {
 }
 
 #notifications-counter {
-  background: var(--c-s-f);
-  color: var(--c-p-a);
+  background: color.$dark;
+  color: color.$light;
   border-radius: var(--s-b-r);
   padding: spacing.$xs;
   width: 2ch;
@@ -674,7 +670,7 @@ details {
       content: "";
       position: absolute;
       width: 2px;
-      background: var(--c-p-b);
+      background: color.$dark;
       height: 100%;
       // left: calc(-#{spacing.$md} + 3px);
       left: -#{spacing.$md - 3px};
@@ -703,7 +699,6 @@ select#body-parts {
     details {
       pre {
         width: 100%;
-        background: var(--c-p-a);
       }
     }
   }
@@ -742,11 +737,11 @@ select#body-parts {
   width: 100%;
 
   span {
-    color: var(--c-s-d);
+    // color: var(--c-s-d);
   }
 
   tr.exercise-date {
-    background: var(--c-p-a);
+    // background: var(--c-p-a);
   }
 
   td {

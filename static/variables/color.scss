@@ -1,117 +1,131 @@
-// https://paletton.com/#uid=70d0u0k8Ioq1cSO4Kv-bYiihdbB
-$_primary-a: #E2EBE7;
-$_primary-b: #95AFA3;
-$_primary-c: #638776;
-$_primary-d: #406553;
-$_primary-e: #1E4030;
-$_primary-f: #329365;
-
-$_secondary-a: #DFE4E7;
-$_secondary-b: #8A98A1;
-$_secondary-c: #5D707C;
-$_secondary-d: #3C505D;
-$_secondary-e: #1D2F3B;
-$_secondary-f: #34759F;
-
-$_tertiary-a: #FFFBF5;
-$_tertiary-b: #FCEBD6;
-$_tertiary-c: #C2AB8E;
-$_tertiary-d: #927A5B;
-$_tertiary-e: #5C462B;
-$_tertiary-f: #AC7735;
-
-$_complementary-a: #FFF8F5;
-$_complementary-b: #FCE0D6;
-$_complementary-c: #C29B8E;
-$_complementary-d: #92695B;
-$_complementary-e: #5C372B;
-$_complementary-f: #C9522B;
-
-$primary-a: var(--c-p-a);
-$primary-b: var(--c-p-b);
-$primary-c: var(--c-p-c);
-$primary-d: var(--c-p-d);
-$primary-e: var(--c-p-e);
-$primary-f: var(--c-p-f);
-
-$secondary-a: var(--c-s-a);
-$secondary-b: var(--c-s-b);
-$secondary-c: var(--c-s-c);
-$secondary-d: var(--c-s-d);
-$secondary-e: var(--c-s-e);
-$secondary-f: var(--c-s-f);
-
-$tertiary-a: var(--c-t-a);
-$tertiary-b: var(--c-t-b);
-$tertiary-c: var(--c-t-c);
-$tertiary-d: var(--c-t-d);
-$tertiary-e: var(--c-t-e);
-$tertiary-f: var(--c-t-f);
-
-$complementary-a: var(--c-c-a);
-$complementary-b: var(--c-c-b);
-$complementary-c: var(--c-c-c);
-$complementary-d: var(--c-c-d);
-$complementary-e: var(--c-c-e);
-$complementary-f: var(--c-c-f);
-
-$colors: (
-  "primary": (
-    "a": $primary-a,
-    "b": $primary-b,
-    "c": $primary-c,
-    "d": $primary-d,
-    "e": $primary-e,
-  ),
-  "secondary": (
-    "a": $secondary-a,
-    "b": $secondary-b,
-    "c": $secondary-c,
-    "d": $secondary-d,
-    "e": $secondary-e,
-  ),
-  "tertiary": (
-    "a": $tertiary-a,
-    "b": $tertiary-b,
-    "c": $tertiary-c,
-    "d": $tertiary-d,
-    "e": $tertiary-e,
-  ),
-  "complementary": (
-    "a": $complementary-a,
-    "b": $complementary-b,
-    "c": $complementary-c,
-    "d": $complementary-d,
-    "e": $complementary-e,
-  ),
-);
+$light: var(--color-light);
+$dark: var(--color-dark);
+$action: var(--color-action);
+$attention: var(--color-attention);
+$error: var(--color-error);
 
 :root {
-  --c-p-a: #{$_primary-a};
-  --c-p-b: #{$_primary-b};
-  --c-p-c: #{$_primary-c};
-  --c-p-d: #{$_primary-d};
-  --c-p-e: #{$_primary-e};
-  --c-p-f: #{$_primary-f};
-
-  --c-s-a: #{$_secondary-a};
-  --c-s-b: #{$_secondary-b};
-  --c-s-c: #{$_secondary-c};
-  --c-s-d: #{$_secondary-d};
-  --c-s-e: #{$_secondary-e};
-  --c-s-f: #{$_secondary-f};
-
-  --c-t-a: #{$_tertiary-a};
-  --c-t-b: #{$_tertiary-b};
-  --c-t-c: #{$_tertiary-c};
-  --c-t-d: #{$_tertiary-d};
-  --c-t-e: #{$_tertiary-e};
-  --c-t-f: #{$_tertiary-f};
-
-  --c-c-a: #{$_complementary-a};
-  --c-c-b: #{$_complementary-b};
-  --c-c-c: #{$_complementary-c};
-  --c-c-d: #{$_complementary-d};
-  --c-c-e: #{$_complementary-e};
-  --c-c-f: #{$_complementary-f};
+  --color-light: #f3ebda;
+  --color-dark: #6c4f3b;
+  --color-action: #e8a4a4;
+  --color-attention: #b4d6e5;
+  --color-error: #ff0000;
 }
+
+// https://paletton.com/#uid=70d0u0k8Ioq1cSO4Kv-bYiihdbB
+// $_primary-a: #E2EBE7;
+// $_primary-b: #95AFA3;
+// $_primary-c: #638776;
+// $_primary-d: #406553;
+// $_primary-e: #1E4030;
+// $_primary-f: #329365;
+//
+// $_secondary-a: #DFE4E7;
+// $_secondary-b: #8A98A1;
+// $_secondary-c: #5D707C;
+// $_secondary-d: #3C505D;
+// $_secondary-e: #1D2F3B;
+// $_secondary-f: #34759F;
+//
+// $_tertiary-a: #FFFBF5;
+// $_tertiary-b: #FCEBD6;
+// $_tertiary-c: #C2AB8E;
+// $_tertiary-d: #927A5B;
+// $_tertiary-e: #5C462B;
+// $_tertiary-f: #AC7735;
+//
+// $_complementary-a: #FFF8F5;
+// $_complementary-b: #FCE0D6;
+// $_complementary-c: #C29B8E;
+// $_complementary-d: #92695B;
+// $_complementary-e: #5C372B;
+// $_complementary-f: #C9522B;
+//
+// $primary-a: var(--c-p-a);
+// $primary-b: var(--c-p-b);
+// $primary-c: var(--c-p-c);
+// $primary-d: var(--c-p-d);
+// $primary-e: var(--c-p-e);
+// $primary-f: var(--c-p-f);
+//
+// $secondary-a: var(--c-s-a);
+// $secondary-b: var(--c-s-b);
+// $secondary-c: var(--c-s-c);
+// $secondary-d: var(--c-s-d);
+// $secondary-e: var(--c-s-e);
+// $secondary-f: var(--c-s-f);
+//
+// $tertiary-a: var(--c-t-a);
+// $tertiary-b: var(--c-t-b);
+// $tertiary-c: var(--c-t-c);
+// $tertiary-d: var(--c-t-d);
+// $tertiary-e: var(--c-t-e);
+// $tertiary-f: var(--c-t-f);
+//
+// $complementary-a: var(--c-c-a);
+// $complementary-b: var(--c-c-b);
+// $complementary-c: var(--c-c-c);
+// $complementary-d: var(--c-c-d);
+// $complementary-e: var(--c-c-e);
+// $complementary-f: var(--c-c-f);
+
+// $colors: (
+//   "primary": (
+//     "a": $primary-a,
+//     "b": $primary-b,
+//     "c": $primary-c,
+//     "d": $primary-d,
+//     "e": $primary-e,
+//   ),
+//   "secondary": (
+//     "a": $secondary-a,
+//     "b": $secondary-b,
+//     "c": $secondary-c,
+//     "d": $secondary-d,
+//     "e": $secondary-e,
+//   ),
+//   "tertiary": (
+//     "a": $tertiary-a,
+//     "b": $tertiary-b,
+//     "c": $tertiary-c,
+//     "d": $tertiary-d,
+//     "e": $tertiary-e,
+//   ),
+//   "complementary": (
+//     "a": $complementary-a,
+//     "b": $complementary-b,
+//     "c": $complementary-c,
+//     "d": $complementary-d,
+//     "e": $complementary-e,
+//   ),
+// );
+
+// :root {
+//   --c-p-a: #{$_primary-a};
+//   --c-p-b: #{$_primary-b};
+//   --c-p-c: #{$_primary-c};
+//   --c-p-d: #{$_primary-d};
+//   --c-p-e: #{$_primary-e};
+//   --c-p-f: #{$_primary-f};
+//
+//   --c-s-a: #{$_secondary-a};
+//   --c-s-b: #{$_secondary-b};
+//   --c-s-c: #{$_secondary-c};
+//   --c-s-d: #{$_secondary-d};
+//   --c-s-e: #{$_secondary-e};
+//   --c-s-f: #{$_secondary-f};
+//
+//   --c-t-a: #{$_tertiary-a};
+//   --c-t-b: #{$_tertiary-b};
+//   --c-t-c: #{$_tertiary-c};
+//   --c-t-d: #{$_tertiary-d};
+//   --c-t-e: #{$_tertiary-e};
+//   --c-t-f: #{$_tertiary-f};
+//
+//   --c-c-a: #{$_complementary-a};
+//   --c-c-b: #{$_complementary-b};
+//   --c-c-c: #{$_complementary-c};
+//   --c-c-d: #{$_complementary-d};
+//   --c-c-e: #{$_complementary-e};
+//   --c-c-f: #{$_complementary-f};
+// }
