@@ -8,7 +8,6 @@ import (
 	"math"
 	"net/http"
 	"strconv"
-	"time"
 	"wholth_go/container"
 	"wholth_go/logger"
 	"wholth_go/util"
@@ -43,8 +42,8 @@ func (p *ExerciseLog) Toggleable_Value() string {
 func FetchExerciseLogList(
 	r *http.Request,
 	userId string,
-	from time.Time,
-	to time.Time,
+	from DateTime,
+	to DateTime,
 ) (util.PaginatableList[ExerciseLog], error, logger.Severity) {
 	pagination := util.QueryPaginationExtract(r.URL)
 
@@ -60,8 +59,6 @@ func FetchExerciseLogList(
 		return list, err, sev
 	}
 
-	format := DateFormat()
-
 	binds := make([]Bindable, 7)
 
 	binds[0].Value = userId
@@ -74,8 +71,8 @@ func FetchExerciseLogList(
 		binds[2].Value = pagination.Q
 	}
 
-	binds[3].Value = from.Format(format)
-	binds[4].Value = to.Format(format)
+	binds[3].Value = from.ToWholthFormat()
+	binds[4].Value = to.ToWholthFormat()
 
 	binds[5].Value = strconv.FormatUint(pagination.Limit, 10)
 	binds[6].Value = strconv.FormatUint(pagination.PageNumber, 10)

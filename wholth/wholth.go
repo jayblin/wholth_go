@@ -40,25 +40,6 @@ func DateFormat() string {
 	return "2006-01-02T15:04:05"
 }
 
-// TODO КОСТЫЛЬ
-func FixTimeToWholthFormat(time string) string {
-	if len(time) < len("00:00:00") {
-		return time + ":00"
-	}
-
-	return time
-}
-
-// TODO КОСТЫЛЬ
-// "2006-01-02T15:04:05"
-func FixDateTimeToWholthFormat(datetime string) (time.Time, error) {
-	if (len(datetime) == len("2006-01-02T15:04:05")) {
-		return time.Parse(DateFormat(), datetime)
-	}
-
-	return time.Parse(DateFormat(), datetime + ":00")
-}
-
 func Setup() {
 	db_path := C.CString("./wholth.db")
 	ctx := C.wholth_AppSetupArgs{db_path}
@@ -447,4 +428,42 @@ func SaveFood(form *PostFoodsForm) (string, error) {
 	}
 
 	return "success", nil
+}
+
+type DateTime struct {
+	Date string
+	Time string
+}
+
+func (d DateTime) ToWholthFormat() string {
+	// TODO fix this. not robust
+	if (len(d.Date) + len(d.Time) + 1) == len(DateFormat()) {
+		return d.Date + "T" + d.Time
+	}
+
+	return d.Date + "T" + d.Time + ":00"
+}
+
+func (d DateTime) ToTime() (time.Time, error) {
+	// TODO fix this. not robust
+	formatted := d.ToWholthFormat()
+	return time.Parse(DateFormat(), formatted)
+}
+
+func (d *DateTime) UpdateFromTime(t time.Time) {
+	formatted := t.Format(DateFormat())
+	d.Date = formatted[0:10]
+	d.Time = formatted[11:]
+}
+
+func DateTimeCreate(date string, time string) DateTime {
+	// TODO fix this. not robust
+	if len(time) == 0 {
+		time = "00:00:00"
+	} else if len(time) < len("00:00:00") {
+		time = time + ":00"
+	}
+	// TODO add checks on date field
+
+	return DateTime{Date: date, Time: time}
 }

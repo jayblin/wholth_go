@@ -31,8 +31,8 @@ type ListExerciseLogPage struct {
 	Q                 string
 	Groups            []string
 	Map               map[string]MapElement
-	From              string
-	To                string
+	From              wholth.DateTime
+	To                wholth.DateTime
 	Types             []wholth.ExerciseType
 	PostForm          PostExerciseLogForm
 	DummyExerciseList struct {
@@ -43,15 +43,21 @@ type ListExerciseLogPage struct {
 func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 	q := r.URL.Query()
 
+	now := time.Now()
+
 	// TODO adapt to user's timezone
-	var from, fromErr = wholth.FixDateTimeToWholthFormat(q.Get("from"))
+	from := wholth.DateTimeCreate(q.Get("from_date"), q.Get("from_time"))
+	_, fromErr := from.ToTime()
 	if nil != fromErr {
-		from = time.Now().Add((time.Hour * 5) - (time.Hour * 48))
+		// from = time.Now().Add((time.Hour * 5) - (time.Hour * 48))
+		from.UpdateFromTime(now.Add(time.Hour * -48).Truncate(time.Hour * 24))
 	}
 
-	var to, toErr = wholth.FixDateTimeToWholthFormat(q.Get("to"))
+	to := wholth.DateTimeCreate(q.Get("to_date"), q.Get("to_time"))
+	_, toErr := to.ToTime()
 	if nil != toErr {
-		to = time.Now().Add(time.Hour * 5)
+		// to = time.Now().Add(time.Hour * 5)
+		to.UpdateFromTime(now.Add(time.Hour * 24).Truncate(time.Hour * 24))
 	}
 
 	list, err, sev := wholth.FetchExerciseLogList(r, session.GetSession(r).UserId, from, to)
@@ -112,8 +118,8 @@ func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 	page.Types = types
 	page.Groups = groups
 	page.Map = mapped
-	page.From = from.Format(wholth.DateFormat())
-	page.To = to.Format(wholth.DateFormat())
+	page.From = from
+	page.To = to
 	page.HtmlPage = route.DefaultHtmlPage(r)
 	// page.PostForm = wholth.PostFoodsFormDefault()
 	page.Meta.Title = fmt.Sprintf(
@@ -162,13 +168,10 @@ func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 
 type PostExerciseLogForm struct {
 	Id        string
-	CreatedAt struct {
-		Date string
-		Time string
-	}
-	TypeId   string
-	Value    string
-	Exercise wholth.Exercise
+	CreatedAt wholth.DateTime
+	TypeId    string
+	Value     string
+	Exercise  wholth.Exercise
 	// BodyParts util.PaginatableList[wholth.BodyPart]
 }
 
@@ -190,13 +193,10 @@ func parseExerciseLogForm(r *http.Request) PostExerciseLogForm {
 		},
 	}
 
-	form.CreatedAt.Date = r.PostForm.Get("created_at_date")
-	form.CreatedAt.Time = r.PostForm.Get("created_at_time")
-
-	// TODO fix this
-	if len(form.CreatedAt.Time) < len("00:00:00") {
-		form.CreatedAt.Time = form.CreatedAt.Time + ":00"
-	}
+	form.CreatedAt = wholth.DateTimeCreate(
+		r.PostForm.Get("created_at_date"),
+		r.PostForm.Get("created_at_time"),
+	)
 
 	return form
 }
@@ -211,8 +211,8 @@ func saveExerciseLog(r *http.Request, form *PostExerciseLogForm) (error, logger.
 		return err, sev
 	}
 
-	createdAt := fmt.Sprintf("%sT%s", form.CreatedAt.Date, form.CreatedAt.Time)
-	_, createdAtErr := time.Parse(wholth.DateFormat(), createdAt)
+	createdAt := form.CreatedAt.ToWholthFormat()
+	_, createdAtErr := form.CreatedAt.ToTime()
 
 	if "" == form.Id {
 		binds := make([]wholth.Bindable, 5)
@@ -394,15 +394,15 @@ func batchExerciseLog(action BatchAction, w http.ResponseWriter, r *http.Request
 			{
 				msg = "изменено"
 				form := PostExerciseLogForm{
-					Id:    id,
-					Value: r.PostForm.Get(fmt.Sprintf("value_%s", id)),
+					Id:     id,
+					Value:  r.PostForm.Get(fmt.Sprintf("value_%s", id)),
 					TypeId: r.PostForm.Get(fmt.Sprintf("type_id_%s", id)),
 				}
-				form.CreatedAt.Date = r.PostForm.Get(fmt.Sprintf("created_at_date_%s", id))
-				form.CreatedAt.Time = r.PostForm.Get(fmt.Sprintf("created_at_time_%s", id))
+				form.CreatedAt = wholth.DateTimeCreate(
+					r.PostForm.Get(fmt.Sprintf("created_at_date_%s", id)),
+					r.PostForm.Get(fmt.Sprintf("created_at_time_%s", id)),
+				)
 
-				// TODO fix this
-				form.CreatedAt.Time = wholth.FixTimeToWholthFormat(form.CreatedAt.Time)
 				err, _ = saveExerciseLog(r, &form)
 				break
 			}

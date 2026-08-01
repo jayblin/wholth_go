@@ -66,23 +66,39 @@ onchange="this.elements.do_query.disabled=false"
         <label>
             Дата от
             <input
-                type="datetime-local"
-                name="from"
-                value="{{.From}}"
+                type="date"
+                name="from_date"
+                value="{{.From.Date}}"
                 autocomplete="off"
                 form="exercise_log-search-form"
-                onchange="windowQueryParameterSet(`from`,value)"
+                onchange="windowQueryParameterSet(`from_date`,value)"
+            >
+            <input
+                type="time"
+                name="from_time"
+                value="{{.From.Time}}"
+                autocomplete="off"
+                form="exercise_log-search-form"
+                onchange="windowQueryParameterSet(`from_time`,value)"
             >
         </label>
         <label>
             Дата до
             <input
-                type="datetime-local"
-                name="to"
-                value="{{.To}}"
+                type="date"
+                name="to_date"
+                value="{{.To.Date}}"
                 autocomplete="off"
                 form="exercise_log-search-form"
-                onchange="windowQueryParameterSet(`to`,value)"
+                onchange="windowQueryParameterSet(`to_date`,value)"
+            >
+            <input
+                type="time"
+                name="to_time"
+                value="{{.To.Time}}"
+                autocomplete="off"
+                form="exercise_log-search-form"
+                onchange="windowQueryParameterSet(`to_time`,value)"
             >
         </label>
         <button

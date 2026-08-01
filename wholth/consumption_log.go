@@ -62,11 +62,11 @@ func (t *ConsumptionLogPage) SetUserId(userId string) error {
 	return err
 }
 
-func (t *ConsumptionLogPage) SetPeriod(from time.Time, to time.Time) error {
+func (t *ConsumptionLogPage) SetPeriod(from DateTime, to DateTime) error {
 	werr := C.wholth_pages_consumption_log_period(
 		t.Handle,
-		toStrView(from.Format(DateFormat())),
-		toStrView(to.Format(DateFormat())))
+		toStrView(from.ToWholthFormat()),
+		toStrView(to.ToWholthFormat()))
 
 	var err error = nil
 
@@ -132,10 +132,7 @@ type ConsumptionLogPostForm struct {
 	FoodId     string
 	FoodTitle  string
 	Mass       string
-	ConsumedAt struct {
-		Date string
-		Time string
-	}
+	ConsumedAt DateTime
 	// todo use util struct
 	ResultStatus  string
 	ResultMessage string

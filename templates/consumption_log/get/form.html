@@ -14,22 +14,38 @@ onchange="this.elements.do_query.disabled=false"
         Дата от
         <input
             form="consumption_log-search-form"
-            type="datetime-local"
-            name="consumed_from"
-            value="{{.ConsumedFrom}}"
+            type="date"
+            name="consumed_from_date"
+            value="{{.ConsumedFrom.Date}}"
             autocomplete="off"
-            onchange="windowQueryParameterSet(`consumed_from`,value)"
+            onchange="windowQueryParameterSet(`consumed_from_date`,value)"
+        >
+        <input
+            form="consumption_log-search-form"
+            type="time"
+            name="consumed_from_time"
+            value="{{.ConsumedFrom.Time}}"
+            autocomplete="off"
+            onchange="windowQueryParameterSet(`consumed_from_time`,value)"
         >
     </label>
     <label>
         Дата до
         <input
             form="consumption_log-search-form"
-            type="datetime-local"
-            name="consumed_to"
-            value="{{.ConsumedTo}}"
+            type="date"
+            name="consumed_to_date"
+            value="{{.ConsumedTo.Date}}"
             autocomplete="off"
-            onchange="windowQueryParameterSet(`consumed_to`,value)"
+            onchange="windowQueryParameterSet(`consumed_to_date`,value)"
+        >
+        <input
+            form="consumption_log-search-form"
+            type="time"
+            name="consumed_to_time"
+            value="{{.ConsumedTo.Time}}"
+            autocomplete="off"
+            onchange="windowQueryParameterSet(`consumed_to_time`,value)"
         >
     </label>
     <button

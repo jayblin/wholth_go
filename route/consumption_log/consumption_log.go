@@ -31,8 +31,8 @@ type ListConsumptionLogsPage struct {
 	Map           map[string]MapElement
 	Q             string
 	PostForm      wholth.ConsumptionLogPostForm
-	ConsumedFrom  string
-	ConsumedTo    string
+	ConsumedFrom  wholth.DateTime
+	ConsumedTo    wholth.DateTime
 	DummyFoodList DummyFoodList
 }
 
@@ -51,21 +51,23 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 	sess := sess_v.(session.HttpSession)
 	page.SetUserId(sess.UserId)
 
-	format := wholth.DateFormat()
+	now := time.Now()
 
 	q := r.URL.Query()
-	var from, fromErr = wholth.FixDateTimeToWholthFormat(q.Get("consumed_from"))
-
+	from := wholth.DateTimeCreate(q.Get("consumed_from_date"), q.Get("consumed_from_time"))
+	_, fromErr := from.ToTime()
 	if nil != fromErr {
 		// TODO adapt to user's timezone
-		from = time.Now().Add(time.Hour * 5).Add(-48 * time.Hour)
+		// from = time.Now().Add(time.Hour * 5).Add(-48 * time.Hour)
+		from.UpdateFromTime(now.Add(time.Hour * -48).Truncate(24 * time.Hour))
 	}
 
-	var to, toErr = wholth.FixDateTimeToWholthFormat(q.Get("consumed_to"))
-
+	to := wholth.DateTimeCreate(q.Get("consumed_to_date"), q.Get("consumed_to_time"))
+	_, toErr := to.ToTime()
 	if nil != toErr {
 		// TODO adapt to user's timezone
-		to = time.Now().Add(time.Hour * 5)
+		// to = time.Now().Add(time.Hour * 5)
+		to.UpdateFromTime(now.Add(time.Hour * 24).Truncate(time.Hour * 24))
 	}
 
 	page.SetPeriod(from, to)
@@ -123,8 +125,8 @@ func ListConsumptionLogs(w http.ResponseWriter, r *http.Request) {
 		PostForm: wholth.ConsumptionLogPostForm{
 			Mass: "",
 		},
-		ConsumedFrom: from.Format(format),
-		ConsumedTo:   to.Format(format),
+		ConsumedFrom: from,
+		ConsumedTo:   to,
 		Map:          mapped,
 		Pagination:   page.Pagination(),
 	}
@@ -185,18 +187,11 @@ func PostConsumptionLog(w http.ResponseWriter, r *http.Request) {
 		ResultMessage: "",
 	}
 
-	form.ConsumedAt.Date = r.PostForm.Get("consumed_at_date")
-	form.ConsumedAt.Time = r.PostForm.Get("consumed_at_time")
+	form.ConsumedAt = wholth.DateTimeCreate(
+		r.PostForm.Get("consumed_at_date"),
+		r.PostForm.Get("consumed_at_time"))
 
-	// TODO fix this
-	if len(form.ConsumedAt.Time) < len("00:00:00") {
-		form.ConsumedAt.Time = form.ConsumedAt.Time + ":00"
-	}
-
-	format := wholth.DateFormat()
-	_, consumedAtErr := time.Parse(
-		format,
-		fmt.Sprintf("%sT%s", form.ConsumedAt.Date, form.ConsumedAt.Time))
+	_, consumedAtErr := form.ConsumedAt.ToTime()
 
 	if nil != consumedAtErr {
 		page := PostConsumptionLogPage{}
@@ -302,12 +297,10 @@ func batchConsumptionLog(action BatchAction, w http.ResponseWriter, r *http.Requ
 			{
 				msg = "изменено"
 				mass := r.PostForm.Get(fmt.Sprintf("mass_%s", id))
-				date := r.PostForm.Get(fmt.Sprintf("consumed_at_date_%s", id))
-				// TODO fix this
-				time := wholth.FixTimeToWholthFormat(
+				consumedAt := wholth.DateTimeCreate(
+					r.PostForm.Get(fmt.Sprintf("consumed_at_date_%s", id)),
 					r.PostForm.Get(fmt.Sprintf("consumed_at_time_%s", id)))
-				consumedAt := fmt.Sprintf("%sT%s", date, time)
-				err = wholth.UpdateConsumptionLog(r, id, mass, consumedAt, sess.UserId)
+				err = wholth.UpdateConsumptionLog(r, id, mass, consumedAt.ToWholthFormat(), sess.UserId)
 				break
 			}
 		case BatchDelete:
