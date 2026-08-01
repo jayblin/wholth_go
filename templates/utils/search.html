@@ -31,8 +31,10 @@
 
 {{define "suggestion"}}{{end}}
 
+{{define "suggestion_list_attributes"}}{{end}}
+
 {{define "suggestion_list"}}
-<ul class="suggestion_list">
+<ul class="suggestion_list" {{template "suggestion_list_attributes" .}}>
 {{range .Values}}
     {{template "suggestion" .}}
 {{end}}

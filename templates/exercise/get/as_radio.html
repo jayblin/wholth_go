@@ -1,8 +1,17 @@
+{{define "suggestion_list_attributes"}}
+oninput="document.querySelector('select[name=type_id]').value = event.target.dataset.type_id;"
+{{end}}
+
 {{define "suggestion"}}
 <li>
     <article>
         <label>
-            <input type="radio" name="exercise_id" value="{{.Id}}" >
+            <input
+                type="radio"
+                name="exercise_id"
+                value="{{.Id}}"
+                data-type_id="{{.PreferredType.Id}}"
+            >
             {{.Title}}
         </label>
         <a href="/exercise/{{.Id}}" target="_blank">↗</a>
