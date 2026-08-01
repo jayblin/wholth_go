@@ -4,12 +4,34 @@
     class="status {{.Status.Alias}}"
     id="exercise_log-post-result"
     form="exercise_log-post-form"
+    style="justify-items: center;gap:0;"
 >
 {{if ne "" .Status.Message}}
-    <span>{{.Status.Message}}</span>
-    {{if eq "success" .Status.Alias}}
-    <a href="/exercise_log">Обновить страницу</a>
-    {{end}}
+    <div style="display:flex;justify-content:space-around;align-items:center;width:100%;">
+        <span>{{.Status.Message}}</span>
+        {{if eq "success" .Status.Alias}}
+        <a class="button" href="/exercise_log" title="Обновить страницу">↺</a>
+        {{end}}
+    </div>
+    <div>
+        <progress id="progress-bar" value="0" max="5"></progress>
+        <small><strong id="secnt">5</strong> сек.</small>
+    </div>
+    <script>
+        const pb = document.getElementById("progress-bar");
+        const out = document.getElementById("exercise_log-post-result");
+        const secnt = document.getElementById("secnt");
+        let count = 0;
+        const intervalId = setInterval(() => {
+            count++;
+            pb.value = count;
+            secnt.innerText = 5 - count;
+            if (count >= 5) {
+                clearInterval(intervalId);
+                out.style.display = "none";
+            }
+        }, 1000);
+    </script>
 {{end}}
 </output>
 {{end}}

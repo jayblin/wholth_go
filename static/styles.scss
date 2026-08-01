@@ -168,7 +168,7 @@ a {
   }
 }
 
-button {
+button,.button {
   text-decoration: none;
   // padding: spacing.$xs;
   border: 1px solid color.$primary-c;
@@ -281,6 +281,7 @@ form {
       border-radius: var(--s-b-r);
       color: var(--status-color-fg);
       background-color: var(--status-color-bg);
+      border: 1px solid var(--status-color-fg);
     }
   }
 }
