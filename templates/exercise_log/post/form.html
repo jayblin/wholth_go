@@ -1,7 +1,10 @@
 {{define "exercise_log_post_form"}}
-{{template "search_form_v2" .DummyExerciseList}}
-<input type="hidden" name="as_radio" value="1" form="exercise-search-form" >
-<input type="hidden" name="limit" value="5" form="exercise-search-form" >
+
+{{template "search_form_v3" .ExerciseSearch}}
+
+<input type="hidden" name="as_radio" value="1" form="{{.ExerciseSearch.SearchForm.Id}}" >
+<input type="hidden" name="limit" value="5" form="{{.ExerciseSearch.SearchForm.Id}}" >
+<input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" form="{{.ExerciseSearch.SearchForm.Id}}" >
 <form 
     id="exercise_log-post-form"
     method="post"
@@ -11,9 +14,9 @@
 >
     <input type="hidden" name="id" value="{{.PostForm.Id}}" >
     <input type="hidden" name="csrf-token" value="{{.Session.CsrfToken}}" >
-    <label>
-        {{template "search" .DummyExerciseList}}
-    </label>
+
+    {{template "search_v3" .ExerciseSearch}}
+
     <hr>
     <label>
         Тип упражнения

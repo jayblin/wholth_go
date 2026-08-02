@@ -29,6 +29,19 @@
 </form>
 {{end}}
 
+{{define "search_form_v3"}}
+<form
+    id="{{.SearchForm.Id}}"
+    action="{{.SearchForm.Action}}"
+    method="get"
+    target="htmz"
+    novalidate
+    onsubmit="searchOnSubmit(event)"
+    {{template "search_form_attributes" .}}
+>
+</form>
+{{end}}
+
 {{define "suggestion"}}{{end}}
 
 {{define "suggestion_list_attributes"}}{{end}}
@@ -44,6 +57,13 @@
 {{define "search_result"}}
 <output id="{{.EntityAlias}}-search-result" form="{{.EntityAlias}}-search-form">
     {{template "paginator" .}}
+    {{template "suggestion_list" .}}
+</output>
+{{end}}
+
+{{define "search_result_v3"}}
+<output id="{{.SearchForm.Id}}-result" form="{{.SearchForm.Id}}">
+    {{template "paginator_v3" .}}
     {{template "suggestion_list" .}}
 </output>
 {{end}}
@@ -75,5 +95,35 @@
         >⌫</button>
     </div>
     {{template "search_result" .}}
+</search>
+{{end}}
+
+{{define "search_v3"}}
+<search>
+    <div class="search-controls">
+        <input
+            type="search"
+            name="q"
+            placeholder="Поиск"
+            form="{{.SearchForm.Id}}"
+            value="{{.Q}}"
+            oninput="searchOnInput(event)"
+        >
+        <button
+            name="submit_btn"
+            type="submit"
+            form="{{.SearchForm.Id}}"
+            onclick="searchOnClick(event)"
+            {{if eq "" .Q}}disabled{{end}}
+            data-skip_enabler="1"
+        >⌕</button>
+        <button
+            type="button"
+            form="{{.SearchForm.Id}}"
+            onclick="searchOnClear(event)"
+            data-skip_disabler="1"
+        >⌫</button>
+    </div>
+    {{template "search_result_v3" .}}
 </search>
 {{end}}

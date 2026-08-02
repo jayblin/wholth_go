@@ -229,7 +229,11 @@ func CsrfTokenValidatorMiddleware(next http.Handler) http.Handler {
 			return
 		}
 
-		token := r.PostFormValue("csrf-token")
+		var token = r.PostFormValue("csrf-token")
+
+		if "" == token {
+			token = r.URL.Query().Get("csrf-token")
+		}
 
 		if "" == token {
 			logger.Info("ABULIA")

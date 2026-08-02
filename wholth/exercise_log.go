@@ -8,6 +8,7 @@ import (
 	"math"
 	"net/http"
 	"strconv"
+	"time"
 	"wholth_go/container"
 	"wholth_go/logger"
 	"wholth_go/util"
@@ -126,4 +127,82 @@ func FetchExerciseLogList(
 	}
 
 	return list, err, sev
+}
+
+// TODO this and FetchExerciseLogList has similar functionality that needs to be coalesced.
+func FetchTodaysHistory(
+	r *http.Request,
+	userId string,
+) ([]ExerciseLog, error, logger.Severity) {
+	result := make([]ExerciseLog, 0)
+
+	res, err, sev := ExecStmtResultNew()
+	defer res.ContainedDelete(container.Instance(r))
+
+	if nil != err {
+		return result, err, sev
+	}
+
+	now := time.Now()
+	from := now.Truncate(time.Hour * 24)
+	to := now.Add(time.Hour * 24).Truncate(time.Hour * 24)
+
+	binds := make([]Bindable, 7)
+
+	binds[0].Value = userId
+	binds[1].IsNull = true // id
+	binds[2].IsNull = true // Q
+
+	binds[3].Value = from.Format(DateFormat())
+	binds[4].Value = to.Format(DateFormat())
+
+	binds[5].Value = strconv.FormatUint(50, 10)
+	binds[6].Value = strconv.FormatUint(0, 10)
+
+	err, sev = res.Bind2(binds)
+
+	if nil != err {
+		return result, err, sev
+	}
+
+	err, sev = res.Fetch("exercise_log_select.sql")
+
+	if nil != err {
+		return result, err, sev
+	}
+
+	sz := res.RowCount()
+
+	if 0 == sz {
+		return result, err, sev
+	}
+
+	result = make([]ExerciseLog, sz-1)
+
+	for i := range sz - 1 {
+		j := uint(i + 1)
+		value, _ := strconv.ParseInt(res.At(j, 1), 10, 64)
+		createdAt := res.At(j, 2)
+		result[i] = ExerciseLog{
+			Id:        res.At(j, 0),
+			Value:     value,
+			Exercise: Exercise{
+				Id:    res.At(j, 3),
+				Title: res.At(j, 4),
+			},
+			Type: ExerciseType{
+				Id:    res.At(j, 5),
+				Alias: res.At(j, 6),
+				Unit:  res.At(j, 7),
+			},
+		}
+
+		result[i].CreatedAt.Value = createdAt
+		if len(createdAt) >= len(DateFormat()) {
+			result[i].CreatedAt.Date = createdAt[0:10]
+			result[i].CreatedAt.Time = createdAt[11:19]
+		}
+	}
+
+	return result, err, sev
 }

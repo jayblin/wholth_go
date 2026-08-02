@@ -38,6 +38,7 @@ type PaginatableList[T AliasableEntity] struct {
 	EntityAliasAware[T]
 	Pagination
 	Values []T
+	// TODO move Q to SearchForm struct
 	Q      string
 }
 
@@ -145,4 +146,9 @@ func TextResponse(w http.ResponseWriter, status int, text string) {
 	w.Header().Add("content-type", "text/plain;charset=utf-8")
 	w.WriteHeader(status)
 	w.Write([]byte(text))
+}
+
+type SearchForm struct {
+	Id     string
+	Action string
 }

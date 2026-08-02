@@ -53,16 +53,6 @@ func ListExercises(w http.ResponseWriter, r *http.Request) {
 
 			"templates/exercise/get/search.html",
 		)
-	} else if "" != q.Get("as_radio") {
-		route.RenderHtmlTemplates(
-			w,
-			r,
-			page,
-			"templates/exercise/get/as_radio.html",
-
-			"templates/utils/search.html",
-			"templates/utils/paginator.html",
-		)
 	} else {
 		route.RenderHtmlTemplates(
 			w,

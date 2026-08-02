@@ -35,3 +35,41 @@
 </div>
 {{end}}
 {{end}}
+
+{{define "paginator_v3"}}
+{{ if and (ne nil .PageMax) (ne nil .Count) }}
+<div class="paginator">
+    <button
+        {{if eq .PageCurrent 1}}
+        disabled
+        {{else}}
+        onclick="paginateDown(event)"
+        form="{{.SearchForm.Id}}"
+        {{end}}
+    >&#8678;</button>
+    <input
+        type="number"
+        inputmode="numeric"
+        name="page_number"
+        min="1"
+        max="{{.PageMax}}"
+        value="{{.PageCurrent}}"
+        autocomplete="off"
+        form="{{.SearchForm.Id}}"
+        oninput="paginate(event)"
+    >
+    <button
+        {{if eq .PageCurrent .PageMax}}
+        disabled
+        {{else}}
+        onclick="paginateUp(event)"
+        form="{{.SearchForm.Id}}"
+        {{end}}
+    >&#8680;</button>
+    <span>&nbsp;&nbsp;</span>
+    <span>{{.PageCurrent}}/{{.PageMax}}</span>
+    <span>&nbsp;&nbsp;</span>
+    <span>{{.Count}} Шт.</span>
+</div>
+{{end}}
+{{end}}

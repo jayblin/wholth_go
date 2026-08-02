@@ -281,6 +281,11 @@ func main() {
 			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
 		},
 		{
+			"GET /exercise-log/exercise-with-history",
+			exercise.GetExercisesWithHistory,
+			[]string{"gzip", "container", "session", "csrf-validator", "csrf-generator", "authentication"},
+		},
+		{
 			"GET /body_part",
 			body_part.ListBodyParts,
 			[]string{"gzip", "container", "session", "csrf-generator", "authentication"},

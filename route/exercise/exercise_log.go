@@ -25,19 +25,18 @@ type MapElement struct {
 
 type ListExerciseLogPage struct {
 	route.HtmlPage
-	util.EntityAliasAware[wholth.ExerciseLog]
 	util.PaginatableList[wholth.ExerciseLog]
 	util.Status
-	Q                 string
-	Groups            []string
-	Map               map[string]MapElement
-	From              wholth.DateTime
-	To                wholth.DateTime
-	Types             []wholth.ExerciseType
-	PostForm          PostExerciseLogForm
-	DummyExerciseList struct {
+	ExerciseSearch struct {
+		util.SearchForm
 		util.PaginatableList[wholth.Exercise]
 	}
+	Groups   []string
+	Map      map[string]MapElement
+	From     wholth.DateTime
+	To       wholth.DateTime
+	Types    []wholth.ExerciseType
+	PostForm PostExerciseLogForm
 }
 
 func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
@@ -114,6 +113,10 @@ func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 	}
 
 	page := ListExerciseLogPage{}
+	// TODO dedupe
+	// @see grep DEDUP_TASK_1
+	page.ExerciseSearch.SearchForm.Id = "exercise-history-aware-search"
+	page.ExerciseSearch.SearchForm.Action = "/exercise-log/exercise-with-history"
 	page.PaginatableList = list
 	page.Types = types
 	page.Groups = groups
@@ -129,6 +132,14 @@ func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 	page.Meta.Description = ""
 	page.PostForm = PostExerciseLogForm{
 		Id: "",
+	}
+
+	history, err, sev := prepareExerciseHistory(r)
+
+	if nil != err {
+		container.Log(r, sev, "[ListExerciseLogs][prepareExerciseHistory]", err)
+	} else {
+		page.ExerciseSearch.Values = history
 	}
 
 	as_subdoc := q.Get("as_subdoc")
@@ -162,6 +173,8 @@ func ListExerciseLogs(w http.ResponseWriter, r *http.Request) {
 
 			"templates/exercise_log/get/content.html",
 			"templates/exercise_log/get/form.html",
+
+			"templates/exercise_log/get/exercise-with-history/search.html",
 		)
 	}
 }
@@ -445,4 +458,81 @@ func BatchPatchExerciseLog(w http.ResponseWriter, r *http.Request) {
 
 func BatchDeleteExerciseLog(w http.ResponseWriter, r *http.Request) {
 	batchExerciseLog(BatchDelete, w, r)
+}
+
+type GetExercisesWithHistoryPage struct {
+	route.HtmlPage
+	util.SearchForm
+	util.PaginatableList[wholth.Exercise]
+}
+
+func prepareExerciseHistory(r *http.Request) ([]wholth.Exercise, error, logger.Severity) {
+	result := make([]wholth.Exercise, 0)
+
+	// TODO add cache
+	history, err, sev := wholth.FetchTodaysHistory(r, session.GetSession(r).UserId)
+
+	if nil != err {
+		return result, err, sev
+	} else {
+		deduped := make([]wholth.Exercise, 0)
+		for _, el := range history {
+			var is_already_inserted = false
+			for _, d := range deduped {
+				if d.Id == el.Exercise.Id {
+					is_already_inserted = true
+					break
+				}
+			}
+			if !is_already_inserted {
+				el.Exercise.PreferredType = el.Type
+				deduped = append(deduped, el.Exercise)
+			}
+		}
+		result = append(result, deduped...)
+	}
+
+	return result, nil, sev
+}
+
+func GetExercisesWithHistory(w http.ResponseWriter, r *http.Request) {
+	// 1. get exercises
+	pagination := util.QueryPaginationExtract(r.URL)
+
+	list, err, sev := wholth.FetchExerciseList(r, pagination)
+
+	if nil != err {
+		container.Log(r, sev, "[GetExercisesWithHistory]", err)
+		util.TextResponse(w, http.StatusInternalServerError, err.Error())
+		return
+	}
+
+	page := GetExercisesWithHistoryPage{}
+	page.PaginatableList = list
+	page.HtmlPage = route.DefaultHtmlPage(r)
+	page.Meta.Title = ""
+	page.Meta.Description = ""
+	// TODO dedupe
+	// @see grep DEDUP_TASK_1
+	page.SearchForm.Id = "exercise-history-aware-search"
+	page.SearchForm.Action = "/exercise-log/exercise-with-history"
+
+	history, err, sev := prepareExerciseHistory(r)
+
+	if nil != err {
+		container.Log(r, sev, "[GetExercisesWithHistory][prepareExerciseHistory]", err)
+	} else {
+		page.Values = append(page.Values, history...)
+	}
+
+	route.RenderHtmlTemplates(
+		w,
+		r,
+		page,
+		"templates/exercise_log/get/exercise-with-history/as_subdoc.html",
+		"templates/exercise_log/get/exercise-with-history/search.html",
+
+		"templates/utils/search.html",
+		"templates/utils/paginator.html",
+	)
 }
