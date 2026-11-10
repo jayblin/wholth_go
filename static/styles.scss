@@ -562,7 +562,27 @@ details {
   }
 }
 
+#food-post-form {
+  .calibration {
+    border-radius: var(--s-b-r);
+    border: 1px solid color.$primary-c;
 
+    summary {
+      text-align: center;
+
+      &::marker {
+        font-size: 1.3em;
+      }
+    }
+
+    & > div {
+      display:flex;
+      gap: spacing.$sm;
+      flex-wrap: wrap;
+      padding: 0 spacing.$md spacing.$md spacing.$md;
+    }
+  }
+}
 
 #consumption_log-get-form,
 #food-post-form {

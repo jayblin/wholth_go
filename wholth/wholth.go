@@ -56,9 +56,17 @@ func SetPasswordEncryptionSecret(secret string) {
 	C.wholth_app_password_encryption_secret(toStrView(secret))
 }
 
+type Calibratee struct {
+	// in grams
+	MassInitial float64
+	// in grams
+	MassResultant float64
+}
+
 type PostFoodsForm struct {
 	Food        Food
 	RecipeStep  RecipeStep
+	Calibratee  Calibratee
 	Ingredients util.PaginatableList[Ingredient]
 	Nutrients   util.PaginatableList[FoodNutrient]
 	Target      string

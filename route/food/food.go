@@ -388,6 +388,8 @@ func GetRecipeCopyForm(w http.ResponseWriter, r *http.Request) {
 		time.Now().Unix(),
 	)
 	form.Food.Id = ""
+	form.Calibratee = defaultCalibratee()
+
 	page := ListFoodsPage{
 		HtmlPage: route.DefaultHtmlPage(r),
 		PostForm: form,
@@ -395,6 +397,13 @@ func GetRecipeCopyForm(w http.ResponseWriter, r *http.Request) {
 	page.Meta.Title = "Копируем рецепт"
 
 	renderRecipeForm(w, r, &page)
+}
+
+func defaultCalibratee() wholth.Calibratee {
+	res := wholth.Calibratee{}
+	res.MassInitial = 0
+	res.MassResultant = 0
+	return res
 }
 
 type PostFoodsPage struct {
@@ -422,6 +431,16 @@ func postFoodsFormFromRequest(r *http.Request) wholth.PostFoodsForm {
 	result.Ingredients.Values = ingredient.IngredientsFromRequest(r.PostForm)
 	result.Nutrients.Values = nutrient.FoodNutrientsFromRequest(r.PostForm)
 
+	result.Calibratee = defaultCalibratee()
+	calibrated_mass_initial, err := strconv.ParseFloat(r.PostForm.Get("calibrated_mass_initial"), 64)
+	if nil == err {
+		result.Calibratee.MassInitial = calibrated_mass_initial
+	}
+	calibrated_mass_resultant, err := strconv.ParseFloat(r.PostForm.Get("calibrated_mass_resultant"), 64)
+	if nil == err {
+		result.Calibratee.MassResultant = calibrated_mass_resultant
+	}
+
 	return result
 }
 
@@ -429,6 +448,24 @@ func postDaFood(r *http.Request) *PostFoodsPage {
 	page := PostFoodsPage{
 		route.DefaultHtmlPage(r),
 		postFoodsFormFromRequest(r)}
+
+	mass_initial := page.PostForm.Calibratee.MassInitial
+	mass_resultant := page.PostForm.Calibratee.MassResultant
+
+	if mass_initial > 0 && mass_resultant > 0 {
+		for i, nut := range page.PostForm.Nutrients.Values {
+			var value_resultant float64 = 0
+			// todo check on whole and scientific values
+			value_per_hecagram, err := strconv.ParseFloat(nut.Value, 64)
+			if nil == err {
+				value_initial := value_per_hecagram * mass_initial
+				value_resultant = value_initial / mass_resultant
+			}
+
+			page.PostForm.Nutrients.Values[i].Value = strconv.FormatFloat(value_resultant, 'f', -1, 64)
+		}
+
+	}
 
 	status, err := wholth.SaveFood(&page.PostForm)
 

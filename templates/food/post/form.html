@@ -26,6 +26,29 @@
         </label>
         <input type="hidden" name="food_id" value="{{.PostForm.Food.Id}}" >
     </fieldset>
+    <details class="calibration">
+        <summary>Калибровать рецепт после терм. обработки</summary>
+        <div>
+            <label for="calibrated_mass_initial">Масса до обработки</label>
+            <input
+                type="number"
+                name="calibrated_mass_initial"
+                inputmode="numeric"
+                min="0"
+                step="any"
+            >
+            <pre>гр.</pre>
+            <label for="calibrated_mass_resultant">Масса после обработки</label>
+            <input
+                type="number"
+                name="calibrated_mass_resultant"
+                inputmode="numeric"
+                min="0"
+                step="any"
+            >
+            <pre>гр.</pre>
+        </div>
+    </details>
     <fieldset
         id="recipe"
         {{if ne "" .PostForm.RecipeStep.Status.Alias}}
